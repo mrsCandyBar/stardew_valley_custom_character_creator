@@ -1,0 +1,10 @@
+{
+  "folderLocation": "./dist",
+  "newCharacterName": "Sephiroth",
+  "Name": "My Character Replacement - Elliot to Sephiroth",
+  "Author": "PastelBeans_",
+  "Version": "1.0.0",
+  "Description": "Replaces Elliot with Sephiroth.",
+  "UniqueID": "PastelBeans_.ElliotToSephiroth",
+  "MinimumApiVersion": "4.0.0"
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Character Creator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Stardew Valley Character Creator</h1>
+
+    <form id="form">
+      <section>
+        <h2>Build target</h2>
+        <label>Character folder
+          <select name="folder" id="folder"></select>
+          <small>Folders in <code>characters/</code> that contain a <code>modDetails.json</code>.</small>
+        </label>
+        <label>Stardew Valley character being replaced
+          <input name="sdvName" value="Elliott" required>
+          <small><code>SDV_Name</code>. Not saved in the file; passed to the build with <code>--name</code>.</small>
+        </label>
+      </section>
+
+      <section>
+        <h2>Mod details</h2>
+        <label>New character name
+          <input name="newCharacterName" required>
+          <small><code>newCharacterName</code>. Used in the folder name and the display name.</small>
+        </label>
+        <label>Output folder
+          <input name="folderLocation" required>
+          <small><code>folderLocation</code>. Relative paths start at the project root.</small>
+        </label>
+        <label>Mod folder name (read-only)
+          <input id="modFolderName" readonly>
+          <small><code>modFolderName</code>. Worked out from the two names above.</small>
+        </label>
+      </section>
+
+      <section>
+        <h2>Manifest</h2>
+        <label>Name <input name="Name" required></label>
+        <label>Author <input name="Author" required></label>
+        <label>Version <input name="Version" required></label>
+        <label>Description <textarea name="Description" rows="2"></textarea></label>
+        <label>Unique ID <input name="UniqueID" required></label>
+        <label>Minimum API version <input name="MinimumApiVersion" required></label>
+      </section>
+
+      <div class="actions">
+        <button type="submit" id="build">Build &amp; open dist folder</button>
+        <span id="status" role="status"></span>
+      </div>
+      <pre id="output" hidden></pre>
+    </form>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
