@@ -4,48 +4,70 @@ Create and replace any Stardew Valley character in a builder that writes the cus
 ## Usage
 
 ```
-node build.js
+node build.js --name Elliott --folder characters/Elliott-Sephiroth
 ```
 
-When you run `node build.js`, the files are built to the `folderLocation` set in [modDetails.js](modDetails.js).
+| Option | Description |
+| --- | --- |
+| `--name`, `-n` | The Stardew Valley character being replaced (e.g. `Elliott`). Becomes `SDV_Name` in the character's files. |
+| `--folder`, `-f` | The character folder holding `modDetails.js`, `changes.js` and `assets/`. Can be anywhere on disk. |
 
-The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), so build output isn't committed. If you change `folderLocation` to a folder inside this project, add it to `.gitignore` too.
+If either option is missing, `node build.js` asks for it. `node build.js --help` shows the usage.
 
-## Configuration
+When you run `node build.js`, the files are built to the `folderLocation` set in that character folder's `modDetails.js`, inside a Content Patcher folder named `[CP] <SDV_Name>-<newCharacterName>` (e.g. `dist/[CP] Elliott-Sephiroth`).
 
-`modDetails.js` holds the build settings:
+The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), so build output isn't committed. If you point `folderLocation` at another folder inside this project, add it to `.gitignore` too.
 
-| Variable | Description | Default |
+## Characters
+
+Each character lives in its own folder, so one project can hold many characters. [characters/Elliott-Sephiroth/](characters/Elliott-Sephiroth/) is the working example.
+
+```
+characters/Elliott-Sephiroth/
+  modDetails.js   build settings and manifest values
+  changes.js      collects the changes for content.json
+  changes/        one file per change
+  assets/         the character's images and music
+```
+
+To add a character, copy an existing folder, edit its files, and run the build with `--folder` pointing at it. The folder doesn't need to be inside this project.
+
+### modDetails.js
+
+| Variable | Description | Example |
 | --- | --- | --- |
-| `folderLocation` | The folder the built files are written to. Relative paths are resolved from the project root. The folder is created if it doesn't exist. | `./dist` |
+| `folderLocation` | The folder the mod folder is built into. Relative paths are resolved from the project root. Created if it doesn't exist. | `./dist` |
+| `newCharacterName` | Name of the new character replacing `SDV_Name`. Used in the mod folder name and the display name change. | `Sephiroth` |
+| `modFolderName` | Name of the folder the mod is built into, made from `SDV_Name` and `newCharacterName`. | `[CP] Elliott-Sephiroth` |
 | `Name` | Mod name, written to `manifest.json`. | `My Character Replacement - Elliot to Sephiroth` |
 | `Author` | Mod author, written to `manifest.json`. | `PastelBeans_` |
 | `Version` | Mod version, written to `manifest.json`. | `1.0.0` |
 | `Description` | Mod description, written to `manifest.json`. | `Replaces Elliot with Sephiroth.` |
 | `UniqueID` | Mod unique ID, written to `manifest.json`. | `PastelBeans_.ElliotToSephiroth` |
 | `MinimumApiVersion` | Minimum SMAPI version, written to `manifest.json`. | `4.0.0` |
-| `SDV_Name` | StarDewValley_Name: the character being replaced. Used by the change files to build targets like `Characters/<SDV_Name>` and keys like `Outdoor_<SDV_Name>`. | `Elliott` |
+| `SDV_Name` | StarDewValley_Name: the character being replaced. Not written in the file: `build.js` sets it from `--name` (or the prompt), and the change files use it to build targets like `Characters/<SDV_Name>` and keys like `Outdoor_<SDV_Name>`. | set at run time |
 
 ## Changes
 
-[changes.js](changes.js) collects the objects that go into the `Changes` array of `content.json`. Each change lives in its own file in the [changes/](changes/) folder, where its variables are declared at the top and pulled into the object. To add a change, create a file in `changes/`, import it in `changes.js`, and add it to the `changes` array. Keeping them separate makes it easy to debug one change at a time (just remove it from the array).
+`changes.js` in the character folder collects the objects that go into the `Changes` array of `content.json`. Each change lives in its own file in the character's `changes/` folder, where its variables are declared at the top and pulled into the object. To add a change, create a file in `changes/`, import it in `changes.js`, and add it to the `changes` array. Keeping them separate makes it easy to debug one change at a time (just remove it from the array).
 
 ### Long strings are arrays
 
 Stardew packs many values into one long string separated by a character (`/` for events, gift tastes and schedules, `#` for dialogue). To keep these readable, each one is written as an array with one section per item, and joined back together with the separator when the build runs.
 
-### Current changes
+### Current changes (Elliott-Sephiroth)
 
 | File | Target | Notes |
 | --- | --- | --- |
-| [spriteChange.js](changes/spriteChange.js) | `Characters/<SDV_Name>` | Loads the custom sprite sheet. |
-| [portraitChange.js](changes/portraitChange.js) | `Portraits/<SDV_Name>` | Loads the custom portraits. |
-| [giftTastesChange.js](changes/giftTastesChange.js) | `Data/NPCGiftTastes` | `giftTasteLines` is joined with `/`. |
-| [dialogueChange.js](changes/dialogueChange.js) | `Characters/Dialogue/<SDV_Name>` | Combines the files in [changes/dialogue/](changes/dialogue/), joining each entry with `#`. |
-| [marriageDialogueChange.js](changes/marriageDialogueChange.js) | `Characters/Dialogue/MarriageDialogue` | Each entry's lines are joined with `#`. |
-| [eventChange.js](changes/eventChange.js) | `Data/Events/ArchaeologyHouse`, `ElliottHouse`, `Beach`, `Farm` | Combines the files in [changes/events/](changes/events/), joining sequences with `/`. |
-| [scheduleChange.js](changes/scheduleChange.js) | `Characters/schedules/<SDV_Name>` | Each schedule's stops are joined with `/`. Not tested in-game yet. |
-| [musicChange.js](changes/musicChange.js) | `Data/AudioChanges` | Custom music track. |
+| `spriteChange.js` | `Characters/<SDV_Name>` | Loads the custom sprite sheet. |
+| `portraitChange.js` | `Portraits/<SDV_Name>` | Loads the custom portraits. |
+| `displayNameChange.js` | `Data/Characters` | Sets `DisplayName` to `<newCharacterName>?`. |
+| `giftTastesChange.js` | `Data/NPCGiftTastes` | `giftTasteLines` is joined with `/`. |
+| `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Combines the files in `changes/dialogue/`, joining each entry with `#`. |
+| `marriageDialogueChange.js` | `Characters/Dialogue/MarriageDialogue` | Each entry's lines are joined with `#`. |
+| `eventChange.js` | `Data/Events/ArchaeologyHouse`, `ElliottHouse`, `Beach`, `Farm` | Combines the files in `changes/events/`, joining sequences with `/`. |
+| `scheduleChange.js` | `Characters/schedules/<SDV_Name>` | Each schedule's stops are joined with `/`. Not tested in-game yet. |
+| `musicChange.js` | `Data/AudioChanges` | Custom music track. |
 
 ### Dialogue files
 
@@ -66,10 +88,10 @@ Each file in `changes/events/` exports `eventName` and `eventSequence`, plus `fo
 
 ## Output
 
-Everything below is built to `folderLocation` when you run `node build.js`:
+Everything below is built to `<folderLocation>/<modFolderName>` when you run `node build.js`:
 
 | Output | Description |
 | --- | --- |
-| `content.json` | Content Patcher file. `Changes` is filled from `changes.js`. |
-| `manifest.json` | SMAPI manifest, filled in from the values in `modDetails.js`. |
-| `assets/` | A copy of the project's `assets` folder. |
+| `content.json` | Content Patcher file. `Changes` is filled from the character's `changes.js`. |
+| `manifest.json` | SMAPI manifest, filled in from the character's `modDetails.js`. |
+| `assets/` | A copy of the character folder's `assets` folder. |
