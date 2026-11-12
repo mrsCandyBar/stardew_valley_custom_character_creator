@@ -20,7 +20,7 @@ body {
 }
 
 main {
-  max-width: 640px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 24px 16px 140px; /* room so the fixed save bar never covers the form */
 }
@@ -58,13 +58,36 @@ dialog label { grid-template-columns: 1fr; }
 h1 { font-size: 1.6rem; }
 h2 { font-size: 1.1rem; margin: 0 0 12px; }
 
-section {
+.card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 16px;
   margin-bottom: 16px;
 }
+.panel { padding: 16px; }
+.panel h2:not(:first-child) { margin-top: 28px; }
+
+/* The character picker sits above and outside the card */
+.character-bar { margin-bottom: 16px; }
+.character-bar label { margin-bottom: 0; }
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px 8px 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 8px 14px;
+  color: var(--muted);
+  white-space: nowrap;
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  border-radius: 6px 6px 0 0;
+}
+.tab:hover { color: var(--text); background: #efe9dc; }
+.tab[aria-selected="true"] { color: var(--accent-dark); border-bottom-color: var(--accent); }
 
 /* Label on the left, field on the right, hint under the field */
 label {
@@ -141,7 +164,7 @@ pre {
 }
 
 /* Assets: label, file picker, view button; hint and preview underneath */
-section > .hint { margin: -4px 0 14px; color: var(--muted); font-size: 0.9rem; }
+.panel > .hint { margin: -4px 0 14px; color: var(--muted); font-size: 0.9rem; }
 .asset {
   display: grid;
   grid-template-columns: 170px 1fr auto;

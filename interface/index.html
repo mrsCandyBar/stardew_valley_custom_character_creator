@@ -10,19 +10,28 @@
   <main>
     <h1>Stardew Valley Character Creator</h1>
 
-    <form id="form">
-      <section>
+    <form id="form" novalidate>
+      <div class="character-bar">
         <label>
           <span>Saved character</span>
           <span class="inline">
             <select name="folder" id="folder"></select>
             <button type="button" id="new" class="secondary">New character</button>
           </span>
-          <small>Each folder in <code>characters/</code> with a <code>modDetails.json</code>.</small>
+          <small>Each folder in <code>characters/</code> with a <code>modDetails.json</code>. Switching keeps the tab you are on.</small>
         </label>
-      </section>
+      </div>
 
-      <section>
+      <div class="card">
+        <div class="tabs" role="tablist" aria-label="Character sections">
+          <button type="button" class="tab" role="tab" id="tab-details" data-tab="details" aria-controls="panel-details">Details</button>
+          <button type="button" class="tab" role="tab" id="tab-assets" data-tab="assets" aria-controls="panel-assets">Assets</button>
+          <button type="button" class="tab" role="tab" id="tab-dialogue" data-tab="dialogue" aria-controls="panel-dialogue">Dialogue</button>
+          <button type="button" class="tab" role="tab" id="tab-marriage" data-tab="marriage" aria-controls="panel-marriage">Marriage dialogue</button>
+          <button type="button" class="tab" role="tab" id="tab-schedule" data-tab="schedule" aria-controls="panel-schedule">Schedule</button>
+        </div>
+
+      <section class="panel" role="tabpanel" id="panel-details" data-panel="details" aria-labelledby="tab-details">
         <h2>Mod details</h2>
         <label>
           <span>Replacing</span>
@@ -44,9 +53,7 @@
           <input id="modFolderName" readonly>
           <small><code>modFolderName</code>. Read-only, worked out from the names above.</small>
         </label>
-      </section>
 
-      <section>
         <h2>Manifest</h2>
         <label><span>Name</span> <input name="Name" required></label>
         <label><span>Author</span> <input name="Author" required></label>
@@ -56,7 +63,7 @@
         <label><span>Minimum API version</span> <input name="MinimumApiVersion" required></label>
       </section>
 
-      <section>
+      <section class="panel" role="tabpanel" id="panel-assets" data-panel="assets" aria-labelledby="tab-assets" hidden>
         <h2>Assets</h2>
         <p class="hint">Choosing a file uploads it straight into this character's <code>assets/</code> folder, replacing the old one.</p>
 
@@ -88,14 +95,15 @@
         </div>
       </section>
 
-      <!-- The dialogue editors fill themselves in (see createDialogueEditor in app.js) -->
-      <section class="dialogue-editor" data-type="dialogue" data-title="Dialogue"
+      <!-- The list editors fill themselves in (see createEditor in app.js) -->
+      <section class="panel dialogue-editor" role="tabpanel" id="panel-dialogue" data-panel="dialogue" aria-labelledby="tab-dialogue" hidden data-type="dialogue" data-title="Dialogue"
         data-hint="Saved to dialogue.json. Each line you type is one section of the speech bubble sequence. A portrait code like $1 at the start of a line changes the portrait."></section>
-      <section class="dialogue-editor" data-type="marriage" data-title="Marriage dialogue"
+      <section class="panel dialogue-editor" role="tabpanel" id="panel-marriage" data-panel="marriage" aria-labelledby="tab-marriage" hidden data-type="marriage" data-title="Marriage dialogue"
         data-hint="Saved to marriageDialogue.json. Use {name} in a key where the Stardew character's name goes, e.g. Indoor_Morning_{name}."></section>
 
-      <section class="dialogue-editor" data-type="schedule" data-title="Schedule"
+      <section class="panel dialogue-editor" role="tabpanel" id="panel-schedule" data-panel="schedule" aria-labelledby="tab-schedule" hidden data-type="schedule" data-title="Schedule"
         data-hint="Saved to schedule.json. Each line is one stop: time, location, x, y, facing (e.g. 600 Beach 34 39 0). A schedule can be for a weekday, a season, or one day of a season, and all of them are optional."></section>
+      </div>
 
       <div class="actions">
         <button type="submit" id="build">Build &amp; open dist folder</button>

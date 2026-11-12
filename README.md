@@ -22,6 +22,7 @@ The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), s
 
 Run `node server.js` and open http://localhost:3000 for a form that edits a character's `modDetails.json` and runs the build.
 
+- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Marriage dialogue, Schedule). Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
 - **Save** (bottom right) writes the form to the selected character's `modDetails.json`.
 - **Build & open dist folder** saves, runs `build.js` and opens the built folder.
 - **New character** asks for the character being replaced and the new name, then copies [templates/character/](templates/character/) into `characters/<Replacing>-<NewName>` with the names filled in. The template uses placeholder text, and its `assets/` folder starts empty, so add `custom_sprites.png` and `custom_portraits.png`.

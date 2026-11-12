@@ -97,6 +97,11 @@ saveButton.addEventListener("click", async () => {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!form.checkValidity()) {
+    showTab("details"); // the empty required field is in this tab, and a hidden field can't show its message
+    form.reportValidity();
+    return;
+  }
   buildButton.disabled = true;
   output.hidden = true;
   setStatus("Building...");
@@ -366,6 +371,11 @@ function createEditor(section) {
   addRows.push(otherRow);
   section.append(el("div", { className: "entry-group" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
 
+  addKey.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    addOtherButton.click();
+  });
   addOtherButton.addEventListener("click", () => {
     const key = addKey.value.trim();
     if (!key) return showMessage("Type a key first.");
@@ -488,5 +498,35 @@ const loadEditors = () => Promise.all(editors.map((editor) => editor.load(folder
 async function saveEditors() {
   for (const editor of editors) await editor.save(folderSelect.value);
 }
+
+// --- Tabs ---
+const tabButtons = [...document.querySelectorAll(".tab")];
+const tabPanels = [...document.querySelectorAll(".panel")];
+
+function showTab(name, focus = false) {
+  if (!tabButtons.some((t) => t.dataset.tab === name)) name = tabButtons[0].dataset.tab;
+  for (const tab of tabButtons) {
+    const active = tab.dataset.tab === name;
+    tab.setAttribute("aria-selected", String(active));
+    tab.tabIndex = active ? 0 : -1;
+    if (active && focus) tab.focus();
+  }
+  for (const panel of tabPanels) panel.hidden = panel.dataset.panel !== name;
+  document.querySelectorAll(".preview audio").forEach((audio) => audio.pause()); // don't keep playing from a hidden tab
+  try {
+    history.replaceState(null, "", `#${name}`); // a refresh stays on this tab
+  } catch {}
+}
+
+tabButtons.forEach((tab) => tab.addEventListener("click", () => showTab(tab.dataset.tab)));
+document.querySelector(".tabs").addEventListener("keydown", (event) => {
+  const current = tabButtons.findIndex((t) => t.getAttribute("aria-selected") === "true");
+  const move = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+  let next = move === undefined ? (event.key === "Home" ? 0 : event.key === "End" ? tabButtons.length - 1 : -1) : (current + move + tabButtons.length) % tabButtons.length;
+  if (next < 0) return;
+  event.preventDefault();
+  showTab(tabButtons[next].dataset.tab, true);
+});
+showTab(location.hash.slice(1));
 
 init(); // last, so everything above is defined before the first load
