@@ -9,6 +9,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
 const INTERFACE_DIR = path.join(ROOT, "interface");
 const CHARACTERS_DIR = path.join(ROOT, "characters");
+const TEMPLATE_DIR = path.join(ROOT, "templates", "character");
 
 // Only these fields are read from / written to modDetails.json
 const MOD_FIELDS = [
@@ -88,6 +89,39 @@ async function handleApi(req, res, url) {
 
   if (req.method === "GET" && url.pathname === "/api/characters") {
     return send(res, 200, { folders: listCharacters() });
+  }
+
+  // Creates characters/<Replacing>-<NewName> from templates/character with the names filled in.
+  if (req.method === "POST" && url.pathname === "/api/characters") {
+    const { replacing = "", newName = "" } = await readBody(req);
+    const sdvName = String(replacing).trim();
+    const newCharacterName = String(newName).trim();
+    const valid = /^\w[\w '.-]{0,39}$/;
+    if (!valid.test(sdvName) || !valid.test(newCharacterName)) {
+      return send(res, 400, { error: "Names need letters or numbers (spaces, - _ ' . are allowed), up to 40 characters." });
+    }
+
+    const folderName = `${sdvName}-${newCharacterName}`.replace(/\s+/g, "_");
+    const dest = path.join(CHARACTERS_DIR, folderName);
+    if (fs.existsSync(dest)) return send(res, 409, { error: `characters/${folderName} already exists.` });
+
+    fs.cpSync(TEMPLATE_DIR, dest, { recursive: true });
+    fs.mkdirSync(path.join(dest, "assets"), { recursive: true });
+
+    const idPart = (s) => s.replace(/[^A-Za-z0-9]/g, "");
+    const details = {
+      SDV_Name: sdvName,
+      folderLocation: "./dist",
+      newCharacterName,
+      Name: `My Character Replacement - ${sdvName} to ${newCharacterName}`,
+      Author: "YourName",
+      Version: "1.0.0",
+      Description: `Replaces ${sdvName} with ${newCharacterName}.`,
+      UniqueID: `YourName.${idPart(sdvName)}To${idPart(newCharacterName)}`,
+      MinimumApiVersion: "4.0.0",
+    };
+    fs.writeFileSync(path.join(dest, "modDetails.json"), JSON.stringify(pickFields(details), null, 2) + "\n");
+    return send(res, 201, { folder: `characters/${folderName}` });
   }
 
   if (req.method === "GET" && url.pathname === "/api/mod-details") {

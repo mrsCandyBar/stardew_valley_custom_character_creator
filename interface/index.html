@@ -16,9 +16,9 @@
           <span>Saved character</span>
           <span class="inline">
             <select name="folder" id="folder"></select>
-            <button type="button" id="save" class="secondary">Save</button>
+            <button type="button" id="new" class="secondary">New character</button>
           </span>
-          <small>Each folder in <code>characters/</code> with a <code>modDetails.json</code>. Save writes the form to the selected file.</small>
+          <small>Each folder in <code>characters/</code> with a <code>modDetails.json</code>.</small>
         </label>
       </section>
 
@@ -58,11 +58,30 @@
 
       <div class="actions">
         <button type="submit" id="build">Build &amp; open dist folder</button>
-        <span id="status" role="status"></span>
       </div>
       <pre id="output" hidden></pre>
+
+      <div class="save-bar">
+        <p>Saving writes your changes to this character's config file, so you don't lose your data.</p>
+        <p id="status" role="status"></p>
+        <button type="button" id="save">Save</button>
+      </div>
     </form>
   </main>
+
+  <dialog id="newDialog">
+    <form method="dialog" id="newForm">
+      <h2>New character</h2>
+      <p class="hint">Copies <code>templates/character</code> into a new folder in <code>characters/</code> with placeholder text.</p>
+      <label><span>Replacing</span> <input name="replacing" placeholder="e.g. Abigail" required></label>
+      <label><span>New character name</span> <input name="newName" placeholder="e.g. Zed" required></label>
+      <p id="newError" class="error" hidden></p>
+      <div class="actions">
+        <button type="submit">Create</button>
+        <button type="button" id="newCancel" class="secondary">Cancel</button>
+      </div>
+    </form>
+  </dialog>
   <script src="app.js"></script>
 </body>
 </html>

@@ -64,10 +64,11 @@ async function loadDetails() {
   }
 }
 
-async function init() {
+async function init(selectFolder) {
   try {
     const { folders } = await api("/api/characters");
     folderSelect.innerHTML = folders.map((f) => `<option>${f}</option>`).join("");
+    if (selectFolder) folderSelect.value = selectFolder;
     if (folders.length) await loadDetails();
     else setStatus("No character folders found in characters/.", true);
   } catch (err) {
@@ -109,6 +110,34 @@ form.addEventListener("submit", async (event) => {
     }
   } finally {
     buildButton.disabled = false;
+  }
+});
+
+// --- New character ---
+const newDialog = document.getElementById("newDialog");
+const newForm = document.getElementById("newForm");
+const newError = document.getElementById("newError");
+
+document.getElementById("new").addEventListener("click", () => {
+  newForm.reset();
+  newError.hidden = true;
+  newDialog.showModal();
+});
+document.getElementById("newCancel").addEventListener("click", () => newDialog.close());
+
+newForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    const { folder } = await postJson("/api/characters", {
+      replacing: newForm.replacing.value,
+      newName: newForm.newName.value,
+    });
+    newDialog.close();
+    await init(folder);
+    setStatus(`Created ${folder} with placeholder text.`);
+  } catch (err) {
+    newError.textContent = err.message;
+    newError.hidden = false;
   }
 });
 

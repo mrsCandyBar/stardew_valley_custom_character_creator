@@ -18,6 +18,16 @@ When you run `node build.js`, the files are built to the `folderLocation` set in
 
 The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), so build output isn't committed. If you point `folderLocation` at another folder inside this project, add it to `.gitignore` too.
 
+## Interface
+
+Run `node server.js` and open http://localhost:3000 for a form that edits a character's `modDetails.json` and runs the build.
+
+- **Save** (bottom right) writes the form to the selected character's `modDetails.json`.
+- **Build & open dist folder** saves, runs `build.js` and opens the built folder.
+- **New character** asks for the character being replaced and the new name, then copies [templates/character/](templates/character/) into `characters/<Replacing>-<NewName>` with the names filled in. The template uses placeholder text, and its `assets/` folder starts empty, so add `custom_sprites.png` and `custom_portraits.png`.
+
+The interface only edits the mod details so far. Dialogue, events and the other changes are still edited in their `.js` files.
+
 ## Characters
 
 Each character lives in its own folder, so one project can hold many characters. [characters/Elliott-Sephiroth/](characters/Elliott-Sephiroth/) is the working example.
