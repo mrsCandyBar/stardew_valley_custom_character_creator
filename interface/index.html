@@ -12,41 +12,48 @@
 
     <form id="form">
       <section>
-        <h2>Build target</h2>
-        <label>Character folder
-          <select name="folder" id="folder"></select>
-          <small>Folders in <code>characters/</code> that contain a <code>modDetails.json</code>.</small>
-        </label>
-        <label>Stardew Valley character being replaced
-          <input name="sdvName" value="Elliott" required>
-          <small><code>SDV_Name</code>. Not saved in the file; passed to the build with <code>--name</code>.</small>
+        <label>
+          <span>Saved character</span>
+          <span class="inline">
+            <select name="folder" id="folder"></select>
+            <button type="button" id="save" class="secondary">Save</button>
+          </span>
+          <small>Each folder in <code>characters/</code> with a <code>modDetails.json</code>. Save writes the form to the selected file.</small>
         </label>
       </section>
 
       <section>
         <h2>Mod details</h2>
-        <label>New character name
+        <label>
+          <span>Replacing</span>
+          <input name="SDV_Name" required>
+          <small><code>SDV_Name</code>. The Stardew Valley character being replaced.</small>
+        </label>
+        <label>
+          <span>New character name</span>
           <input name="newCharacterName" required>
           <small><code>newCharacterName</code>. Used in the folder name and the display name.</small>
         </label>
-        <label>Output folder
+        <label>
+          <span>Output folder</span>
           <input name="folderLocation" required>
           <small><code>folderLocation</code>. Relative paths start at the project root.</small>
         </label>
-        <label>Mod folder name (read-only)
+        <label>
+          <span>Mod folder name</span>
           <input id="modFolderName" readonly>
-          <small><code>modFolderName</code>. Worked out from the two names above.</small>
+          <small><code>modFolderName</code>. Read-only, worked out from the names above.</small>
         </label>
       </section>
 
       <section>
         <h2>Manifest</h2>
-        <label>Name <input name="Name" required></label>
-        <label>Author <input name="Author" required></label>
-        <label>Version <input name="Version" required></label>
-        <label>Description <textarea name="Description" rows="2"></textarea></label>
-        <label>Unique ID <input name="UniqueID" required></label>
-        <label>Minimum API version <input name="MinimumApiVersion" required></label>
+        <label><span>Name</span> <input name="Name" required></label>
+        <label><span>Author</span> <input name="Author" required></label>
+        <label><span>Version</span> <input name="Version" required></label>
+        <label><span>Description</span> <textarea name="Description" rows="2"></textarea></label>
+        <label><span>Unique ID</span> <input name="UniqueID" required></label>
+        <label><span>Minimum API version</span> <input name="MinimumApiVersion" required></label>
       </section>
 
       <div class="actions">

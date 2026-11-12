@@ -3,9 +3,11 @@ const folderSelect = document.getElementById("folder");
 const status = document.getElementById("status");
 const output = document.getElementById("output");
 const buildButton = document.getElementById("build");
+const saveButton = document.getElementById("save");
 const modFolderName = document.getElementById("modFolderName");
 
 const DETAIL_FIELDS = [
+  "SDV_Name",
   "folderLocation",
   "newCharacterName",
   "Name",
@@ -32,8 +34,22 @@ async function api(url, options) {
   return data;
 }
 
+function postJson(url, body) {
+  return api(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+function readDetails() {
+  const details = {};
+  for (const key of DETAIL_FIELDS) details[key] = form[key].value.trim();
+  return details;
+}
+
 function updateModFolderName() {
-  modFolderName.value = `[CP] ${form.sdvName.value}-${form.newCharacterName.value}`;
+  modFolderName.value = `[CP] ${form.SDV_Name.value}-${form.newCharacterName.value}`;
 }
 
 async function loadDetails() {
@@ -41,6 +57,7 @@ async function loadDetails() {
     const details = await api(`/api/mod-details?folder=${encodeURIComponent(folderSelect.value)}`);
     for (const key of DETAIL_FIELDS) form[key].value = details[key];
     updateModFolderName();
+    output.hidden = true;
     setStatus("");
   } catch (err) {
     setStatus(err.message, true);
@@ -59,26 +76,31 @@ async function init() {
 }
 
 folderSelect.addEventListener("change", loadDetails);
-form.sdvName.addEventListener("input", updateModFolderName);
+form.SDV_Name.addEventListener("input", updateModFolderName);
 form.newCharacterName.addEventListener("input", updateModFolderName);
+
+saveButton.addEventListener("click", async () => {
+  saveButton.disabled = true;
+  try {
+    await postJson("/api/mod-details", { folder: folderSelect.value, details: readDetails() });
+    setStatus(`Saved to ${folderSelect.value}/modDetails.json`);
+  } catch (err) {
+    setStatus(err.message, true);
+  } finally {
+    saveButton.disabled = false;
+  }
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const details = {};
-  for (const key of DETAIL_FIELDS) details[key] = form[key].value;
-
   buildButton.disabled = true;
   output.hidden = true;
   setStatus("Building...");
   try {
-    const result = await api("/api/build", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ folder: folderSelect.value, sdvName: form.sdvName.value.trim(), details }),
-    });
+    const result = await postJson("/api/build", { folder: folderSelect.value, details: readDetails() });
     output.textContent = result.output;
     output.hidden = false;
-    setStatus("Built. Opened the folder in Explorer.");
+    setStatus("Saved and built. Opened the folder in Explorer.");
   } catch (err) {
     setStatus(err.message, true);
     if (err.output) {

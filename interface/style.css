@@ -36,17 +36,29 @@ section {
   margin-bottom: 16px;
 }
 
+/* Label on the left, field on the right, hint under the field */
 label {
-  display: block;
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  column-gap: 16px;
+  align-items: center;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 label:last-child { margin-bottom: 0; }
+label > small { grid-column: 2; }
+
+@media (max-width: 520px) {
+  label { grid-template-columns: 1fr; }
+  label > small { grid-column: 1; }
+}
+
+.inline { display: flex; gap: 8px; }
+.inline select { flex: 1; }
 
 input, select, textarea {
   display: block;
   width: 100%;
-  margin-top: 4px;
   padding: 8px;
   font: inherit;
   font-weight: 400;
@@ -80,6 +92,8 @@ button {
   cursor: pointer;
 }
 button:hover { background: var(--accent-dark); }
+button.secondary { color: var(--accent-dark); background: transparent; border: 1px solid var(--accent); }
+button.secondary:hover { color: #fff; background: var(--accent); }
 button:disabled { opacity: 0.6; cursor: wait; }
 
 #status.error { color: var(--error); }

@@ -5,13 +5,14 @@ const fs = require("fs");
 const path = require("path");
 const { execFile } = require("child_process");
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
 const INTERFACE_DIR = path.join(ROOT, "interface");
 const CHARACTERS_DIR = path.join(ROOT, "characters");
 
 // Only these fields are read from / written to modDetails.json
 const MOD_FIELDS = [
+  "SDV_Name",
   "folderLocation",
   "newCharacterName",
   "Name",
@@ -96,13 +97,23 @@ async function handleApi(req, res, url) {
     return send(res, 200, pickFields(JSON.parse(fs.readFileSync(file, "utf8"))));
   }
 
+  // Saves the form to the selected character's modDetails.json (which must already exist).
+  if (req.method === "POST" && url.pathname === "/api/mod-details") {
+    const { folder, details } = await readBody(req);
+    const file = detailsPath(folder || "");
+    if (!folder || !fs.existsSync(file)) return send(res, 404, { error: `No modDetails.json in ${folder}` });
+    fs.writeFileSync(file, JSON.stringify(pickFields(details || {}), null, 2) + "\n");
+    return send(res, 200, { saved: file });
+  }
+
   if (req.method === "POST" && url.pathname === "/api/build") {
-    const { folder, sdvName, details } = await readBody(req);
+    const { folder, details } = await readBody(req);
+    const clean = pickFields(details || {});
+    const sdvName = clean.SDV_Name.trim();
     if (!folder || !sdvName) return send(res, 400, { error: "A character folder and the Stardew character name are required." });
     const file = detailsPath(folder);
-    if (!fs.existsSync(path.dirname(file))) return send(res, 404, { error: `Folder not found: ${folder}` });
+    if (!fs.existsSync(file)) return send(res, 404, { error: `No modDetails.json in ${folder}` });
 
-    const clean = pickFields(details || {});
     fs.writeFileSync(file, JSON.stringify(clean, null, 2) + "\n");
 
     const result = await runBuild(sdvName, folder);
