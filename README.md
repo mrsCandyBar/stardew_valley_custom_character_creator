@@ -28,7 +28,9 @@ Run `node server.js` and open http://localhost:3000 for a form that edits a char
 
 - **Assets** lets you upload the portraits (`custom_portraits.png`), sprites (`custom_sprites.png`) and a music track (`.ogg`) into the selected character's `assets/` folder, replacing the old file. **View** shows the image, or **Play** plays the track. The music file name is stored in the character's `music.json`, which `musicChange.js` reads; with no track set there is no music change.
 
-The interface only edits the mod details and these assets so far. Dialogue, events and the other changes are still edited in their `.js` files.
+- **Dialogue** and **Marriage dialogue** list every entry as a card. Under *Day dialogue*, add a day (Mon to Sun) with an optional heart count (1 to 14), which makes keys like `Sun` or `Sun4`. Under *Other dialogue*, add any key, e.g. `Introduction` or `Festival_Egg`. Each line you type in a card is one `#` section. Save writes `dialogue.json` and `marriageDialogue.json`.
+
+The interface only edits the mod details, assets and dialogue so far. Events and the other changes are still edited in their `.js` files.
 
 ## Characters
 
@@ -76,15 +78,15 @@ Stardew packs many values into one long string separated by a character (`/` for
 | `portraitChange.js` | `Portraits/<SDV_Name>` | Loads the custom portraits. |
 | `displayNameChange.js` | `Data/Characters` | Sets `DisplayName` to `<newCharacterName>?`. |
 | `giftTastesChange.js` | `Data/NPCGiftTastes` | `giftTasteLines` is joined with `/`. |
-| `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Combines the files in `changes/dialogue/`, joining each entry with `#`. |
-| `marriageDialogueChange.js` | `Characters/Dialogue/MarriageDialogue` | Each entry's lines are joined with `#`. |
+| `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Reads `dialogue.json`, joining each entry's lines with `#`. |
+| `marriageDialogueChange.js` | `Characters/Dialogue/MarriageDialogue` | Reads `marriageDialogue.json`, joining each entry's lines with `#`. `{name}` in a key becomes `SDV_Name`. |
 | `eventChange.js` | `Data/Events/ArchaeologyHouse`, `ElliottHouse`, `Beach`, `Farm` | Combines the files in `changes/events/`, joining sequences with `/`. |
 | `scheduleChange.js` | `Characters/schedules/<SDV_Name>` | Each schedule's stops are joined with `/`. Not tested in-game yet. |
 | `musicChange.js` | `Data/AudioChanges` | Custom music track. |
 
-### Dialogue files
+### Dialogue data
 
-Each file in `changes/dialogue/` exports an object of `{ key: [lines] }`. Files: `introduction`, `monday` to `sunday` (each tier, like `Mon`, `Mon2`, `Mon4`), `generic` (`one` to `eight`) and `festivals`. To add more, create a file there and add one `require` line to the list in `dialogueChange.js`. A duplicate key across files stops the build with an error.
+`dialogue.json` and `marriageDialogue.json` each hold `{ "entries": [{ "key": "Mon4", "lines": ["..."] }] }`. Day keys are `Mon` to `Sun` with an optional heart count after them (`Sun`, `Sun4`, up to `Sun14`). Other keys are things like `Introduction`, `one` and `Festival_Egg`. A duplicate key stops the build with an error. Edit them in the interface or by hand.
 
 ### Event files
 

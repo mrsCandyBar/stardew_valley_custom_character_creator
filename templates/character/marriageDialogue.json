@@ -1,0 +1,59 @@
+{
+  "entries": [
+    {
+      "key": "Indoor_Morning_{name}",
+      "lines": [
+        "Placeholder marriage dialogue for indoorMorning (part 1).",
+        "$1Placeholder marriage dialogue for indoorMorning (part 2)."
+      ]
+    },
+    {
+      "key": "Indoor_Night_{name}",
+      "lines": [
+        "Placeholder marriage dialogue for indoorNight (part 1).",
+        "$1Placeholder marriage dialogue for indoorNight (part 2)."
+      ]
+    },
+    {
+      "key": "Outdoor_{name}",
+      "lines": [
+        "Placeholder marriage dialogue for outdoor (part 1).",
+        "$1Placeholder marriage dialogue for outdoor (part 2)."
+      ]
+    },
+    {
+      "key": "OneRoom_{name}",
+      "lines": [
+        "Placeholder marriage dialogue for oneRoom (part 1).",
+        "$1Placeholder marriage dialogue for oneRoom (part 2).",
+        "$1Placeholder marriage dialogue for oneRoom (part 3)."
+      ]
+    },
+    {
+      "key": "fun_12",
+      "lines": [
+        "Placeholder marriage dialogue for fun (part 1).",
+        "$1Placeholder marriage dialogue for fun (part 2).",
+        "$1Placeholder marriage dialogue for fun (part 3).",
+        "$1Placeholder marriage dialogue for fun (part 4)."
+      ]
+    },
+    {
+      "key": "Rainy_Day_{name}",
+      "lines": [
+        "Placeholder marriage dialogue for rainyDay (part 1).",
+        "$1Placeholder marriage dialogue for rainyDay (part 2).",
+        "$1Placeholder marriage dialogue for rainyDay (part 3)."
+      ]
+    },
+    {
+      "key": "patio_{name}",
+      "lines": [
+        "Placeholder marriage dialogue for patio (part 1).",
+        "$1Placeholder marriage dialogue for patio (part 2).",
+        "$1Placeholder marriage dialogue for patio (part 3).",
+        "$1Placeholder marriage dialogue for patio (part 4)."
+      ]
+    }
+  ]
+}

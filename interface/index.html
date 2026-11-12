@@ -62,28 +62,37 @@
 
         <div class="asset" data-kind="portrait" data-accept="image/png">
           <span class="asset-label">Portraits</span>
-          <input type="file" accept=".png,image/png">
-          <button type="button" class="secondary view">View</button>
-          <small>PNG, saved as <code>custom_portraits.png</code>. <span class="asset-state"></span></small>
+          <span class="asset-state"></span>
+          <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">View</button></span>
+          <small>PNG, saved as <code>custom_portraits.png</code>.</small>
+          <input type="file" accept=".png,image/png" hidden>
           <div class="preview" hidden></div>
         </div>
 
         <div class="asset" data-kind="sprite" data-accept="image/png">
           <span class="asset-label">Sprites</span>
-          <input type="file" accept=".png,image/png">
-          <button type="button" class="secondary view">View</button>
-          <small>PNG sprite sheet, saved as <code>custom_sprites.png</code>. <span class="asset-state"></span></small>
+          <span class="asset-state"></span>
+          <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">View</button></span>
+          <small>PNG sprite sheet, saved as <code>custom_sprites.png</code>.</small>
+          <input type="file" accept=".png,image/png" hidden>
           <div class="preview" hidden></div>
         </div>
 
         <div class="asset" data-kind="music" data-accept="audio/ogg">
           <span class="asset-label">Music</span>
-          <input type="file" accept=".ogg,audio/ogg">
-          <button type="button" class="secondary view">Play</button>
-          <small>OGG track, saved under its own name and recorded in <code>music.json</code>. <span class="asset-state"></span></small>
+          <span class="asset-state"></span>
+          <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">Play</button></span>
+          <small>OGG track, saved under its own name and recorded in <code>music.json</code>.</small>
+          <input type="file" accept=".ogg,audio/ogg" hidden>
           <div class="preview" hidden></div>
         </div>
       </section>
+
+      <!-- The dialogue editors fill themselves in (see createDialogueEditor in app.js) -->
+      <section class="dialogue-editor" data-type="dialogue" data-title="Dialogue"
+        data-hint="Saved to dialogue.json. Each line you type is one section of the speech bubble sequence. A portrait code like $1 at the start of a line changes the portrait."></section>
+      <section class="dialogue-editor" data-type="marriage" data-title="Marriage dialogue"
+        data-hint="Saved to marriageDialogue.json. Use {name} in a key where the Stardew character's name goes, e.g. Indoor_Morning_{name}."></section>
 
       <div class="actions">
         <button type="submit" id="build">Build &amp; open dist folder</button>

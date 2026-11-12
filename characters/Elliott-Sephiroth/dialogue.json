@@ -1,0 +1,362 @@
+{
+  "entries": [
+    {
+      "key": "Introduction",
+      "lines": [
+        "Ah... a newcomer. I am... a resident of the beach. ",
+        "TESTING NEW LINE",
+        "$8I am Sephi—... just a wanderer. ",
+        "$6I hope your stay here is less... complicated than my arrival."
+      ]
+    },
+    {
+      "key": "Mon",
+      "lines": [
+        "Morning. A woman named Marnie brought me eggs yesterday. Simply out of... kindness. ",
+        "$2I kept waiting for her to ask me to join her... cause, but she just smiled and left. It is... confusing... ",
+        "$0why would she do that?"
+      ]
+    },
+    {
+      "key": "Mon2",
+      "lines": [
+        "You stand quite close! ",
+        "$7Is this your local interrogation tactic?"
+      ]
+    },
+    {
+      "key": "Mon4",
+      "lines": [
+        "Marnie brought more eggs. I didn't question her motives this time. ",
+        "$1I simply... thanked her. It felt less awkward than before."
+      ]
+    },
+    {
+      "key": "Mon6",
+      "lines": [
+        "Morning. I am growing accustomed to your visits. ",
+        "$3It is... pleasant to speak with someone who doesn't look at me like an eccentric theatrical actor."
+      ]
+    },
+    {
+      "key": "Mon8",
+      "lines": [
+        "Marnie told me yesterday that I look much happier than when I first arrived. ",
+        "$1I suppose she is right. ",
+        "$6The shadows of my past have less hold on me now. Thank you, my friend."
+      ]
+    },
+    {
+      "key": "Tue",
+      "lines": [
+        "Some months back I had been struck down, I was so sure of... my success. ",
+        "$5Yet here I am. No Jenova. No Shinra. No grand purpose. ",
+        "$8Just... here... in a town full of people who think my sword is an overly dramatic fishing tool. ",
+        "$5I do not know what to do with this quiet."
+      ]
+    },
+    {
+      "key": "Tue2",
+      "lines": [
+        "I saw you checking the bulletin board in town. ",
+        "$4Are you gathering intelligence on me? I would advise you to reconsider."
+      ]
+    },
+    {
+      "key": "Tue4",
+      "lines": [
+        "I sat on the docks today. I realized I was not checking for threats or calculating escape routes. ",
+        "$2I was... just listening to the waves. A strange sensation."
+      ]
+    },
+    {
+      "key": "Tue6",
+      "lines": [
+        "I cleaned the dust off my cabin shelves today. I found an old piece of wood and thought about carving something. ",
+        "$6Perhaps... a gift for your farmhouse? I am still considering it."
+      ]
+    },
+    {
+      "key": "Tue8",
+      "lines": [
+        "I've decided to keep the Masamune safely put away. There is no success to be found in ruin. ",
+        "$7Being 'here'... with you... is a purpose I never anticipated, yet I am grateful for it."
+      ]
+    },
+    {
+      "key": "Wed",
+      "lines": [
+        "The fisherman offered to teach me how to hook a 'Super Cucumber'. ",
+        "$2I told him I have wielded the strongest sword known to man and summoned meteors... ",
+        "$8He told me that was 'nice', but a fiberglass rod has better bite rate. I am completely out of my depth here."
+      ]
+    },
+    {
+      "key": "Wed2",
+      "lines": [
+        "The fisherman spoke to you earlier. Did you ask him about the stranger in the cabin? ",
+        "$5Trust me stranger. Some things... are better left in the past where they belong."
+      ]
+    },
+    {
+      "key": "Wed4",
+      "lines": [
+        "Willy convinced me to try holding the fishing rod. My stance was perfect, but my timing was... terrible. ",
+        "$4The fish escaped. It is frustrating, but... not entirely unpleasant."
+      ]
+    },
+    {
+      "key": "Wed6",
+      "lines": [
+        "Willy let me keep an extra crab from his traps today. I had no use for a live crustacean, so I left it by the tide pools. ",
+        "$3This valley is changing how I view small victories."
+      ]
+    },
+    {
+      "key": "Wed8",
+      "lines": [
+        "Willy says I'm actually getting the hang of casting a line. ",
+        "$3I even caught a small fish yesterday. It felt... rewarding. A different kind of victory!"
+      ]
+    },
+    {
+      "key": "Thu",
+      "lines": [
+        "I walk the shore at dusk. For the first time in my existence, no one expects me to be a god, a hero, or a monster. It feels... peaceful. ",
+        "$2But I look at my hands, and I still only know how to hold a weapon. How do these people just... live?"
+      ]
+    },
+    {
+      "key": "Thu2",
+      "lines": [
+        "You walk the beach at the exact hour I do. Coincidence is a luxury I cannot afford to believe in. ",
+        "$8Why are you so attentive?"
+      ]
+    },
+    {
+      "key": "Thu4",
+      "lines": [
+        "The blacksmith, Clint, asked me if my hair required special maintenance. ",
+        "$8I... did not know how to respond. In SOLDIER, we did not discuss such trivialities. It was bizarre."
+      ]
+    },
+    {
+      "key": "Thu6",
+      "lines": [
+        "The sunset was remarkably clear today. ",
+        "$5I found myself wishing you were walking the shoreline at the same time. ",
+        "$3Talking to you helps quiet the noise in my mind."
+      ]
+    },
+    {
+      "key": "Thu8",
+      "lines": [
+        "When I walk the shore at dusk now, I no longer look at my hands and see a weapon. ",
+        "$1I see a life that belongs to me. Thank you for walking beside me while I figured that out."
+      ]
+    },
+    {
+      "key": "Fri",
+      "lines": [
+        "The villagers invited me to the saloon. They want to play billiards. ",
+        "$3I asked if the loser must forfeit their soul to the Lifestream. ",
+        "$8Robin laughed and said it just costs a starfruit wine... What even is starfruit wine?"
+      ]
+    },
+    {
+      "key": "Fri2",
+      "lines": [
+        "You spent time at the saloon. A crowded room is an ideal place to exchange secrets... ",
+        "$4Not that I noticed..."
+      ]
+    },
+    {
+      "key": "Fri4",
+      "lines": [
+        "I walked to the saloon last night. I didn't go in, but I saw you through the window. You seemed... at peace. ",
+        "$6I find myself wondering what that feels like."
+      ]
+    },
+    {
+      "key": "Fri6",
+      "lines": [
+        "I almost went inside the saloon tonight because I knew you would be there. ",
+        "$1I didn't go in, but... the choice was mine this time and not... fear."
+      ]
+    },
+    {
+      "key": "Fri8",
+      "lines": [
+        "I went to the saloon last night. I sat in the corner... ",
+        "$8then Gus brought me a plate of food, and Robin waved. ",
+        "$5I did not feel like an outsider. I felt... seen."
+      ]
+    },
+    {
+      "key": "Sat",
+      "lines": [
+        "I almost introduced myself to Pierre as the Ultimate Soldier today. ",
+        "$7He looked perplexed and thought I was talking about a theatrical play. ",
+        "$5I think he thinks I am eccentric."
+      ]
+    },
+    {
+      "key": "Sat2",
+      "lines": [
+        "I saw you buying supplies at the market. ",
+        "$4Planning a long excursion, or preparing a perimeter?"
+      ]
+    },
+    {
+      "key": "Sat4",
+      "lines": [
+        "I stumbled upon the town kids, Vincent and Jas, playing near the river with Penny. ",
+        "$8They saw my sword and asked if I was a wizard. I told them I was just a traveler. ",
+        "$1Then they offered me a dandelion. I kept it."
+      ]
+    },
+    {
+      "key": "Sat6",
+      "lines": [
+        "Pierre asked me if I wanted to purchase a fruit tree today. It requires a long-term commitment to this soil. I found myself thinking... ",
+        "$6perhaps staying here wouldn't be so bad."
+      ]
+    },
+    {
+      "key": "Sat8",
+      "lines": [
+        "Pierre gave me a discount on seeds today. ",
+        "$1He called me a good neighbor. Me! A neighbor! ",
+        "$3I think... I am beginning to understand how to just... live... I like this place."
+      ]
+    },
+    {
+      "key": "Sun",
+      "lines": [
+        "Sundays are quiet. The Mayor asked if I wanted to help with the upcoming festival. ",
+        "$8Me! Organizing a festival? If he knew what I had happened in Nibelheim- but thankfully he does not! ",
+        "$5They just see a traveler with long hair. It is a... strange mercy."
+      ]
+    },
+    {
+      "key": "Sun2",
+      "lines": [
+        "Even on a day of rest, you approach my cabin. ",
+        "$5You are either incredibly brave, or entirely unaware of who I used to be."
+      ]
+    },
+    {
+      "key": "Sun4",
+      "lines": [
+        "Sundays here are... quiet. Back in Midgar, the sky was steel and the noise never stopped. ",
+        "$1I find myself preferring this quiet. ",
+        "$6Especially when you visit."
+      ]
+    },
+    {
+      "key": "Sun6",
+      "lines": [
+        "Sundays no longer feel heavy with memories of... past events. ",
+        "$3Now, they just feel like a quiet prelude to whatever news you will bring from your farm."
+      ]
+    },
+    {
+      "key": "Sun8",
+      "lines": [
+        "The Mayor asked if I would officially join the town committee. I declined, but thanked him. ",
+        "$1I do not need a title anymore. ",
+        "$6Having a home here... and a connection to you... is more than enough."
+      ]
+    },
+    {
+      "key": "one",
+      "lines": [
+        "You... dropped by again. Most people here tend not to... Why do you look at me with such... casual curiosity?"
+      ]
+    },
+    {
+      "key": "two",
+      "lines": [
+        "You spend a great deal of time wandering the valley. Are you... watching me? No? Forgive me. Old habits are difficult to break."
+      ]
+    },
+    {
+      "key": "three",
+      "lines": [
+        "I was wandering about the beach. I found myself... just staring at your farm, wondering if your harvest was a success... It is a logistical inquiry. Nothing more..."
+      ]
+    },
+    {
+      "key": "four",
+      "lines": [
+        "I had a dream of the sky crashing last night. Reality cracking and splintering all around me. Normally I wake up reaching for my sword. But this morning... I did not feel the urge to draw blood. I do not understand this place."
+      ]
+    },
+    {
+      "key": "five",
+      "lines": [
+        "I found this quartz in the mines. I thought you might want it- Wait. Do not misunderstand. I did not go looking for it for *you*. It was blocking my path- and my hands were full, so I had to put it somewhere... Take it."
+      ]
+    },
+    {
+      "key": "six",
+      "lines": [
+        "The tavern keeper... Gus? Offered me a drink on the house. I almost accepted it. But... 'You' were there, laughing with them... I found myself... wishing I knew how to join... But a wandering soldier does not belong in a tavern."
+      ]
+    },
+    {
+      "key": "seven",
+      "lines": [
+        "You are an unusual person. You approach me without fear, despite... everything. I have been following your behavior, but I have yet to find a practical reason for your persistence."
+      ]
+    },
+    {
+      "key": "eight",
+      "lines": [
+        "In my past, alliances were forged for war, and they always ended in betrayal. Yet, you continue to bring me crops and listen to my silence. I... do not mind your presence. In fact, the beach is less chaotic when you are here."
+      ]
+    },
+    {
+      "key": "Festival_Egg",
+      "lines": [
+        "I've stood guard to inaugurations of presidents, soldiers and high profile events where they serve caviar to the top 1 percent... Never would I have imagined I'd watch children hunt 'eggs'."
+      ]
+    },
+    {
+      "key": "Festival_Dance",
+      "lines": [
+        "Can I dance? Of course. Do I want to? Of course not..."
+      ]
+    },
+    {
+      "key": "Festival_Luau",
+      "lines": [
+        "The Governor is tasting a communal soup. Everyone threw a random item into the pot. If I dropped Void Essence in there, would it grant them cosmic power or simply ruin dinner? Best not to test that today."
+      ]
+    },
+    {
+      "key": "Festival_DanceOfJellies",
+      "lines": [
+        "Jellyfish gather in the waters this evening in absolute silence. It is an efficient, natural rhythm. Watching them... is surprisingly quiet."
+      ]
+    },
+    {
+      "key": "Festival_Fair",
+      "lines": [
+        "The Mayor asked me to showcase my 'talents' at a display booth. I am unsure if displaying the Masamune or high-tier Black Magic fits the agricultural theme of a parsnip festival."
+      ]
+    },
+    {
+      "key": "Festival_Spirit",
+      "lines": [
+        "The townsfolk built a maze to simulate terror... They tried... really hard. Still... you seem to be enjoying the diversion. I will watch you instead."
+      ]
+    },
+    {
+      "key": "Festival_Ice",
+      "lines": [
+        "Willy told me my sword was cheating for carving the ice holes. I am freezing, my hair is full of frost, and I do not understand why we are competing over frozen carp."
+      ]
+    }
+  ]
+}

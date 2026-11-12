@@ -1,0 +1,66 @@
+{
+  "entries": [
+    {
+      "key": "Introduction",
+      "lines": [
+        "Placeholder dialogue for Introduction (part 1).",
+        "$1Placeholder dialogue for Introduction (part 2)."
+      ]
+    },
+    {
+      "key": "Mon",
+      "lines": [
+        "Placeholder dialogue for Mon (part 1).",
+        "$1Placeholder dialogue for Mon (part 2)."
+      ]
+    },
+    {
+      "key": "one",
+      "lines": [
+        "Placeholder dialogue for one."
+      ]
+    },
+    {
+      "key": "Festival_Egg",
+      "lines": [
+        "Placeholder dialogue for Festival_Egg."
+      ]
+    },
+    {
+      "key": "Festival_Dance",
+      "lines": [
+        "Placeholder dialogue for Festival_Dance."
+      ]
+    },
+    {
+      "key": "Festival_Luau",
+      "lines": [
+        "Placeholder dialogue for Festival_Luau."
+      ]
+    },
+    {
+      "key": "Festival_DanceOfJellies",
+      "lines": [
+        "Placeholder dialogue for Festival_DanceOfJellies."
+      ]
+    },
+    {
+      "key": "Festival_Fair",
+      "lines": [
+        "Placeholder dialogue for Festival_Fair."
+      ]
+    },
+    {
+      "key": "Festival_Spirit",
+      "lines": [
+        "Placeholder dialogue for Festival_Spirit."
+      ]
+    },
+    {
+      "key": "Festival_Ice",
+      "lines": [
+        "Placeholder dialogue for Festival_Ice."
+      ]
+    }
+  ]
+}

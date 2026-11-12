@@ -1,0 +1,59 @@
+{
+  "entries": [
+    {
+      "key": "Indoor_Morning_{name}",
+      "lines": [
+        "Good morning my love. If you need any heavy lifting done on the farm today, just say the word. ",
+        "$1Consider it an official request."
+      ]
+    },
+    {
+      "key": "Indoor_Night_{name}",
+      "lines": [
+        "You're back late. I was tempted to bring you home... ",
+        "$1Come, sit down. Tell me about your day."
+      ]
+    },
+    {
+      "key": "Outdoor_{name}",
+      "lines": [
+        "Being your partner in this quiet valley... it is a victory I never sought, ",
+        "$4yet it is the greatest one I have."
+      ]
+    },
+    {
+      "key": "OneRoom_{name}",
+      "lines": [
+        "This space is... peaceful. I am unaccustomed to luxury, ",
+        "$2but a soldier appreciates a well-maintained base of operations. Not to brag but... ",
+        "$4I get to wake up beside the best view in the entire valley everyday."
+      ]
+    },
+    {
+      "key": "fun_12",
+      "lines": [
+        "I tried to feed the chickens. ",
+        "$7They completely ignored my authority! ",
+        "$5I suppose my presence isn't very... vexing to a flock of birds. ",
+        "$7It was... humbling."
+      ]
+    },
+    {
+      "key": "Rainy_Day_{name}",
+      "lines": [
+        "The rain reminds me of the storms over Midgar, ",
+        "$2but there is no acid in this water. It is just... nature. ",
+        "$6Stay inside today if you can. I do not wish for you to catch a cold."
+      ]
+    },
+    {
+      "key": "patio_{name}",
+      "lines": [
+        "My movements are... slowing down. ",
+        "$8Not from age! it's because the edge is gone! ",
+        "$1I no longer feel the need to destroy. I only feel the urge to protect this land. ",
+        "$6To protect you."
+      ]
+    }
+  ]
+}

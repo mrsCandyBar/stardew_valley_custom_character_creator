@@ -95,6 +95,24 @@ function assetFile(dir, kind) {
   return name ? path.join(dir, "assets", name) : null;
 }
 
+// Dialogue lists: { entries: [{ key, lines: [...] }] }. Marriage keys may contain "{name}".
+const DIALOGUE_FILES = { dialogue: "dialogue.json", marriage: "marriageDialogue.json" };
+const DIALOGUE_KEY = /^[\w.{}-]{1,80}$/;
+
+function cleanDialogue(body) {
+  if (!Array.isArray(body)) throw new Error("Expected a list of dialogue entries.");
+  const seen = new Set();
+  return body.map((item) => {
+    const key = String(item?.key ?? "").trim();
+    if (!DIALOGUE_KEY.test(key)) throw new Error(`"${key}" isn't a valid key (letters, numbers, _ - . { } only).`);
+    if (seen.has(key)) throw new Error(`The key ${key} is used twice.`);
+    seen.add(key);
+    const lines = (Array.isArray(item.lines) ? item.lines : []).map(String).filter((line) => line.trim() !== "");
+    if (!lines.length) throw new Error(`${key} needs at least one line of dialogue.`);
+    return { key, lines };
+  });
+}
+
 function readRaw(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -133,6 +151,30 @@ async function handleApi(req, res, url) {
   const isUpload = url.pathname === "/api/asset";
   if (req.method === "POST" && !contentType.startsWith(isUpload ? "application/octet-stream" : "application/json")) {
     return send(res, 415, { error: isUpload ? "Expected a file upload" : "Expected JSON" });
+  }
+
+  // Dialogue and marriage dialogue lists (type is "dialogue" or "marriage").
+  if (url.pathname === "/api/dialogue") {
+    const body = req.method === "POST" ? await readBody(req) : {};
+    const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
+    const fileName = DIALOGUE_FILES[req.method === "POST" ? body.type : url.searchParams.get("type")];
+    if (!dir || !fileName) return send(res, 404, { error: "Unknown character folder or dialogue type" });
+    const file = path.join(dir, fileName);
+
+    if (req.method === "GET") {
+      if (!fs.existsSync(file)) return send(res, 404, { error: `No ${fileName} in this character folder.` });
+      return send(res, 200, { entries: JSON.parse(fs.readFileSync(file, "utf8")).entries || [] });
+    }
+    if (req.method === "POST") {
+      let entries;
+      try {
+        entries = cleanDialogue(body.entries);
+      } catch (err) {
+        return send(res, 400, { error: err.message });
+      }
+      fs.writeFileSync(file, JSON.stringify({ entries }, null, 2) + "\n");
+      return send(res, 200, { saved: fileName, count: entries.length });
+    }
   }
 
   // Which assets a character has, for the Assets section.
