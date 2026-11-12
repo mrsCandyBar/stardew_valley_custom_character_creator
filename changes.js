@@ -9,12 +9,16 @@ const { giftTastesChange } = require("./changes/giftTastesChange");
 const { eventChanges } = require("./changes/eventChange");
 
 const { dialogueChange } = require("./changes/dialogueChange");
+const { marriageDialogueChange } = require("./changes/marriageDialogueChange");
+const { scheduleChange } = require("./changes/scheduleChange");
 
 const changes = [
     spriteChange, 
     portraitChange, 
     giftTastesChange,
     dialogueChange,
+    marriageDialogueChange,
+    scheduleChange,
     ...eventChanges,
     musicChange
 ];
