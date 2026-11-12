@@ -12,7 +12,11 @@ const Description = "Replaces Elliot with Sephiroth.";
 const UniqueID = "PastelBeans_.ElliotToSephiroth";
 const MinimumApiVersion = "4.0.0";
 
+// Name of the Stardew Valley character being replaced
+const SDV_Name = "Elliott"; // StarDewValley_Name
+
 module.exports = {
+  SDV_Name,
   folderLocation,
   Name,
   Author,

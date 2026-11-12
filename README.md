@@ -22,6 +22,7 @@ When you run `node build.js`, the files are built to the `folderLocation` set in
 | `Description` | Mod description, written to `manifest.json`. | `Replaces Elliot with Sephiroth.` |
 | `UniqueID` | Mod unique ID, written to `manifest.json`. | `PastelBeans_.ElliotToSephiroth` |
 | `MinimumApiVersion` | Minimum SMAPI version, written to `manifest.json`. | `4.0.0` |
+| `SDV_Name` | StarDewValley_Name: the character being replaced. Used by the change files in `changes/` to build targets like `Characters/<SDV_Name>`. | `Elliott` |
 
 ## Changes
 

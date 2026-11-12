@@ -1,0 +1,52 @@
+const { SDV_Name } = require("../modDetails");
+
+// --- Custom gift tastes (Data/NPCGiftTastes) ---
+// Each item in this array is one "/"-separated section of the gift taste string.
+// The array is joined back together with "/" when the build runs.
+
+const giftTasteLines = [
+
+  // Generic gift taste lines for the character
+  "$4... I don't know what to say except... thank you",
+  "$1How thoughtful. I will keep this.",
+  "$0Not quite my taste but your heart is in the right place I suppose",
+  "$7... do not go out of your way next time.",
+  "$8Do you have a death wish? If it belongs in the bin do not gift it to me.",
+
+  // Generic gift taste lines for item categories
+  "769 74 637 279 591 340",                 // Loves
+  "335 336 82 84 170 221 578 771 773",      // Likes
+  "394 24 109 172",                         // Dislikes
+  "168 169 909 910 818",                    // Hates
+  "universal_neutral",                      // Neutral
+
+  // Explicit gift taste lines for specific items
+  "(O)769 $4Void Essence... I used to use power like this to bring down empires. To hold it here... it is a jarring juxtaposition. Thank you.",
+  "(O)74 $8This light... glows exactly like Holy materia... A beautiful relic of a bygone time... I will guard it with my life.",
+  "(O)109 $7This... reminds me of... less joyful moments of my life that I'd rather not revist",
+  "(O)170 $4I would've loved to have smashed a pair of glasses like these... on a certain scientist's face... while he wore them... Thanks",
+  "(O)172 $5Urgh... propaganda",
+  "(O)221 $3Not quite my colour but... Your intentions are incredibly thoughtful. Thank you.",
+  "(O)279 $4(Smiles while laughing whilst he takes it) Perhaps you understand me better than I think you do.",
+  "(O)578 $1Reminds me of a place I spend much of my life encased- surrounded by... It was so... peaceful",
+  "(O)591 $4A tulip? Huh... It's actually kind of beautiful. It reminds me of a song... about a freezing night in the city where two people share a jacket to keep warm. About drying your tears and building something real. Thank you... Let's let this be our opportunity.",
+  "(O)637 $3Blood-red beneath a bitter rind... how fitting. It reminds me of the story of Hades, standing in the silent dark, offering a lonely queen a reason to stay... only... you've reversed our roles...",
+  "(O)771 $6fibers are... ",
+  "(O)773 $4Huh! You trying to start a 'life' with me? kidding...",
+  "(O)818 $8...looks like shit",
+  "(O)340 $4Sickeningly sweet... like you",
+  "(O)909 $5... this... reminds me of a past I'd rather not remember.",
+];
+
+const giftTasteTarget = "Data/NPCGiftTastes";
+const giftTasteString = giftTasteLines.join("/");
+
+const giftTastesChange = {
+  Action: "EditData",
+  Target: giftTasteTarget,
+  Entries: {
+    [SDV_Name]: giftTasteString,
+  },
+};
+
+module.exports = { giftTastesChange };
