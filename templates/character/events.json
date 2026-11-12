@@ -1,0 +1,765 @@
+{
+  "events": [
+    {
+      "id": "9999004",
+      "location": "ArchaeologyHouse",
+      "conditions": [
+        "f {name} 1000"
+      ],
+      "music": "none",
+      "viewport": "15 11",
+      "actors": "farmer 15 16 0 {name} 11 10 0",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "sweet"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"...\""
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 -6 0"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "emote",
+          "args": "farmer 32"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 1"
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 1"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1Placeholder event dialogue.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 1"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$6Placeholder event dialogue.\""
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$8Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$2Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 1"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "question",
+          "args": "fork0 \"Placeholder question? #Placeholder answer 1 #Placeholder answer 2\""
+        },
+        {
+          "type": "fork",
+          "args": "carry_it_forward"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 0"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1Placeholder event dialogue.\""
+        },
+        {
+          "type": "emote",
+          "args": "{name} 32"
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "carry_it_forward",
+      "forkCommands": [
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"Thank you, {{ PlayerName }}\""
+        },
+        {
+          "type": "pause",
+          "args": "3000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999002",
+      "location": "ElliottHouse",
+      "conditions": [
+        "f {name} 500"
+      ],
+      "music": "none",
+      "viewport": "4 5",
+      "actors": "farmer 3 8 0 {name} 3 4 3",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "playMusic",
+          "args": "eerie"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"... {{ PlayerName }}?\""
+        },
+        {
+          "type": "pause",
+          "args": "5000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 2"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$7Placeholder event dialogue.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 2 2"
+        },
+        {
+          "type": "pause",
+          "args": "600"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 1 2"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "600"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "question",
+          "args": "fork0 \"Placeholder question? #Placeholder answer 1 #Placeholder answer 2\""
+        },
+        {
+          "type": "fork",
+          "args": "thePastMatters"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "thePastMatters",
+      "forkCommands": [
+        {
+          "type": "raw",
+          "args": ""
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999006",
+      "location": "ElliottHouse",
+      "conditions": [
+        "f {name} 1500"
+      ],
+      "music": "none",
+      "viewport": "4 7",
+      "actors": "farmer 3 8 0 {name} 8 4 0",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "move",
+          "args": "farmer 0 -4 0"
+        },
+        {
+          "type": "pause",
+          "args": "200"
+        },
+        {
+          "type": "move",
+          "args": "farmer 3 0 1"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "playMusic",
+          "args": "sweet"
+        },
+        {
+          "type": "pause",
+          "args": "120000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 2 0 1"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$7Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$5Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1200"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$8Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "question",
+          "args": "fork1 \"Placeholder question? #Placeholder answer 1 #Placeholder answer 2\""
+        },
+        {
+          "type": "fork",
+          "args": "i_will_stay"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "i_will_stay",
+      "forkCommands": [
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "shake",
+          "args": "{name} 500"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999008",
+      "location": "Beach",
+      "conditions": [
+        "f {name} 2000",
+        "w sunny"
+      ],
+      "music": "none",
+      "viewport": "12 38",
+      "actors": "farmer 11 34 2 {name} 14 39 2",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "sweet"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 3 2"
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 2 1"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "emote",
+          "args": "farmer 32"
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"...thank you. {{ PlayerName }}\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999010",
+      "location": "Beach",
+      "conditions": [
+        "f {name} 2500",
+        "t 2000 2400"
+      ],
+      "music": "none",
+      "viewport": "12 38",
+      "actors": "farmer 11 34 2 {name} 14 39 2",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "night_fall"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 5 1"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 3"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1Placeholder event dialogue.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "600"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1200"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$6Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$8Placeholder event dialogue.\""
+        },
+        {
+          "type": "question",
+          "args": "fork1 \"Placeholder question? #Placeholder answer 1 #Placeholder answer 2\""
+        },
+        {
+          "type": "fork",
+          "args": "declineLove"
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 3"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1Placeholder event dialogue.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 0"
+        },
+        {
+          "type": "showFrame",
+          "args": "farmer 2"
+        },
+        {
+          "type": "showFrame",
+          "args": "{name} 11"
+        },
+        {
+          "type": "specificTemporarySprite",
+          "args": "heart 11 39"
+        },
+        {
+          "type": "playSound",
+          "args": "dwop"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "showFrame",
+          "args": "farmer 2"
+        },
+        {
+          "type": "showFrame",
+          "args": "{name} 11"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "showFrame",
+          "args": "farmer 2"
+        },
+        {
+          "type": "emote",
+          "args": "farmer 20"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "declineLove",
+      "forkCommands": [
+        {
+          "type": "speak",
+          "args": "{name} \"$6Placeholder event dialogue.\""
+        },
+        {
+          "type": "emote",
+          "args": "{name} 34"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999014",
+      "location": "Farm",
+      "conditions": [
+        "f {name} 3500",
+        "d-1"
+      ],
+      "music": "none",
+      "viewport": "15 11",
+      "actors": "farmer 64 15 0 {name} 63 15 0",
+      "skippable": false,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "morning_memories"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 2"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 -1 0"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$7Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1200"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1Placeholder event dialogue.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Placeholder event dialogue.\""
+        },
+        {
+          "type": "jump",
+          "args": "{name}"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    }
+  ]
+}

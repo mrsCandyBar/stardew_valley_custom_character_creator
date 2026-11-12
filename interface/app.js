@@ -87,7 +87,7 @@ saveButton.addEventListener("click", async () => {
   try {
     await postJson("/api/mod-details", { folder: folderSelect.value, details: readDetails() });
     await saveEditors();
-    setStatus(`Saved the details, dialogue, marriage dialogue, schedule and gift tastes to ${folderSelect.value}`);
+    setStatus(`Saved the details, dialogue, marriage dialogue, schedule, gift tastes and events to ${folderSelect.value}`);
   } catch (err) {
     setStatus(err.message, true);
   } finally {
@@ -636,9 +636,413 @@ function createGiftTastesEditor(section) {
   };
 }
 
+// --- Events ---
+// An event is a few required settings (id, place, music, viewport, actors) plus optional conditions,
+// "skippable", and a list of commands. Each command is { type, args } and is written "<type> <args>" at build time.
+// A command type that has a definition below gets its own fields; anything else is a "custom" command (type + args typed in).
+const FACING = options([0, 1, 2, 3], (n) => ["up", "right", "down", "left"][n]);
+const CUSTOM = "custom";
+const actorText = { kind: "text", title: "Who", placeholder: "{name}", size: 10 };
+const actorAndWords = (label) => ({
+  label,
+  fields: [actorText, { kind: "textarea", title: "Words", placeholder: "A $1 at the start changes the portrait" }],
+  defaults: ["{name}", ""],
+  parse: (args) => {
+    const match = /^(\S+) "(.*)"$/s.exec(args);
+    return match && [match[1], match[2]];
+  },
+  compose: ([who, words]) => `${who} "${words}"`,
+});
+const spaced = (pattern) => (args) => {
+  const match = pattern.exec(args);
+  return match && match.slice(1);
+};
+const noFields = (label) => ({ label, fields: [], defaults: [], parse: (args) => (args === "" ? [] : null), compose: () => "" });
+
+const COMMAND_TYPES = {
+  speak: actorAndWords("Speak"),
+  textAboveHead: actorAndWords("Text above head"),
+  pause: {
+    label: "Pause",
+    fields: [{ kind: "number", title: "Milliseconds", min: 0 }],
+    defaults: ["500"],
+    parse: spaced(/^(\d+)$/),
+    compose: ([ms]) => ms,
+  },
+  move: {
+    label: "Move",
+    fields: [actorText, { kind: "number", title: "Tiles right (negative is left)" }, { kind: "number", title: "Tiles down (negative is up)" }, { kind: "select", title: "Face", options: FACING }],
+    defaults: ["farmer", "0", "0", "2"],
+    parse: spaced(/^(\S+) (-?\d+) (-?\d+) ([0-3])$/),
+    compose: (values) => values.join(" "),
+  },
+  emote: {
+    label: "Emote",
+    fields: [actorText, { kind: "number", title: "Emote number", min: 0 }],
+    defaults: ["{name}", "32"],
+    parse: spaced(/^(\S+) (\d+)$/),
+    compose: (values) => values.join(" "),
+  },
+  showFrame: {
+    label: "Show frame",
+    fields: [actorText, { kind: "number", title: "Sprite frame", min: 0 }],
+    defaults: ["{name}", "0"],
+    parse: spaced(/^(\S+) (\d+)$/),
+    compose: (values) => values.join(" "),
+  },
+  shake: {
+    label: "Shake",
+    fields: [actorText, { kind: "number", title: "Milliseconds", min: 0 }],
+    defaults: ["{name}", "500"],
+    parse: spaced(/^(\S+) (\d+)$/),
+    compose: (values) => values.join(" "),
+  },
+  jump: {
+    label: "Jump",
+    fields: [actorText],
+    defaults: ["{name}"],
+    parse: spaced(/^(\S+)$/),
+    compose: ([who]) => who,
+  },
+  playMusic: {
+    label: "Play music",
+    fields: [{ kind: "text", title: "Track name", placeholder: "e.g. sweet" }],
+    defaults: [""],
+    parse: spaced(/^(\S+)$/),
+    compose: ([track]) => track,
+  },
+  stopMusic: noFields("Stop music"),
+  playSound: {
+    label: "Play sound",
+    fields: [{ kind: "text", title: "Sound name", placeholder: "e.g. dwop" }],
+    defaults: [""],
+    parse: spaced(/^(\S+)$/),
+    compose: ([sound]) => sound,
+  },
+  question: {
+    label: "Question",
+    fields: [
+      { kind: "text", title: "Question ID", placeholder: "fork1", size: 8 },
+      { kind: "textarea", title: "Question, then each answer", placeholder: "Question?#Answer one#Answer two" },
+    ],
+    defaults: ["fork1", ""],
+    parse: (args) => {
+      const match = /^(\S+) "(.*)"$/s.exec(args);
+      return match && [match[1], match[2]];
+    },
+    compose: ([id, words]) => `${id} "${words}"`,
+  },
+  fork: {
+    label: "Fork (jump to the answer's path)",
+    fields: [{ kind: "text", title: "Fork name", placeholder: "the event's fork name" }],
+    defaults: [""],
+    parse: spaced(/^(\S+)$/),
+    compose: ([name]) => name,
+  },
+  end: noFields("End"),
+};
+
+const COMMON_LOCATIONS = ["Farm", "FarmHouse", "Town", "Beach", "Forest", "Mountain", "ElliottHouse", "ArchaeologyHouse", "Saloon", "SeedShop", "Hospital", "Railroad", "Woods", "Desert"];
+
+function commandField(field, value, onInput) {
+  let node;
+  if (field.kind === "select") node = fieldSelect(field, value);
+  else if (field.kind === "textarea") node = el("textarea", { value, rows: 2, title: field.title, placeholder: field.placeholder || "" });
+  else {
+    node = el("input", { type: field.kind === "number" ? "number" : "text", value, title: field.title, placeholder: field.placeholder || "" });
+    if (field.min !== undefined) node.min = field.min;
+    if (field.size) node.size = field.size;
+  }
+  node.addEventListener(field.kind === "select" ? "change" : "input", () => onInput(node.value));
+  if (field.kind === "textarea") node.classList.add("wide");
+  return node;
+}
+
+// The list of commands for an event (or for its fork). `commands` is edited in place.
+function createCommandList(commands, getForkName) {
+  const box = el("div", { className: "commands" });
+
+  const typeOptions = [...Object.entries(COMMAND_TYPES).map(([value, def]) => ({ value, label: def.label })), { value: CUSTOM, label: "Custom command..." }];
+  const addType = fieldSelect({ title: "Command type", options: typeOptions }, "speak");
+  const addButton = el("button", { type: "button", className: "secondary", textContent: "Add command" });
+  addButton.addEventListener("click", () => {
+    const def = COMMAND_TYPES[addType.value];
+    if (!def) commands.push({ type: "raw", args: "" });
+    else {
+      const defaults = addType.value === "fork" ? [getForkName()] : def.defaults;
+      commands.push({ type: addType.value, args: def.compose(defaults) });
+    }
+    render();
+  });
+
+  const row = (command, index) => {
+    const def = COMMAND_TYPES[command.type];
+    let values = def ? def.parse(command.args) : null;
+    const custom = !values;
+
+    const type = fieldSelect({ title: "Command type", options: typeOptions }, custom ? CUSTOM : command.type);
+    type.addEventListener("change", () => {
+      const next = COMMAND_TYPES[type.value];
+      if (!next) {
+        // Keep what was there as a custom command, so nothing typed is lost
+        const text = command.type === "raw" ? command.args : `${command.type} ${command.args}`.trim();
+        const space = text.indexOf(" ");
+        Object.assign(command, space < 0 ? { type: text || "raw", args: "" } : { type: text.slice(0, space), args: text.slice(space + 1) });
+      } else {
+        command.type = type.value;
+        command.args = next.compose(type.value === "fork" ? [getForkName()] : next.defaults);
+      }
+      render();
+    });
+
+    const move = (by) => {
+      const target = index + by;
+      if (target < 0 || target >= commands.length) return;
+      [commands[index], commands[target]] = [commands[target], commands[index]];
+      render();
+    };
+    const head = el(
+      "div",
+      { className: "entry-head" },
+      el("span", { className: "step", textContent: String(index + 1) }),
+      type,
+      el("span", { className: "key" }),
+      el("button", { type: "button", className: "secondary", textContent: "Up", disabled: index === 0, onclick: () => move(-1) }),
+      el("button", { type: "button", className: "secondary", textContent: "Down", disabled: index === commands.length - 1, onclick: () => move(1) }),
+      el("button", {
+        type: "button",
+        className: "secondary",
+        textContent: "Remove",
+        onclick: () => {
+          commands.splice(index, 1);
+          render();
+        },
+      })
+    );
+
+    let body;
+    if (custom) {
+      const name = el("input", { value: command.type === "raw" ? "" : command.type, title: "Command name", placeholder: "command", size: 14 });
+      name.addEventListener("input", () => (command.type = name.value.trim() || "raw"));
+      const args = el("input", { value: command.args, title: "Everything after the command name", placeholder: "arguments" });
+      args.addEventListener("input", () => (command.args = args.value));
+      body = el("div", { className: "command-fields" }, name, args);
+    } else {
+      body = el(
+        "div",
+        { className: "command-fields" },
+        ...def.fields.map((field, i) =>
+          commandField(field, values[i], (value) => {
+            values[i] = value;
+            command.args = def.compose(values);
+          })
+        )
+      );
+    }
+    return el("div", { className: "entry command" }, head, body);
+  };
+
+  function render() {
+    box.replaceChildren(
+      ...(commands.length ? commands.map(row) : [el("p", { className: "empty", textContent: "No commands yet." })]),
+      el("div", { className: "add-row" }, addType, addButton)
+    );
+  }
+  render();
+  return box;
+}
+
+function createEventsEditor(section) {
+  const { title, hint } = section.dataset;
+  let events = [];
+  let loaded = false;
+
+  const message = el("p", { className: "editor-message", hidden: true });
+  const showMessage = (text) => {
+    message.textContent = text;
+    message.hidden = !text;
+  };
+
+  const list = el("div");
+  const addId = el("input", { placeholder: "Event ID, e.g. 9999016", title: "Event ID" });
+  const addLocation = el("input", { placeholder: "Place, e.g. Beach", title: "Location", value: "Beach" });
+  addLocation.setAttribute("list", "event-locations");
+  const addButton = el("button", { type: "button", className: "secondary", textContent: "Add event" });
+  const addRow = el("div", { className: "add-row" }, addId, addLocation, addButton);
+  const datalists = [
+    el("datalist", { id: "event-locations" }, ...COMMON_LOCATIONS.map((value) => el("option", { value }))),
+  ];
+
+  section.append(el("h2", { textContent: title }), el("p", { className: "hint", textContent: hint }), message, list, addRow, ...datalists);
+
+  const labelOf = (event) => `${event.id || "(no ID)"} in ${event.location || "(no place)"}`;
+
+  function card(event) {
+    const summary = el("summary", { textContent: labelOf(event) });
+    const refresh = () => (summary.textContent = labelOf(event));
+    const text = (key, props) => {
+      const input = el("input", { value: event[key], ...props });
+      input.addEventListener("input", () => {
+        event[key] = input.value;
+        refresh();
+      });
+      return input;
+    };
+    const labelled = (label, node, note) => el("label", {}, el("span", { textContent: label }), node, ...(note ? [el("small", { textContent: note })] : []));
+
+    const locationInput = text("location", { title: "Location" });
+    locationInput.setAttribute("list", "event-locations");
+
+    // Conditions are optional: one line each
+    const conditionBox = el("div");
+    const renderConditions = () => {
+      conditionBox.replaceChildren(
+        ...event.conditions.map((condition, i) => {
+          const input = el("input", { value: condition, placeholder: "e.g. f {name} 1000" });
+          input.addEventListener("input", () => (event.conditions[i] = input.value));
+          return el(
+            "div",
+            { className: "add-row" },
+            input,
+            el("button", {
+              type: "button",
+              className: "secondary",
+              textContent: "Remove",
+              onclick: () => {
+                event.conditions.splice(i, 1);
+                renderConditions();
+              },
+            })
+          );
+        }),
+        el("button", {
+          type: "button",
+          className: "secondary",
+          textContent: "Add condition",
+          onclick: () => {
+            event.conditions.push("");
+            renderConditions();
+          },
+        })
+      );
+    };
+    renderConditions();
+
+    const skippable = el("input", { type: "checkbox", checked: event.skippable });
+    skippable.addEventListener("change", () => (event.skippable = skippable.checked));
+
+    // The fork is optional: the name the player's answer jumps to, and its own commands
+    const forkName = el("input", { value: event.forkName || "", placeholder: "e.g. carry_it_forward" });
+    const forkBox = el("div");
+    const hasFork = el("input", { type: "checkbox", checked: event.forkName !== undefined });
+    const renderFork = () => {
+      forkName.hidden = !hasFork.checked;
+      forkBox.replaceChildren(...(hasFork.checked ? [createCommandList(event.forkCommands, () => event.forkName || "")] : []));
+    };
+    hasFork.addEventListener("change", () => {
+      if (hasFork.checked) {
+        event.forkName = forkName.value;
+        event.forkCommands = event.forkCommands || [{ type: "end", args: "" }];
+      } else {
+        delete event.forkName;
+        delete event.forkCommands;
+      }
+      renderFork();
+    });
+    forkName.addEventListener("input", () => (event.forkName = forkName.value));
+    renderFork();
+
+    const details = el(
+      "details",
+      { className: "entry event", open: !!event.open },
+      summary,
+      labelled("Event ID", text("id", { title: "Event ID" }), "A unique number. Part of the event's key in the game."),
+      labelled("Place", locationInput, "The map the event happens in (Data/Events/<place>)."),
+      el("div", { className: "label" }, el("span", { textContent: "Conditions" }), conditionBox,
+        el("small", { textContent: "All optional. Examples: f {name} 1000 (friendship points), t 600 1200 (time of day), w sunny (weather)." })),
+      el("h4", { textContent: "Setup" }),
+      labelled("Starting music", text("music", { title: "Starting music" }), "A track name, or none."),
+      labelled("Viewport", text("viewport", { title: "Viewport" }), "The map tile the camera starts on, as x y."),
+      labelled("Actors", text("actors", { title: "Actors" }), "Who is in the scene and where: name x y facing, repeated (e.g. farmer 15 16 0 {name} 11 10 0)."),
+      el("label", { className: "check" }, skippable, el("span", { textContent: "Skippable" })),
+      el("h4", { textContent: "Commands" }),
+      createCommandList(event.commands, () => event.forkName || ""),
+      el("h4", { textContent: "Fork" }),
+      el("label", { className: "check" }, hasFork, el("span", { textContent: "This event has a fork (a question's answer jumps to it)" })),
+      forkName,
+      forkBox,
+      el("button", {
+        type: "button",
+        className: "secondary",
+        textContent: "Remove event",
+        onclick: () => {
+          events = events.filter((e) => e !== event);
+          render();
+        },
+      })
+    );
+    details.addEventListener("toggle", () => (event.open = details.open));
+    return details;
+  }
+
+  function render() {
+    list.replaceChildren(...(events.length ? events.map(card) : [el("p", { className: "empty", textContent: "None yet." })]));
+  }
+
+  addButton.addEventListener("click", () => {
+    const id = addId.value.trim();
+    const location = addLocation.value.trim();
+    if (!/^\w+$/.test(id)) return showMessage("Give the event an ID (letters and numbers only).");
+    if (!/^\w+$/.test(location)) return showMessage("Give the place the event happens in, e.g. Beach.");
+    if (events.some((e) => e.id === id && e.location === location)) return showMessage(`${id} already exists in ${location}.`);
+    showMessage("");
+    events.push({
+      id,
+      location,
+      conditions: [],
+      music: "none",
+      viewport: "10 10",
+      actors: "farmer 10 12 0 {name} 10 10 0",
+      skippable: true,
+      commands: [{ type: "end", args: "" }],
+      open: true,
+    });
+    addId.value = "";
+    render();
+  });
+
+  return {
+    async load(folder) {
+      showMessage("");
+      try {
+        events = (await api(`/api/events?folder=${encodeURIComponent(folder)}`)).events;
+        loaded = true;
+      } catch (err) {
+        events = [];
+        loaded = false;
+        showMessage(err.message);
+      }
+      addRow.hidden = !loaded;
+      render();
+    },
+    async save(folder) {
+      if (!loaded) return;
+      try {
+        // "open" is only for the page, so it isn't saved
+        await postJson("/api/events", { folder, events: events.map(({ open, ...event }) => event) });
+        showMessage("");
+      } catch (err) {
+        showMessage(err.message);
+        throw new Error(`${title}: ${err.message}`);
+      }
+    },
+  };
+}
+
 const editors = [
   ...[...document.querySelectorAll(".dialogue-editor")].map(createEditor),
   ...[...document.querySelectorAll(".gift-editor")].map(createGiftTastesEditor),
+  ...[...document.querySelectorAll(".events-editor")].map(createEventsEditor),
 ];
 const loadEditors = () => Promise.all(editors.map((editor) => editor.load(folderSelect.value)));
 async function saveEditors() {

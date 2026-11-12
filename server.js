@@ -152,6 +152,60 @@ function cleanGiftTastes(body) {
   return { generic, categories, items };
 }
 
+// Events: { events: [{ id, location, conditions, music, viewport, actors, skippable, commands: [{type, args}], forkName?, forkCommands? }] }
+// The pieces are joined with "/" at build time, so none of them may contain one.
+function oneLine(value, label, { required = true } = {}) {
+  const text = String(value ?? "").replace(/\s*\r?\n\s*/g, " ");
+  if (required && !text.trim()) throw new Error(`${label} can't be empty.`);
+  if (text.includes("/")) throw new Error(`${label} can't contain a "/" (it separates the event commands).`);
+  return text;
+}
+
+function cleanCommands(list, label) {
+  return (Array.isArray(list) ? list : []).map((command, i) => {
+    const where = `${label}, command ${i + 1}`;
+    const type = String(command?.type ?? "");
+    if (type !== "raw" && !/^\w+$/.test(type)) throw new Error(`${where}: the command type must be one word.`);
+    return { type, args: oneLine(command?.args, where, { required: false }) };
+  });
+}
+
+function cleanEvents(body) {
+  if (!Array.isArray(body)) throw new Error("Expected a list of events.");
+  const keys = new Set();
+  return body.map((event) => {
+    const id = String(event?.id ?? "").trim();
+    if (!/^\w+$/.test(id)) throw new Error(`"${id}" isn't a valid event ID (letters and numbers only).`);
+    const label = `Event ${id}`;
+    const location = String(event?.location ?? "").trim();
+    if (!/^\w+$/.test(location)) throw new Error(`${label}: the location must be a map name like Beach or ElliottHouse.`);
+    const conditions = (Array.isArray(event.conditions) ? event.conditions : []).map((c, i) => oneLine(c, `${label}, condition ${i + 1}`).trim());
+    const out = {
+      id,
+      location,
+      conditions,
+      music: oneLine(event.music, `${label}: the starting music`).trim(),
+      viewport: oneLine(event.viewport, `${label}: the viewport`).trim(),
+      actors: oneLine(event.actors, `${label}: the actors`).trim(),
+      skippable: !!event.skippable,
+      commands: cleanCommands(event.commands, label),
+    };
+
+    const forkName = String(event.forkName ?? "").trim();
+    if (forkName) {
+      if (!/^\w+$/.test(forkName)) throw new Error(`${label}: the fork name must be letters, numbers and _ only.`);
+      out.forkName = forkName;
+      out.forkCommands = cleanCommands(event.forkCommands, `${label} fork`);
+    }
+
+    for (const key of [`${location}|${[id, ...conditions].join("/")}`, ...(forkName ? [`${location}|${forkName}`] : [])]) {
+      if (keys.has(key)) throw new Error(`${label}: "${key.split("|")[1]}" is used twice in ${location}.`);
+      keys.add(key);
+    }
+    return out;
+  });
+}
+
 function readRaw(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -236,6 +290,29 @@ async function handleApi(req, res, url) {
       }
       fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
       return send(res, 200, { saved: "giftTastes.json", count: data.items.length });
+    }
+  }
+
+  // Events (events.json).
+  if (url.pathname === "/api/events") {
+    const body = req.method === "POST" ? await readBody(req) : {};
+    const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
+    if (!dir) return send(res, 404, { error: "Unknown character folder" });
+    const file = path.join(dir, "events.json");
+
+    if (req.method === "GET") {
+      if (!fs.existsSync(file)) return send(res, 404, { error: "No events.json in this character folder." });
+      return send(res, 200, { events: JSON.parse(fs.readFileSync(file, "utf8")).events || [] });
+    }
+    if (req.method === "POST") {
+      let events;
+      try {
+        events = cleanEvents(body.events);
+      } catch (err) {
+        return send(res, 400, { error: err.message });
+      }
+      fs.writeFileSync(file, JSON.stringify({ events }, null, 2) + "\n");
+      return send(res, 200, { saved: "events.json", count: events.length });
     }
   }
 

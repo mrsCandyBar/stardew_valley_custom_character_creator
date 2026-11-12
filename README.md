@@ -22,7 +22,7 @@ The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), s
 
 Run `node server.js` and open http://localhost:3000 for a form that edits a character's `modDetails.json` and runs the build.
 
-- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Marriage dialogue, Schedule, Gift tastes). Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
+- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Marriage dialogue, Schedule, Gift tastes, Events). Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
 - **Save** (bottom right) writes the form to the selected character's `modDetails.json`.
 - **Build & open dist folder** saves, runs `build.js` and opens the built folder.
 - **New character** asks for the character being replaced and the new name, then copies [templates/character/](templates/character/) into `characters/<Replacing>-<NewName>` with the names filled in. The template uses placeholder text, and its `assets/` folder starts empty, so add `custom_sprites.png` and `custom_portraits.png`.
@@ -33,7 +33,7 @@ Run `node server.js` and open http://localhost:3000 for a form that edits a char
 - **Schedule** works the same way. Add a schedule for a day of the week (`Mon`), a season (`spring`, `summer`, `fall`, `winter`) or one day of a season (`spring:1`); every one of them is optional. Each line in a card is one stop (`600 Beach 34 39 0`). Any other key, such as `Rain`, goes under *Other schedules*. Save writes `schedule.json`.
 - **Gift tastes** has three parts. *Generic reactions* are the five lines the character says for a loved, liked, neutral, disliked or hated gift, each with a sprite face dropdown (`$0` to `$8`) and the text. *Item categories* are the item numbers for loves, likes, dislikes, hates and neutral, typed as numbers separated by spaces (`universal_neutral` also works). *Specific items* are optional: pick an item from the dropdown (`(O)0` to `(O)999`), a sprite face and the text. Text can't contain `/`. The game ignores extra fields in the gift string, so these are built into the dialogue as `AcceptGift_(O)<id>` (not tested in-game yet). Save writes `giftTastes.json`.
 
-The interface only edits the mod details, assets, dialogue, schedule and gift tastes so far. Events and the other changes are still edited in their `.js` files.
+The interface edits the mod details, assets, dialogue, schedule, gift tastes and events. The other changes are still edited in their `.js` files.
 
 ## Characters
 
@@ -83,26 +83,28 @@ Stardew packs many values into one long string separated by a character (`/` for
 | `giftTastesChange.js` | `Data/NPCGiftTastes` | Reads `giftTastes.json` and joins the sections with `/`: five reaction + item list pairs in the game's order (love, like, dislike, hate, neutral). |
 | `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Reads `dialogue.json`, joining each entry's lines with `#`, and adds `AcceptGift_(O)<id>` entries from the specific items in `giftTastes.json`. |
 | `marriageDialogueChange.js` | `Characters/Dialogue/MarriageDialogue` | Reads `marriageDialogue.json`, joining each entry's lines with `#`. `{name}` in a key becomes `SDV_Name`. |
-| `eventChange.js` | `Data/Events/ArchaeologyHouse`, `ElliottHouse`, `Beach`, `Farm` | Combines the files in `changes/events/`, joining sequences with `/`. |
-| `scheduleChange.js` | `Characters/schedules/<SDV_Name>` | Reads `schedule.json`, joining each schedule's stops with `/`. Not tested in-game yet. |
+| `eventChange.js` | `Data/Events/ArchaeologyHouse`, `ElliottHouse`, `Beach`, `Farm` | Reads `events.json`, joining each event's commands with `/` and grouping events by location. |
+| `scheduleChange.js` | `Characters/schedules/<SDV_Name>` | Reads `schedule.json`, joining each schedule's stops with `/`. Not tested in-game yet, and currently commented out in `changes.js` (it was reported as an infinite loop). |
 | `musicChange.js` | `Data/AudioChanges` | Custom music track. |
 
 ### Dialogue data
 
 `dialogue.json`, `marriageDialogue.json` and `schedule.json` each hold `{ "entries": [{ "key": "Mon4", "lines": ["..."] }] }`. Day keys are `Mon` to `Sun` with an optional heart count after them (`Sun`, `Sun4`, up to `Sun14`). Other keys are things like `Introduction`, `one` and `Festival_Egg`. A duplicate key stops the build with an error. Edit them in the interface or by hand.
 
-### Event files
+### Event data
 
-Each file in `changes/events/` exports `eventName` and `eventSequence`, plus `forkName` and `forkSequence` if the event has a fork. `eventChange.js` turns each into its entries and groups them by target.
+`events.json` holds `{ "events": [...] }`. Each event has:
 
-| File | Event | Target |
-| --- | --- | --- |
-| `archaeologyEvent.js` | 9999004 | `ArchaeologyHouse` |
-| `pastLifeEvent.js` | 9999002 | `ElliottHouse` |
-| `pianoEvent.js` | 9999006 | `ElliottHouse` |
-| `beachBelongEvent.js` | 9999008 | `Beach` |
-| `beachConfessionEvent.js` | 9999010 | `Beach` |
-| `farmSunriseEvent.js` | 9999014 | `Farm` (work in progress) |
+| Field | Description |
+| --- | --- |
+| `id`, `location` | The event ID and the map it happens in (`Data/Events/<location>`). One `EditData` change is built per location. |
+| `conditions` | Optional list written after the ID in the event key, e.g. `f {name} 1000`. |
+| `music`, `viewport`, `actors` | The three required setup entries that open every script. |
+| `skippable` | Adds `skippable` after the setup. |
+| `commands` | The rest of the script, in order: a list of `{ type, args }`, each written as `<type> <args>` (`speak`, `pause`, `move`, `emote`, `playMusic`, `stopMusic`, `question`, `fork`, `end` and so on). Any other command works as a custom command in the interface. |
+| `forkName`, `forkCommands` | Optional. The fork entry a question's answer jumps to, with its own commands. |
+
+`{name}` anywhere in the file becomes `SDV_Name`. A command of type `raw` is written exactly as its `args` (Elliott's `pastLifeEvent` fork starts with a blank one). Nothing can contain a `/`, since it separates the commands. The events are Elliott's six: 9999002 and 9999006 in `ElliottHouse`, 9999004 in `ArchaeologyHouse`, 9999008 and 9999010 in `Beach`, and 9999014 in `Farm` (work in progress).
 
 ## Output
 

@@ -1,68 +1,45 @@
-const { archaeologyEvent } = require("./events/archaeologyEvent");
-const { pastLifeEvent } = require("./events/pastLifeEvent");
-const { pianoEvent } = require("./events/pianoEvent");
-const { beachBelongEvent } = require("./events/beachBelongEvent");
-const { beachConfessionEvent } = require("./events/beachConfessionEvent");
-const { farmSunriseEvent } = require("./events/farmSunriseEvent");
+const { SDV_Name } = require("../modDetails");
+
+// --- Events (Data/Events/<location>) ---
+// The events live in events.json (the interface edits that file) as a list of events. Each one is
+// { id, location, conditions, music, viewport, actors, skippable, commands, forkName?, forkCommands? }.
+// "{name}" anywhere in the file is replaced with SDV_Name. Content Patcher tokens like {{ PlayerName }} are left alone.
+//
+// An event is written as the key "<id>/<conditions...>" and a script of "/"-separated commands:
+// music, viewport, actors, then "skippable" (optional), then the commands, each written as "<type> <args>".
+// A fork (the answer jumped to by a "fork" command) is its own entry whose key is the fork name.
+const { events } = require("../events.json");
+
+const folder = "Data/Events";
+const fill = (text) => text.replaceAll("{name}", SDV_Name);
+const toText = ({ type, args }) => fill(type === "raw" ? args : args ? `${type} ${args}` : type);
 
 // Turns an event into its entries: the event itself and, if it has one, its fork.
-// Sequences are joined with "/" here.
-function toEntries({ eventName, eventSequence, forkName, forkSequence }) {
-  const entries = { [eventName]: eventSequence.join("/") };
+function toEntries({ id, conditions, music, viewport, actors, skippable, commands, forkName, forkCommands }) {
+  const key = fill([id, ...conditions].join("/"));
+  const sequence = [fill(music), fill(viewport), fill(actors), ...(skippable ? ["skippable"] : []), ...commands.map(toText)];
+  const entries = { [key]: sequence.join("/") };
   if (forkName) {
-    entries[forkName] = forkSequence.join("/");
+    entries[fill(forkName)] = (forkCommands || []).map(toText).join("/");
   }
   return entries;
 }
 
-const folder = "Data/Events";
+// One EditData change per location, in the order the locations first appear.
+const byLocation = new Map();
+for (const event of events) {
+  if (!byLocation.has(event.location)) byLocation.set(event.location, {});
+  const entries = byLocation.get(event.location);
+  for (const [key, value] of Object.entries(toEntries(event))) {
+    if (key in entries) throw new Error(`Duplicate event key in ${event.location}: ${key}`);
+    entries[key] = value;
+  }
+}
 
-// --- Data/Events/ArchaeologyHouse ---
-const archaeologyHouseTarget = `${folder}/ArchaeologyHouse`;
-
-const archaeologyHouseChange = {
+const eventChanges = [...byLocation].map(([location, entries]) => ({
   Action: "EditData",
-  Target: archaeologyHouseTarget,
-  Entries: {
-    ...toEntries(archaeologyEvent),
-  },
-};
-
-// --- Data/Events/ElliottHouse ---
-const elliottHouseTarget = `${folder}/ElliottHouse`;
-
-const elliottHouseChange = {
-  Action: "EditData",
-  Target: elliottHouseTarget,
-  Entries: {
-    ...toEntries(pastLifeEvent),
-    ...toEntries(pianoEvent),
-  },
-};
-
-// --- Data/Events/Beach ---
-const beachTarget = `${folder}/Beach`;
-
-const beachChange = {
-  Action: "EditData",
-  Target: beachTarget,
-  Entries: {
-    ...toEntries(beachBelongEvent),
-    ...toEntries(beachConfessionEvent),
-  },
-};
-
-// --- Data/Events/Farm ---
-const farmTarget = `${folder}/Farm`;
-
-const farmChange = {
-  Action: "EditData",
-  Target: farmTarget,
-  Entries: {
-    ...toEntries(farmSunriseEvent),
-  },
-};
-
-const eventChanges = [archaeologyHouseChange, elliottHouseChange, beachChange, farmChange];
+  Target: `${folder}/${location}`,
+  Entries: entries,
+}));
 
 module.exports = { eventChanges };

@@ -1,0 +1,765 @@
+{
+  "events": [
+    {
+      "id": "9999004",
+      "location": "ArchaeologyHouse",
+      "conditions": [
+        "f {name} 1000"
+      ],
+      "music": "none",
+      "viewport": "15 11",
+      "actors": "farmer 15 16 0 {name} 11 10 0",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "sweet"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"...\""
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 -6 0"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "emote",
+          "args": "farmer 32"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 1"
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 1"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1{{ PlayerName }}! what a nice surprise to see you here.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 1"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$6I find myself drawn to this library. These old texts... they speak of empires rising and falling on the whims of a few.\""
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0It reminds me of the archives I used to study in. Before everything fell apart...\""
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$8I look at the choices I made, the loyalty I gave to things that only brought ruin... \""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$2...and I wonder if a person like me can ever truly... 'live' with the choices I have made in my... past.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 1"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Tell me... \""
+        },
+        {
+          "type": "question",
+          "args": "fork0 \"When you carry a burden that cannot be erased, nor fixed... how do you live with it? #(Be honest) You carry it forward, but don't let it define you.#(Offer comfort) You focus on the present. What you can do in the here and now.\""
+        },
+        {
+          "type": "fork",
+          "args": "carry_it_forward"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 0"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1The present... You make it sound so simple. But... perhaps it is possible.\""
+        },
+        {
+          "type": "emote",
+          "args": "{name} 32"
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "carry_it_forward",
+      "forkCommands": [
+        {
+          "type": "speak",
+          "args": "{name} \"$4...Carry it forward... Perhaps you're right. Thank you. I will... try\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"Thank you, {{ PlayerName }}\""
+        },
+        {
+          "type": "pause",
+          "args": "3000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999002",
+      "location": "ElliottHouse",
+      "conditions": [
+        "f {name} 500"
+      ],
+      "music": "none",
+      "viewport": "4 5",
+      "actors": "farmer 3 8 0 {name} 3 4 3",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "playMusic",
+          "args": "eerie"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"... {{ PlayerName }}?\""
+        },
+        {
+          "type": "pause",
+          "args": "5000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 2"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$7...How long were you standing there?\""
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 2 2"
+        },
+        {
+          "type": "pause",
+          "args": "600"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 1 2"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Excuse me... I wasn't expecting company.\""
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0I was just... keeping a journal. Jotting down fragments.\""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"Trying to make sense of how a life can derail so entirely... how everything went so terribly wrong before I even realized the path I was standing on was... fracturing...\""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4It's foolish to dwell on it. Out here, the days just... blur into quiet. But the ink dries the same.\""
+        },
+        {
+          "type": "pause",
+          "args": "600"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0Tell me... do you ever miss your past life? Before all of this?\""
+        },
+        {
+          "type": "question",
+          "args": "fork0 \"My past life... #(Honestly) Yes, sometimes it's hard to let go. #(Reassuringly) No. Everything I need is right here.\""
+        },
+        {
+          "type": "fork",
+          "args": "thePastMatters"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4...I see. At least one of us has found some clarity, then.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "thePastMatters",
+      "forkCommands": [
+        {
+          "type": "raw",
+          "args": ""
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1(A faint, guarded smile touches his lips) ...Perhaps you're right. Thank you for... staying.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999006",
+      "location": "ElliottHouse",
+      "conditions": [
+        "f {name} 1500"
+      ],
+      "music": "none",
+      "viewport": "4 7",
+      "actors": "farmer 3 8 0 {name} 8 4 0",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "move",
+          "args": "farmer 0 -4 0"
+        },
+        {
+          "type": "pause",
+          "args": "200"
+        },
+        {
+          "type": "move",
+          "args": "farmer 3 0 1"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "playMusic",
+          "args": "crisis-core-theme-the-terrible-truth-takeharu-ishimoto"
+        },
+        {
+          "type": "pause",
+          "args": "120000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 2 0 1"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$7...You stood there through the whole song. You didn't turn away... when the notes grew heavy.\""
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$5They called me a perfection. A masterpiece. A monster... right to my face when the paths split and everyone turned their backs. Genesis... Angeal... they all left me to carry the quiet.\""
+        },
+        {
+          "type": "pause",
+          "args": "1200"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$8And yet, you're still here. Standing in this damp little shack, acting as though I'm... human.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4I don't need grand empires or legacy. I just... I am so tired of being alone...\""
+        },
+        {
+          "type": "question",
+          "args": "fork1 \"Tell me, are you actually going to stay? As a real friend?#(Step forward and smile) I'm not going anywhere. You're stuck with me.#(Nod gently) Through the quiet and the heavy days, I'll stay.\""
+        },
+        {
+          "type": "fork",
+          "args": "i_will_stay"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1(His hands tremble slightly over the piano keys, a soft, broken relief washing over his expression) ...A real friend. I think... I could learn what that means with you.\""
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "i_will_stay",
+      "forkCommands": [
+        {
+          "type": "speak",
+          "args": "{name} \"$4(He looks down, hiding a watery smile as his shoulders finally relax) Thank you... That is all I ever really wanted to hear.\""
+        },
+        {
+          "type": "shake",
+          "args": "{name} 500"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999008",
+      "location": "Beach",
+      "conditions": [
+        "f {name} 2000",
+        "w sunny"
+      ],
+      "music": "none",
+      "viewport": "12 38",
+      "actors": "farmer 11 34 2 {name} 14 39 2",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "sweet"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 3 2"
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"Do you ever feel like you don't belong anywhere?\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 2 1"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4For a long time, I thought silence was the only thing I deserved. But... when you're around, the quiet doesn't feel heavy anymore.\""
+        },
+        {
+          "type": "emote",
+          "args": "farmer 32"
+        },
+        {
+          "type": "pause",
+          "args": "2000"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"...thank you. {{ PlayerName }}\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999010",
+      "location": "Beach",
+      "conditions": [
+        "f {name} 2500",
+        "t 2000 2400"
+      ],
+      "music": "none",
+      "viewport": "12 38",
+      "actors": "farmer 11 34 2 {name} 14 39 2",
+      "skippable": true,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "night_fall"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "farmer 0 5 1"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 0 3"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1You came. I... hoped you would. Even out here in the dark.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 3"
+        },
+        {
+          "type": "pause",
+          "args": "600"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0For a long time, I believed my path was meant to be walked alone. That 'anyone' who got too close would only find ruin...\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"...or a monster pretending to be a man.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0The villagers... they smile, and I've... 'learned' to accept their kindness. But you... \""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4You didn't just accept me. You stayed... when the music stopped. when I had... nothing to offer but my broken history.\""
+        },
+        {
+          "type": "pause",
+          "args": "1200"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$6And I realize now... I don't just want you as a friend who shares the quiet.\""
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$8I want you to be my anchor. My home... More than anyone else could ever be...\""
+        },
+        {
+          "type": "question",
+          "args": "fork1 \"Do you want to be more than friends? #(Blush) I would like that more than anything #(Smile softly, but say nothing).\""
+        },
+        {
+          "type": "fork",
+          "args": "declineLove"
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 3"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1I'm ready to let go of who I was. Because who I want to be... is right here, with you.\""
+        },
+        {
+          "type": "move",
+          "args": "{name} -1 0 0"
+        },
+        {
+          "type": "showFrame",
+          "args": "farmer 2"
+        },
+        {
+          "type": "showFrame",
+          "args": "{name} 11"
+        },
+        {
+          "type": "specificTemporarySprite",
+          "args": "heart 11 39"
+        },
+        {
+          "type": "playSound",
+          "args": "dwop"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "showFrame",
+          "args": "farmer 2"
+        },
+        {
+          "type": "showFrame",
+          "args": "{name} 11"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4You're the only future I want.\""
+        },
+        {
+          "type": "showFrame",
+          "args": "farmer 2"
+        },
+        {
+          "type": "emote",
+          "args": "farmer 20"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ],
+      "forkName": "declineLove",
+      "forkCommands": [
+        {
+          "type": "speak",
+          "args": "{name} \"$6Then I will wait. I won't rush you... We'll face whatever comes, together.\""
+        },
+        {
+          "type": "emote",
+          "args": "{name} 34"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    },
+    {
+      "id": "9999014",
+      "location": "Farm",
+      "conditions": [
+        "f {name} 3500",
+        "d-1"
+      ],
+      "music": "none",
+      "viewport": "15 11",
+      "actors": "farmer 64 15 0 {name} 63 15 0",
+      "skippable": false,
+      "commands": [
+        {
+          "type": "playMusic",
+          "args": "morning_memories"
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "move",
+          "args": "{name} 1 0 2"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4...You're awake early. I was just watching the sunrise over the crops.\""
+        },
+        {
+          "type": "pause",
+          "args": "800"
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 -1 0"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$0For years, I thought mornings only brought new burdens. New orders to follow. New expectations to crush.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$7Look at this place. It's quiet. The earth doesn't ask me to be a weapon or a legend... it just asks to be tended.\""
+        },
+        {
+          "type": "pause",
+          "args": "1200"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$1(He turns to you, a completely unburdened, radiant expression crossing his face) And you... you showed me that a man isn't defined by the shadow of his past, but by who he chooses to hold in the light.\""
+        },
+        {
+          "type": "pause",
+          "args": "1000"
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Thank you for giving me a home when I had nowhere left to fall. I am entirely yours.\""
+        },
+        {
+          "type": "jump",
+          "args": "{name}"
+        },
+        {
+          "type": "pause",
+          "args": "500"
+        },
+        {
+          "type": "stopMusic",
+          "args": ""
+        },
+        {
+          "type": "end",
+          "args": ""
+        }
+      ]
+    }
+  ]
+}

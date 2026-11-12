@@ -206,3 +206,20 @@ pre {
 .editor-message { margin: 0 0 12px; color: var(--error); font-size: 0.9rem; }
 
 [hidden] { display: none !important; }
+
+/* Events */
+.event > summary { cursor: pointer; font-family: monospace; font-weight: 600; margin-bottom: 8px; }
+.event h4 { margin: 14px 0 6px; font-size: 0.9rem; }
+.event .label { display: grid; gap: 6px; margin-bottom: 10px; }
+.event .label > span { font-weight: 600; font-size: 0.9rem; }
+.event .label small, .event label small { color: var(--muted); }
+.event label.check { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.event label.check input { width: auto; }
+.event .add-row { margin-bottom: 6px; }
+.commands .command { margin-bottom: 8px; background: #fbf8f0; }
+.command-fields { display: flex; flex-wrap: wrap; gap: 8px; }
+.command-fields input { width: auto; flex: 1 1 120px; }
+.command-fields input[type=number] { flex: 0 1 110px; }
+.command-fields select { width: auto; }
+.command-fields textarea.wide { flex: 1 1 100%; min-height: 3.2em; resize: vertical; }
+.entry-head .step { min-width: 1.6em; color: var(--muted); font-size: 0.85rem; }
