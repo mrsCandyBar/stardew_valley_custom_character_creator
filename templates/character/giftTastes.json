@@ -1,0 +1,138 @@
+{
+  "generic": {
+    "love": {
+      "face": "$4",
+      "text": "Placeholder: reaction to a loved gift (generic)."
+    },
+    "like": {
+      "face": "$1",
+      "text": "Placeholder: reaction to a liked gift (generic)."
+    },
+    "neutral": {
+      "face": "$0",
+      "text": "Placeholder: reaction to a neutral gift (generic)."
+    },
+    "dislike": {
+      "face": "$7",
+      "text": "Placeholder: reaction to a disliked gift (generic)."
+    },
+    "hate": {
+      "face": "$8",
+      "text": "Placeholder: reaction to a hated gift (generic)."
+    }
+  },
+  "categories": {
+    "loves": [
+      "769",
+      "74",
+      "637",
+      "279",
+      "591",
+      "340"
+    ],
+    "likes": [
+      "335",
+      "336",
+      "82",
+      "84",
+      "170",
+      "221",
+      "578",
+      "771",
+      "773"
+    ],
+    "dislikes": [
+      "394",
+      "24",
+      "109",
+      "172"
+    ],
+    "hates": [
+      "168",
+      "169",
+      "909",
+      "910",
+      "818"
+    ],
+    "neutral": [
+      "universal_neutral"
+    ]
+  },
+  "items": [
+    {
+      "item": "769",
+      "face": "$4",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "74",
+      "face": "$8",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "109",
+      "face": "$7",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "170",
+      "face": "$4",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "172",
+      "face": "$5",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "221",
+      "face": "$3",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "279",
+      "face": "$4",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "578",
+      "face": "$1",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "591",
+      "face": "$4",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "637",
+      "face": "$3",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "771",
+      "face": "$6",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "773",
+      "face": "$4",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "818",
+      "face": "$8",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "340",
+      "face": "$4",
+      "text": "Placeholder: reaction to this specific item."
+    },
+    {
+      "item": "909",
+      "face": "$5",
+      "text": "Placeholder: reaction to this specific item."
+    }
+  ]
+}

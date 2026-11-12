@@ -1,0 +1,138 @@
+{
+  "generic": {
+    "love": {
+      "face": "$4",
+      "text": "... I don't know what to say except... thank you"
+    },
+    "like": {
+      "face": "$1",
+      "text": "How thoughtful. I will keep this."
+    },
+    "neutral": {
+      "face": "$0",
+      "text": "Not quite my taste but your heart is in the right place I suppose"
+    },
+    "dislike": {
+      "face": "$7",
+      "text": "... do not go out of your way next time."
+    },
+    "hate": {
+      "face": "$8",
+      "text": "Do you have a death wish? If it belongs in the bin do not gift it to me."
+    }
+  },
+  "categories": {
+    "loves": [
+      "769",
+      "74",
+      "637",
+      "279",
+      "591",
+      "340"
+    ],
+    "likes": [
+      "335",
+      "336",
+      "82",
+      "84",
+      "170",
+      "221",
+      "578",
+      "771",
+      "773"
+    ],
+    "dislikes": [
+      "394",
+      "24",
+      "109",
+      "172"
+    ],
+    "hates": [
+      "168",
+      "169",
+      "909",
+      "910",
+      "818"
+    ],
+    "neutral": [
+      "universal_neutral"
+    ]
+  },
+  "items": [
+    {
+      "item": "769",
+      "face": "$4",
+      "text": "Void Essence... I used to use power like this to bring down empires. To hold it here... it is a jarring juxtaposition. Thank you."
+    },
+    {
+      "item": "74",
+      "face": "$8",
+      "text": "This light... glows exactly like Holy materia... A beautiful relic of a bygone time... I will guard it with my life."
+    },
+    {
+      "item": "109",
+      "face": "$7",
+      "text": "This... reminds me of... less joyful moments of my life that I'd rather not revist"
+    },
+    {
+      "item": "170",
+      "face": "$4",
+      "text": "I would've loved to have smashed a pair of glasses like these... on a certain scientist's face... while he wore them... Thanks"
+    },
+    {
+      "item": "172",
+      "face": "$5",
+      "text": "Urgh... propaganda"
+    },
+    {
+      "item": "221",
+      "face": "$3",
+      "text": "Not quite my colour but... Your intentions are incredibly thoughtful. Thank you."
+    },
+    {
+      "item": "279",
+      "face": "$4",
+      "text": "(Smiles while laughing whilst he takes it) Perhaps you understand me better than I think you do."
+    },
+    {
+      "item": "578",
+      "face": "$1",
+      "text": "Reminds me of a place I spend much of my life encased- surrounded by... It was so... peaceful"
+    },
+    {
+      "item": "591",
+      "face": "$4",
+      "text": "A tulip? Huh... It's actually kind of beautiful. It reminds me of a song... about a freezing night in the city where two people share a jacket to keep warm. About drying your tears and building something real. Thank you... Let's let this be our opportunity."
+    },
+    {
+      "item": "637",
+      "face": "$3",
+      "text": "Blood-red beneath a bitter rind... how fitting. It reminds me of the story of Hades, standing in the silent dark, offering a lonely queen a reason to stay... only... you've reversed our roles..."
+    },
+    {
+      "item": "771",
+      "face": "$6",
+      "text": "fibers are... "
+    },
+    {
+      "item": "773",
+      "face": "$4",
+      "text": "Huh! You trying to start a 'life' with me? kidding..."
+    },
+    {
+      "item": "818",
+      "face": "$8",
+      "text": "...looks like shit"
+    },
+    {
+      "item": "340",
+      "face": "$4",
+      "text": "Sickeningly sweet... like you"
+    },
+    {
+      "item": "909",
+      "face": "$5",
+      "text": "... this... reminds me of a past I'd rather not remember."
+    }
+  ]
+}

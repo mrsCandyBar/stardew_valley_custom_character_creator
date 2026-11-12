@@ -113,6 +113,45 @@ function cleanEntries(body) {
   });
 }
 
+// Gift tastes: { generic: {love, like, neutral, dislike, hate: {face, text}}, categories: {loves ... neutral: [ids]}, items: [{item, face, text}] }
+const GENERIC_TASTES = ["love", "like", "neutral", "dislike", "hate"];
+const TASTE_CATEGORIES = ["loves", "likes", "dislikes", "hates", "neutral"];
+
+function cleanReaction(source, label) {
+  const face = String(source?.face ?? "");
+  if (!/^\$[0-8]$/.test(face)) throw new Error(`${label}: the sprite face must be $0 to $8.`);
+  // The text is kept exactly as typed (no trimming), apart from line breaks, which the game can't use here.
+  const text = String(source?.text ?? "").replace(/\s*\r?\n\s*/g, " ");
+  if (!text.trim()) throw new Error(`${label} needs some text.`);
+  if (text.includes("/")) throw new Error(`${label}: the text can't contain a "/" (it separates the sections).`);
+  return { face, text };
+}
+
+function cleanGiftTastes(body) {
+  const generic = {};
+  for (const name of GENERIC_TASTES) generic[name] = cleanReaction(body?.generic?.[name], `The ${name} reaction`);
+
+  const categories = {};
+  for (const name of TASTE_CATEGORIES) {
+    const list = body?.categories?.[name];
+    categories[name] = (Array.isArray(list) ? list : []).map((id) => String(id).trim()).filter(Boolean);
+    for (const id of categories[name]) {
+      if (!/^-?\w+$/.test(id)) throw new Error(`"${id}" in ${name} isn't a valid item number (use numbers separated by spaces).`);
+    }
+    if (!categories[name].length) throw new Error(`${name} needs at least one entry.`);
+  }
+
+  const seen = new Set();
+  const items = (Array.isArray(body?.items) ? body.items : []).map((entry) => {
+    const item = String(entry?.item ?? "");
+    if (!/^\d{1,6}$/.test(item)) throw new Error(`"${item}" isn't a valid item number.`);
+    if (seen.has(item)) throw new Error(`The item (O)${item} is used twice.`);
+    seen.add(item);
+    return { item, ...cleanReaction(entry, `Item (O)${item}`) };
+  });
+  return { generic, categories, items };
+}
+
 function readRaw(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -174,6 +213,29 @@ async function handleApi(req, res, url) {
       }
       fs.writeFileSync(file, JSON.stringify({ entries }, null, 2) + "\n");
       return send(res, 200, { saved: fileName, count: entries.length });
+    }
+  }
+
+  // Gift tastes (giftTastes.json).
+  if (url.pathname === "/api/gift-tastes") {
+    const body = req.method === "POST" ? await readBody(req) : {};
+    const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
+    if (!dir) return send(res, 404, { error: "Unknown character folder" });
+    const file = path.join(dir, "giftTastes.json");
+
+    if (req.method === "GET") {
+      if (!fs.existsSync(file)) return send(res, 404, { error: "No giftTastes.json in this character folder." });
+      return send(res, 200, JSON.parse(fs.readFileSync(file, "utf8")));
+    }
+    if (req.method === "POST") {
+      let data;
+      try {
+        data = cleanGiftTastes(body.tastes);
+      } catch (err) {
+        return send(res, 400, { error: err.message });
+      }
+      fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
+      return send(res, 200, { saved: "giftTastes.json", count: data.items.length });
     }
   }
 

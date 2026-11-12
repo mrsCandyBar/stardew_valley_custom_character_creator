@@ -1,41 +1,29 @@
 const { SDV_Name } = require("../modDetails");
 
 // --- Custom gift tastes (Data/NPCGiftTastes) ---
-// Each item in this array is one "/"-separated section of the gift taste string.
-// The array is joined back together with "/" when the build runs.
+// The values live in giftTastes.json (the interface edits that file). The gift taste string is
+// "/"-separated fields, and the game reads them as five dialogue + item list pairs, in this order:
+//   0-1   love    (reaction line, item ids)
+//   2-3   like
+//   4-5   dislike
+//   6-7   hate
+//   8-9   neutral
+// Reactions to specific items are not part of this string (the game ignores extra fields). They are
+// written to the dialogue as AcceptGift_(O)<id> by dialogueChange.js.
+// A reaction line is a sprite face ("$0" to "$8", stored with the $) followed by the text.
+
+const { generic, categories } = require("../giftTastes.json");
+
+const reaction = ({ face, text }) => `${face}${text}`;
 
 const giftTasteLines = [
-
-  // Generic gift taste lines for the character
-  "$4Placeholder: reaction to a loved gift (generic).",
-  "$1Placeholder: reaction to a liked gift (generic).",
-  "$0Placeholder: reaction to a neutral gift (generic).",
-  "$7Placeholder: reaction to a disliked gift (generic).",
-  "$8Placeholder: reaction to a hated gift (generic).",
-
-  // Generic gift taste lines for item categories
-  "769 74 637 279 591 340",                 // Loves
-  "335 336 82 84 170 221 578 771 773",      // Likes
-  "394 24 109 172",                         // Dislikes
-  "168 169 909 910 818",                    // Hates
-  "universal_neutral",                      // Neutral
-
-  // Explicit gift taste lines for specific items
-  "(O)769 $4Placeholder: reaction to this specific item.",
-  "(O)74 $8Placeholder: reaction to this specific item.",
-  "(O)109 $7Placeholder: reaction to this specific item.",
-  "(O)170 $4Placeholder: reaction to this specific item.",
-  "(O)172 $5Placeholder: reaction to this specific item.",
-  "(O)221 $3Placeholder: reaction to this specific item.",
-  "(O)279 $4Placeholder: reaction to this specific item.",
-  "(O)578 $1Placeholder: reaction to this specific item.",
-  "(O)591 $4Placeholder: reaction to this specific item.",
-  "(O)637 $3Placeholder: reaction to this specific item.",
-  "(O)771 $6Placeholder: reaction to this specific item.",
-  "(O)773 $4Placeholder: reaction to this specific item.",
-  "(O)818 $8Placeholder: reaction to this specific item.",
-  "(O)340 $4Placeholder: reaction to this specific item.",
-  "(O)909 $5Placeholder: reaction to this specific item.",
+  ...[
+    ["love", "loves"],
+    ["like", "likes"],
+    ["dislike", "dislikes"],
+    ["hate", "hates"],
+    ["neutral", "neutral"],
+  ].flatMap(([taste, category]) => [reaction(generic[taste]), categories[category].join(" ")]),
 ];
 
 const giftTasteTarget = "Data/NPCGiftTastes";

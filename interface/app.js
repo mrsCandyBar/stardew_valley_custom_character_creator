@@ -87,7 +87,7 @@ saveButton.addEventListener("click", async () => {
   try {
     await postJson("/api/mod-details", { folder: folderSelect.value, details: readDetails() });
     await saveEditors();
-    setStatus(`Saved the details, dialogue, marriage dialogue and schedule to ${folderSelect.value}`);
+    setStatus(`Saved the details, dialogue, marriage dialogue, schedule and gift tastes to ${folderSelect.value}`);
   } catch (err) {
     setStatus(err.message, true);
   } finally {
@@ -493,7 +493,153 @@ function createEditor(section) {
   };
 }
 
-const editors = [...document.querySelectorAll(".dialogue-editor")].map(createEditor);
+// --- Gift tastes ---
+// Three parts: the character's generic reactions (a face + text each), the item ids for each category,
+// and optional explicit reactions for specific items. Face and item are dropdowns for now.
+// TODO (README): swap both dropdowns for clickable pictures.
+const FACES = range(0, 8).map((n) => ({ value: `$${n}`, label: `$${n}` }));
+const MAX_ITEM_ID = 999;
+const itemOptions = (extra) => {
+  const ids = range(0, MAX_ITEM_ID);
+  if (extra !== undefined && !ids.includes(Number(extra))) ids.push(Number(extra)); // an id from the file that's beyond the dropdown
+  return options(ids, (n) => `(O)${n}`);
+};
+const GENERIC_ROWS = [
+  ["love", "Loved gift"],
+  ["like", "Liked gift"],
+  ["dislike", "Disliked gift"],
+  ["hate", "Hated gift"],
+  ["neutral", "Neutral gift"],
+];
+const CATEGORY_ROWS = [
+  ["loves", "Loves"],
+  ["likes", "Likes"],
+  ["dislikes", "Dislikes"],
+  ["hates", "Hates"],
+  ["neutral", "Neutral"],
+];
+
+function createGiftTastesEditor(section) {
+  const { title, hint } = section.dataset;
+  let tastes = { generic: {}, categories: {}, items: [] };
+  let loaded = false;
+
+  const message = el("p", { className: "editor-message", hidden: true });
+  const showMessage = (text) => {
+    message.textContent = text;
+    message.hidden = !text;
+  };
+
+  const genericBox = el("div");
+  const categoryBox = el("div");
+  const itemList = el("div");
+  const itemSelect = fieldSelect({ title: "Item", options: itemOptions() }, "0");
+  const addItem = el("button", { type: "button", className: "secondary", textContent: "Add item" });
+  const addRow = el("div", { className: "add-row" }, itemSelect, addItem);
+
+  section.append(
+    el("h2", { textContent: title }),
+    el("p", { className: "hint", textContent: hint }),
+    message,
+    el("div", { className: "entry-group" }, el("h3", { textContent: "Generic reactions" }), genericBox),
+    el("div", { className: "entry-group" }, el("h3", { textContent: "Item categories" }), categoryBox),
+    el("div", { className: "entry-group" }, el("h3", { textContent: "Specific items" }), itemList, addRow)
+  );
+
+  // A face dropdown and a text box bound to one { face, text } object
+  const reactionFields = (reaction) => {
+    const face = fieldSelect({ title: "Sprite face", options: FACES }, reaction.face);
+    face.addEventListener("change", () => (reaction.face = face.value));
+    const text = el("textarea", { value: reaction.text, rows: 2, placeholder: "What they say" });
+    text.addEventListener("input", () => (reaction.text = text.value));
+    return [face, text];
+  };
+
+  function render() {
+    genericBox.replaceChildren(
+      ...GENERIC_ROWS.map(([name, label]) => {
+        const [face, text] = reactionFields(tastes.generic[name]);
+        return el("div", { className: "entry" }, el("div", { className: "entry-head" }, el("span", { className: "key", textContent: label }), face), text);
+      })
+    );
+
+    categoryBox.replaceChildren(
+      ...CATEGORY_ROWS.map(([name, label]) => {
+        const input = el("input", { value: tastes.categories[name].join(" "), placeholder: "e.g. 769 74 637" });
+        input.addEventListener("input", () => (tastes.categories[name] = input.value.split(/\s+/).filter(Boolean)));
+        return el("label", { className: "category-row" }, el("span", { textContent: label }), input);
+      }),
+      el("p", { className: "hint", textContent: "Item numbers separated by spaces. Negative numbers are whole categories (e.g. -4 for fish) and universal_neutral works too." })
+    );
+
+    itemList.replaceChildren(
+      ...(tastes.items.length
+        ? tastes.items.map((entry) => {
+            const item = fieldSelect({ title: "Item", options: itemOptions(entry.item) }, entry.item);
+            item.addEventListener("change", () => {
+              if (tastes.items.some((e) => e !== entry && e.item === item.value)) {
+                showMessage(`(O)${item.value} already exists.`);
+                item.value = entry.item;
+                return;
+              }
+              showMessage("");
+              entry.item = item.value;
+            });
+            const [face, text] = reactionFields(entry);
+            const remove = el("button", {
+              type: "button",
+              className: "secondary",
+              textContent: "Remove",
+              onclick: () => {
+                tastes.items = tastes.items.filter((e) => e !== entry);
+                render();
+              },
+            });
+            return el("div", { className: "entry" }, el("div", { className: "entry-head" }, item, face, el("span", { className: "key" }), remove), text);
+          })
+        : [el("p", { className: "empty", textContent: "None yet. Optional." })])
+    );
+  }
+
+  addItem.addEventListener("click", () => {
+    if (tastes.items.some((e) => e.item === itemSelect.value)) return showMessage(`(O)${itemSelect.value} already exists.`);
+    showMessage("");
+    tastes.items.push({ item: itemSelect.value, face: "$0", text: "" });
+    render();
+  });
+
+  return {
+    async load(folder) {
+      showMessage("");
+      try {
+        tastes = await api(`/api/gift-tastes?folder=${encodeURIComponent(folder)}`);
+        loaded = true;
+      } catch (err) {
+        loaded = false;
+        showMessage(err.message);
+      }
+      addRow.hidden = !loaded;
+      genericBox.hidden = categoryBox.hidden = !loaded;
+      if (loaded) render();
+      else itemList.replaceChildren();
+    },
+    async save(folder) {
+      if (!loaded) return;
+      try {
+        await postJson("/api/gift-tastes", { folder, tastes });
+        showMessage("");
+      } catch (err) {
+        showMessage(err.message);
+        throw new Error(`${title}: ${err.message}`);
+      }
+    },
+  };
+}
+
+const editors = [
+  ...[...document.querySelectorAll(".dialogue-editor")].map(createEditor),
+  ...[...document.querySelectorAll(".gift-editor")].map(createGiftTastesEditor),
+];
 const loadEditors = () => Promise.all(editors.map((editor) => editor.load(folderSelect.value)));
 async function saveEditors() {
   for (const editor of editors) await editor.save(folderSelect.value);

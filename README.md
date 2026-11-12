@@ -22,7 +22,7 @@ The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), s
 
 Run `node server.js` and open http://localhost:3000 for a form that edits a character's `modDetails.json` and runs the build.
 
-- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Marriage dialogue, Schedule). Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
+- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Marriage dialogue, Schedule, Gift tastes). Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
 - **Save** (bottom right) writes the form to the selected character's `modDetails.json`.
 - **Build & open dist folder** saves, runs `build.js` and opens the built folder.
 - **New character** asks for the character being replaced and the new name, then copies [templates/character/](templates/character/) into `characters/<Replacing>-<NewName>` with the names filled in. The template uses placeholder text, and its `assets/` folder starts empty, so add `custom_sprites.png` and `custom_portraits.png`.
@@ -31,8 +31,9 @@ Run `node server.js` and open http://localhost:3000 for a form that edits a char
 
 - **Dialogue** and **Marriage dialogue** list every entry as a card. Under *Day dialogue*, add a day (Mon to Sun) with an optional heart count (1 to 14), which makes keys like `Sun` or `Sun4`. Under *Other dialogue*, add any key, e.g. `Introduction` or `Festival_Egg`. Each line you type in a card is one `#` section. Save writes `dialogue.json` and `marriageDialogue.json`.
 - **Schedule** works the same way. Add a schedule for a day of the week (`Mon`), a season (`spring`, `summer`, `fall`, `winter`) or one day of a season (`spring:1`); every one of them is optional. Each line in a card is one stop (`600 Beach 34 39 0`). Any other key, such as `Rain`, goes under *Other schedules*. Save writes `schedule.json`.
+- **Gift tastes** has three parts. *Generic reactions* are the five lines the character says for a loved, liked, neutral, disliked or hated gift, each with a sprite face dropdown (`$0` to `$8`) and the text. *Item categories* are the item numbers for loves, likes, dislikes, hates and neutral, typed as numbers separated by spaces (`universal_neutral` also works). *Specific items* are optional: pick an item from the dropdown (`(O)0` to `(O)999`), a sprite face and the text. Text can't contain `/`. The game ignores extra fields in the gift string, so these are built into the dialogue as `AcceptGift_(O)<id>` (not tested in-game yet). Save writes `giftTastes.json`.
 
-The interface only edits the mod details, assets, dialogue and schedule so far. Events and the other changes are still edited in their `.js` files.
+The interface only edits the mod details, assets, dialogue, schedule and gift tastes so far. Events and the other changes are still edited in their `.js` files.
 
 ## Characters
 
@@ -79,8 +80,8 @@ Stardew packs many values into one long string separated by a character (`/` for
 | `spriteChange.js` | `Characters/<SDV_Name>` | Loads the custom sprite sheet. |
 | `portraitChange.js` | `Portraits/<SDV_Name>` | Loads the custom portraits. |
 | `displayNameChange.js` | `Data/Characters` | Sets `DisplayName` to `<newCharacterName>?`. |
-| `giftTastesChange.js` | `Data/NPCGiftTastes` | `giftTasteLines` is joined with `/`. |
-| `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Reads `dialogue.json`, joining each entry's lines with `#`. |
+| `giftTastesChange.js` | `Data/NPCGiftTastes` | Reads `giftTastes.json` and joins the sections with `/`: five reaction + item list pairs in the game's order (love, like, dislike, hate, neutral). |
+| `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Reads `dialogue.json`, joining each entry's lines with `#`, and adds `AcceptGift_(O)<id>` entries from the specific items in `giftTastes.json`. |
 | `marriageDialogueChange.js` | `Characters/Dialogue/MarriageDialogue` | Reads `marriageDialogue.json`, joining each entry's lines with `#`. `{name}` in a key becomes `SDV_Name`. |
 | `eventChange.js` | `Data/Events/ArchaeologyHouse`, `ElliottHouse`, `Beach`, `Farm` | Combines the files in `changes/events/`, joining sequences with `/`. |
 | `scheduleChange.js` | `Characters/schedules/<SDV_Name>` | Reads `schedule.json`, joining each schedule's stops with `/`. Not tested in-game yet. |
@@ -112,3 +113,7 @@ Everything below is built to `<folderLocation>/<modFolderName>` when you run `no
 | `content.json` | Content Patcher file. `Changes` is filled from the character's `changes.js`. |
 | `manifest.json` | SMAPI manifest, filled in from the character's `modDetails.js`. |
 | `assets/` | A copy of the character folder's `assets` folder. |
+
+## TODO
+
+- Gift tastes: replace the item dropdown (`(O)0` to `(O)999`) with a picker of clickable item images, and replace the sprite face dropdown (`$0` to `$8`) with the character's portrait at that index, so you click the face you want.

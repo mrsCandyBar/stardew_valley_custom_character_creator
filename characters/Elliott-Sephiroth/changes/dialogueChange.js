@@ -9,6 +9,7 @@ const { SDV_Name } = require("../modDetails");
 const dialogueTarget = `Characters/Dialogue/${SDV_Name}`;
 
 const { entries } = require("../dialogue.json");
+const { items: giftItems } = require("../giftTastes.json");
 
 const dialogueEntries = {};
 for (const { key, lines } of entries) {
@@ -16,6 +17,16 @@ for (const { key, lines } of entries) {
     throw new Error(`Duplicate dialogue key: ${key}`);
   }
   dialogueEntries[key] = lines.join("#");
+}
+
+// Reactions to specific gifts live in giftTastes.json but the game reads them from the dialogue file,
+// under AcceptGift_(O)<id>. Each is a sprite face ($0 to $8) followed by the text.
+for (const { item, face, text } of giftItems) {
+  const key = `AcceptGift_(O)${item}`;
+  if (key in dialogueEntries) {
+    throw new Error(`Duplicate dialogue key: ${key}`);
+  }
+  dialogueEntries[key] = `${face}${text}`;
 }
 
 const dialogueChange = {

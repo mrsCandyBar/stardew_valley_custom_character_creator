@@ -201,6 +201,8 @@ pre {
 .add-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .add-row select, .add-row input { width: auto; flex: 0 1 auto; }
 .add-row input { flex: 1 1 200px; }
+.category-row { grid-template-columns: 110px 1fr; margin-bottom: 8px; }
+.entry-head select { min-width: 5.5em; }
 .editor-message { margin: 0 0 12px; color: var(--error); font-size: 0.9rem; }
 
 [hidden] { display: none !important; }

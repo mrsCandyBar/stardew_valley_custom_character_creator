@@ -29,6 +29,7 @@
           <button type="button" class="tab" role="tab" id="tab-dialogue" data-tab="dialogue" aria-controls="panel-dialogue">Dialogue</button>
           <button type="button" class="tab" role="tab" id="tab-marriage" data-tab="marriage" aria-controls="panel-marriage">Marriage dialogue</button>
           <button type="button" class="tab" role="tab" id="tab-schedule" data-tab="schedule" aria-controls="panel-schedule">Schedule</button>
+          <button type="button" class="tab" role="tab" id="tab-gifts" data-tab="gifts" aria-controls="panel-gifts">Gift tastes</button>
         </div>
 
       <section class="panel" role="tabpanel" id="panel-details" data-panel="details" aria-labelledby="tab-details">
@@ -103,6 +104,9 @@
 
       <section class="panel dialogue-editor" role="tabpanel" id="panel-schedule" data-panel="schedule" aria-labelledby="tab-schedule" hidden data-type="schedule" data-title="Schedule"
         data-hint="Saved to schedule.json. Each line is one stop: time, location, x, y, facing (e.g. 600 Beach 34 39 0). A schedule can be for a weekday, a season, or one day of a season, and all of them are optional."></section>
+
+      <section class="panel gift-editor" role="tabpanel" id="panel-gifts" data-panel="gifts" aria-labelledby="tab-gifts" hidden data-title="Gift tastes"
+        data-hint="Saved to giftTastes.json. A face like $4 is the portrait shown while they speak (0 to 8). Specific items are optional and are saved as AcceptGift_(O)&lt;id&gt; dialogue."></section>
       </div>
 
       <div class="actions">
