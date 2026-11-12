@@ -58,7 +58,7 @@ async function loadDetails() {
     for (const key of DETAIL_FIELDS) form[key].value = details[key];
     updateModFolderName();
     loadAssets();
-    loadDialogues();
+    loadEditors();
     output.hidden = true;
     setStatus("");
   } catch (err) {
@@ -86,8 +86,8 @@ saveButton.addEventListener("click", async () => {
   saveButton.disabled = true;
   try {
     await postJson("/api/mod-details", { folder: folderSelect.value, details: readDetails() });
-    await saveDialogues();
-    setStatus(`Saved the details, dialogue and marriage dialogue to ${folderSelect.value}`);
+    await saveEditors();
+    setStatus(`Saved the details, dialogue, marriage dialogue and schedule to ${folderSelect.value}`);
   } catch (err) {
     setStatus(err.message, true);
   } finally {
@@ -101,7 +101,7 @@ form.addEventListener("submit", async (event) => {
   output.hidden = true;
   setStatus("Building...");
   try {
-    await saveDialogues();
+    await saveEditors();
     const result = await postJson("/api/build", { folder: folderSelect.value, details: readDetails() });
     output.textContent = result.output;
     output.hidden = false;
@@ -226,19 +226,88 @@ for (const row of assetRows) {
   });
 }
 
-// --- Dialogue editors (dialogue and marriage dialogue share this) ---
+// --- Keyed list editors (dialogue, marriage dialogue and schedule share this) ---
+// Each list is entries of { key, lines }. A "group" describes one kind of key that is built from
+// one or more dropdowns (e.g. day + heart count), so every part of it is optional to add.
+// Keys that match no group go in the "other" list, where the key is typed in.
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const SEASONS = ["spring", "summer", "fall", "winter"];
 const MAX_HEARTS = 14;
-const DAY_KEY = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(\d{1,2})?$/;
+const MAX_SEASON_DAY = 28;
 
-// "Sun" -> { day: "Sun", hearts: 0 }, "Sun4" -> { day: "Sun", hearts: 4 }. Anything else is not a day key.
-function parseDayKey(key) {
-  const match = DAY_KEY.exec(key);
-  if (!match) return null;
-  if (match[2] === undefined) return { day: match[1], hearts: 0 };
-  const hearts = Number(match[2]);
-  return hearts >= 1 && hearts <= MAX_HEARTS && String(hearts) === match[2] ? { day: match[1], hearts } : null;
-}
+const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+const options = (values, label = (v) => v) => values.map((v) => ({ value: String(v), label: label(v) }));
+// A number written without leading zeros, within min..max, or null
+const inRange = (text, min, max) => (/^(0|[1-9]\d*)$/.test(text) && Number(text) >= min && Number(text) <= max ? text : null);
+
+const SEASON_OPTIONS = options(SEASONS, (s) => (s === "fall" ? "fall (autumn)" : s));
+
+// Mon, Mon4 ... Sun14: a day with an optional heart count.
+const dayHeartsGroup = {
+  title: "Day dialogue",
+  empty: "None yet. Days and heart counts are optional.",
+  addLabel: "Add day dialogue",
+  fields: [
+    { title: "Day", options: options(DAYS) },
+    { title: "Heart count (optional)", options: [{ value: "", label: "No heart count" }, ...options(range(1, MAX_HEARTS), (h) => `${h} hearts`)] },
+  ],
+  parse(key) {
+    const match = new RegExp(`^(${DAYS.join("|")})(\\d{1,2})?$`).exec(key);
+    if (!match) return null;
+    if (match[2] === undefined) return [match[1], ""];
+    return inRange(match[2], 1, MAX_HEARTS) ? [match[1], match[2]] : null;
+  },
+  compose: ([day, hearts]) => day + hearts,
+};
+
+const EDITORS = {
+  dialogue: {
+    groups: [dayHeartsGroup],
+    otherTitle: "Other dialogue",
+    otherPlaceholder: "e.g. Introduction, one, Festival_Egg",
+  },
+  marriage: {
+    groups: [dayHeartsGroup],
+    otherTitle: "Other dialogue",
+    otherPlaceholder: "e.g. Indoor_Morning_{name}, fun_12",
+  },
+  schedule: {
+    groups: [
+      {
+        title: "Day of the week",
+        empty: "None yet. Optional.",
+        addLabel: "Add day",
+        fields: [{ title: "Day", options: options(DAYS) }],
+        parse: (key) => (DAYS.includes(key) ? [key] : null),
+        compose: ([day]) => day,
+      },
+      {
+        title: "Season",
+        empty: "None yet. Optional.",
+        addLabel: "Add season",
+        fields: [{ title: "Season", options: SEASON_OPTIONS }],
+        parse: (key) => (SEASONS.includes(key) ? [key] : null),
+        compose: ([season]) => season,
+      },
+      {
+        title: "Day of a season",
+        empty: "None yet. Optional.",
+        addLabel: "Add day of season",
+        fields: [
+          { title: "Season", options: SEASON_OPTIONS },
+          { title: "Day of the season", options: options(range(1, MAX_SEASON_DAY), (d) => `day ${d}`) },
+        ],
+        parse(key) {
+          const match = new RegExp(`^(${SEASONS.join("|")}):(\\d{1,2})$`).exec(key);
+          return match && inRange(match[2], 1, MAX_SEASON_DAY) ? [match[1], match[2]] : null;
+        },
+        compose: ([season, day]) => `${season}:${day}`,
+      },
+    ],
+    otherTitle: "Other schedules",
+    otherPlaceholder: "e.g. Rain, marriage_Mon",
+  },
+};
 
 function el(tag, props = {}, ...children) {
   const node = Object.assign(document.createElement(tag), props);
@@ -246,24 +315,23 @@ function el(tag, props = {}, ...children) {
   return node;
 }
 
-function daySelect(value) {
-  const select = el("select", { title: "Day" }, ...DAYS.map((d) => el("option", { value: d, textContent: d })));
+function fieldSelect(field, value) {
+  const select = el("select", { title: field.title }, ...field.options.map((o) => el("option", { value: o.value, textContent: o.label })));
   select.value = value;
   return select;
 }
 
-function heartsSelect(value) {
-  const options = [el("option", { value: "", textContent: "No heart count" })];
-  for (let h = 1; h <= MAX_HEARTS; h++) options.push(el("option", { value: String(h), textContent: `${h} hearts` }));
-  const select = el("select", { title: "Heart count (optional)" }, ...options);
-  select.value = value ? String(value) : "";
-  return select;
-}
-
-function createDialogueEditor(section) {
+function createEditor(section) {
   const { type, title, hint } = section.dataset;
-  let entries = []; // { key, text (one line per section), kind: "day" | "other" }
+  const { groups, otherTitle, otherPlaceholder } = EDITORS[type];
+  const OTHER = -1;
+  let entries = []; // { key, text (one line per section), group: index into groups, or OTHER }
   let loaded = false;
+
+  const groupOf = (key) => {
+    const index = groups.findIndex((g) => g.parse(key));
+    return index < 0 ? OTHER : index;
+  };
 
   section.append(
     el("h2", { textContent: title }),
@@ -271,23 +339,40 @@ function createDialogueEditor(section) {
     el("p", { className: "editor-message", hidden: true })
   );
   const message = section.querySelector(".editor-message");
-  const dayList = el("div");
+
+  const lists = []; // one list element per group, then the "other" list last
+  const addRows = [];
+
+  // One block per group: heading, cards, and a row of dropdowns to add another
+  groups.forEach((group, index) => {
+    const list = el("div");
+    const selects = group.fields.map((field) => fieldSelect(field, field.options[0].value));
+    const button = el("button", { type: "button", className: "secondary", textContent: group.addLabel });
+    button.addEventListener("click", () => {
+      const key = group.compose(selects.map((s) => s.value));
+      if (hasKey(key)) return showMessage(`${key} already exists.`);
+      add({ key, text: "", group: index });
+    });
+    const row = el("div", { className: "add-row" }, ...selects, button);
+    lists.push(list);
+    addRows.push(row);
+    section.append(el("div", { className: "entry-group" }, el("h3", { textContent: group.title }), list, row));
+  });
+
   const otherList = el("div");
-
-  const addDay = daySelect("Mon");
-  const addHearts = heartsSelect(0);
-  const addDayButton = el("button", { type: "button", className: "secondary", textContent: "Add day dialogue" });
-  const addKey = el("input", { placeholder: "e.g. Introduction, one, Festival_Egg", title: "Dialogue key" });
+  const addKey = el("input", { placeholder: otherPlaceholder, title: "Key" });
   const addOtherButton = el("button", { type: "button", className: "secondary", textContent: "Add" });
-  const addRows = [
-    el("div", { className: "add-row" }, addDay, addHearts, addDayButton),
-    el("div", { className: "add-row" }, addKey, addOtherButton),
-  ];
+  const otherRow = el("div", { className: "add-row" }, addKey, addOtherButton);
+  addRows.push(otherRow);
+  section.append(el("div", { className: "entry-group" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
 
-  section.append(
-    el("div", { className: "entry-group" }, el("h3", { textContent: "Day dialogue" }), dayList, addRows[0]),
-    el("div", { className: "entry-group" }, el("h3", { textContent: "Other dialogue" }), otherList, addRows[1])
-  );
+  addOtherButton.addEventListener("click", () => {
+    const key = addKey.value.trim();
+    if (!key) return showMessage("Type a key first.");
+    if (hasKey(key)) return showMessage(`${key} already exists.`);
+    add({ key, text: "", group: groupOf(key) }); // a key that fits a group moves into it
+    addKey.value = "";
+  });
 
   function showMessage(text) {
     message.textContent = text;
@@ -298,29 +383,28 @@ function createDialogueEditor(section) {
 
   function card(entry) {
     const head = el("div", { className: "entry-head" });
-    if (entry.kind === "day") {
-      const parsed = parseDayKey(entry.key);
-      const day = daySelect(parsed.day);
-      const hearts = heartsSelect(parsed.hearts);
+    if (entry.group !== OTHER) {
+      const group = groups[entry.group];
+      const values = group.parse(entry.key);
+      const selects = group.fields.map((field, i) => fieldSelect(field, values[i]));
       const label = el("span", { className: "key", textContent: entry.key });
       const rename = () => {
-        const key = day.value + hearts.value;
+        const next = selects.map((s) => s.value);
+        const key = group.compose(next);
         if (hasKey(key, entry)) {
           showMessage(`${key} already exists.`);
-          [day.value, hearts.value] = [parsed.day, parsed.hearts ? String(parsed.hearts) : ""];
+          selects.forEach((s, i) => (s.value = values[i]));
           return;
         }
         showMessage("");
-        parsed.day = day.value;
-        parsed.hearts = Number(hearts.value);
+        values.splice(0, values.length, ...next);
         entry.key = key;
         label.textContent = key;
       };
-      day.addEventListener("change", rename);
-      hearts.addEventListener("change", rename);
-      head.append(day, hearts, label);
+      selects.forEach((s) => s.addEventListener("change", rename));
+      head.append(...selects, label);
     } else {
-      const key = el("input", { value: entry.key, title: "Dialogue key" });
+      const key = el("input", { value: entry.key, title: "Key" });
       key.addEventListener("input", () => (entry.key = key.value));
       head.append(key);
     }
@@ -342,14 +426,14 @@ function createDialogueEditor(section) {
   }
 
   function render() {
-    const rank = (e) => {
-      const p = parseDayKey(e.key);
-      return DAYS.indexOf(p.day) * 100 + p.hearts;
-    };
-    const days = entries.filter((e) => e.kind === "day").sort((a, b) => rank(a) - rank(b));
-    const others = entries.filter((e) => e.kind === "other");
     const none = (text) => el("p", { className: "empty", textContent: text });
-    dayList.replaceChildren(...(days.length ? days.map(card) : [none("None yet. Days and heart counts are optional.")]));
+    groups.forEach((group, index) => {
+      // Sort by each dropdown's position, so Mon, Mon2, Mon4 ... Tue and spring, spring:1 ... summer read in order
+      const rank = (e) => group.parse(e.key).reduce((total, v, i) => total * 100 + group.fields[i].options.findIndex((o) => o.value === v), 0);
+      const mine = entries.filter((e) => e.group === index).sort((a, b) => rank(a) - rank(b));
+      lists[index].replaceChildren(...(mine.length ? mine.map(card) : [none(group.empty)]));
+    });
+    const others = entries.filter((e) => e.group === OTHER);
     otherList.replaceChildren(...(others.length ? others.map(card) : [none("None yet.")]));
   }
 
@@ -357,21 +441,7 @@ function createDialogueEditor(section) {
     entries.push(entry);
     showMessage("");
     render();
-    return entry;
   }
-
-  addDayButton.addEventListener("click", () => {
-    const key = addDay.value + addHearts.value;
-    if (hasKey(key)) return showMessage(`${key} already exists.`);
-    add({ key, text: "", kind: "day" });
-  });
-  addOtherButton.addEventListener("click", () => {
-    const key = addKey.value.trim();
-    if (!key) return showMessage("Type a key first.");
-    if (hasKey(key)) return showMessage(`${key} already exists.`);
-    add({ key, text: "", kind: parseDayKey(key) ? "day" : "other" });
-    addKey.value = "";
-  });
 
   function setLoaded(ok) {
     loaded = ok;
@@ -382,8 +452,8 @@ function createDialogueEditor(section) {
     async load(folder) {
       showMessage("");
       try {
-        const data = await api(`/api/dialogue?folder=${encodeURIComponent(folder)}&type=${type}`);
-        entries = data.entries.map(({ key, lines }) => ({ key, text: lines.join("\n"), kind: parseDayKey(key) ? "day" : "other" }));
+        const data = await api(`/api/entries?folder=${encodeURIComponent(folder)}&type=${type}`);
+        entries = data.entries.map(({ key, lines }) => ({ key, text: lines.join("\n"), group: groupOf(key) }));
         setLoaded(true);
       } catch (err) {
         entries = [];
@@ -398,12 +468,12 @@ function createDialogueEditor(section) {
       try {
         const seen = new Set();
         for (const { key, lines } of clean) {
-          if (!key) throw new Error("A dialogue entry has no key.");
+          if (!key) throw new Error("An entry has no key.");
           if (seen.has(key)) throw new Error(`The key ${key} is used twice.`);
           seen.add(key);
-          if (!lines.length) throw new Error(`${key} needs at least one line of dialogue.`);
+          if (!lines.length) throw new Error(`${key} needs at least one line.`);
         }
-        await postJson("/api/dialogue", { folder, type, entries: clean });
+        await postJson("/api/entries", { folder, type, entries: clean });
         showMessage("");
       } catch (err) {
         showMessage(err.message);
@@ -413,10 +483,10 @@ function createDialogueEditor(section) {
   };
 }
 
-const dialogueEditors = [...document.querySelectorAll(".dialogue-editor")].map(createDialogueEditor);
-const loadDialogues = () => Promise.all(dialogueEditors.map((editor) => editor.load(folderSelect.value)));
-async function saveDialogues() {
-  for (const editor of dialogueEditors) await editor.save(folderSelect.value);
+const editors = [...document.querySelectorAll(".dialogue-editor")].map(createEditor);
+const loadEditors = () => Promise.all(editors.map((editor) => editor.load(folderSelect.value)));
+async function saveEditors() {
+  for (const editor of editors) await editor.save(folderSelect.value);
 }
 
 init(); // last, so everything above is defined before the first load

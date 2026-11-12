@@ -95,20 +95,20 @@ function assetFile(dir, kind) {
   return name ? path.join(dir, "assets", name) : null;
 }
 
-// Dialogue lists: { entries: [{ key, lines: [...] }] }. Marriage keys may contain "{name}".
-const DIALOGUE_FILES = { dialogue: "dialogue.json", marriage: "marriageDialogue.json" };
-const DIALOGUE_KEY = /^[\w.{}-]{1,80}$/;
+// Keyed lists: { entries: [{ key, lines: [...] }] }. Marriage keys may contain "{name}", schedule keys a ":" (spring:1).
+const ENTRY_FILES = { dialogue: "dialogue.json", marriage: "marriageDialogue.json", schedule: "schedule.json" };
+const ENTRY_KEY = /^[\w.{}:-]{1,80}$/;
 
-function cleanDialogue(body) {
-  if (!Array.isArray(body)) throw new Error("Expected a list of dialogue entries.");
+function cleanEntries(body) {
+  if (!Array.isArray(body)) throw new Error("Expected a list of entries.");
   const seen = new Set();
   return body.map((item) => {
     const key = String(item?.key ?? "").trim();
-    if (!DIALOGUE_KEY.test(key)) throw new Error(`"${key}" isn't a valid key (letters, numbers, _ - . { } only).`);
+    if (!ENTRY_KEY.test(key)) throw new Error(`"${key}" isn't a valid key (letters, numbers, _ - . : { } only).`);
     if (seen.has(key)) throw new Error(`The key ${key} is used twice.`);
     seen.add(key);
     const lines = (Array.isArray(item.lines) ? item.lines : []).map(String).filter((line) => line.trim() !== "");
-    if (!lines.length) throw new Error(`${key} needs at least one line of dialogue.`);
+    if (!lines.length) throw new Error(`${key} needs at least one line.`);
     return { key, lines };
   });
 }
@@ -153,12 +153,12 @@ async function handleApi(req, res, url) {
     return send(res, 415, { error: isUpload ? "Expected a file upload" : "Expected JSON" });
   }
 
-  // Dialogue and marriage dialogue lists (type is "dialogue" or "marriage").
-  if (url.pathname === "/api/dialogue") {
+  // Dialogue, marriage dialogue and schedule lists (type is "dialogue", "marriage" or "schedule").
+  if (url.pathname === "/api/entries") {
     const body = req.method === "POST" ? await readBody(req) : {};
     const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
-    const fileName = DIALOGUE_FILES[req.method === "POST" ? body.type : url.searchParams.get("type")];
-    if (!dir || !fileName) return send(res, 404, { error: "Unknown character folder or dialogue type" });
+    const fileName = ENTRY_FILES[req.method === "POST" ? body.type : url.searchParams.get("type")];
+    if (!dir || !fileName) return send(res, 404, { error: "Unknown character folder or list type" });
     const file = path.join(dir, fileName);
 
     if (req.method === "GET") {
@@ -168,7 +168,7 @@ async function handleApi(req, res, url) {
     if (req.method === "POST") {
       let entries;
       try {
-        entries = cleanDialogue(body.entries);
+        entries = cleanEntries(body.entries);
       } catch (err) {
         return send(res, 400, { error: err.message });
       }
