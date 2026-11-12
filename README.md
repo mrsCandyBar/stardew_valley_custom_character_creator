@@ -26,7 +26,9 @@ Run `node server.js` and open http://localhost:3000 for a form that edits a char
 - **Build & open dist folder** saves, runs `build.js` and opens the built folder.
 - **New character** asks for the character being replaced and the new name, then copies [templates/character/](templates/character/) into `characters/<Replacing>-<NewName>` with the names filled in. The template uses placeholder text, and its `assets/` folder starts empty, so add `custom_sprites.png` and `custom_portraits.png`.
 
-The interface only edits the mod details so far. Dialogue, events and the other changes are still edited in their `.js` files.
+- **Assets** lets you upload the portraits (`custom_portraits.png`), sprites (`custom_sprites.png`) and a music track (`.ogg`) into the selected character's `assets/` folder, replacing the old file. **View** shows the image, or **Play** plays the track. The music file name is stored in the character's `music.json`, which `musicChange.js` reads; with no track set there is no music change.
+
+The interface only edits the mod details and these assets so far. Dialogue, events and the other changes are still edited in their `.js` files.
 
 ## Characters
 
@@ -38,6 +40,7 @@ characters/Elliott-Sephiroth/
   changes.js      collects the changes for content.json
   changes/        one file per change
   assets/         the character's images and music
+  music.json      file name of the custom music track (blank for none)
 ```
 
 To add a character, copy an existing folder, edit its files, and run the build with `--folder` pointing at it. The folder doesn't need to be inside this project.

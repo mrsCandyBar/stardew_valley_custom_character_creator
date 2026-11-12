@@ -1,23 +1,27 @@
-// Define the variables for a change first, then pull them into its object.
+// --- Custom music track (Data/AudioChanges) ---
+// The file name lives in music.json (the interface writes it when you upload a track).
+// With no file set, there is no music change and nothing is added to content.json.
+const { file } = require("../music.json");
 
-// --- Example: custom music track (Data/AudioChanges) ---
+let musicChange = null;
 
-const musicEntryKey = "crisis-core-theme-the-terrible-truth-takeharu-ishimoto";
-const musicId = "crisis-core-theme-the-terrible-truth-takeharu-ishimoto";
-const musicFilePath = "{{AbsoluteFilePath: assets/crisis-core-theme-the-terrible-truth-takeharu-ishimoto.ogg}}";
+if (file) {
+  // The track's id is its file name without the extension, e.g. "my-song" for "my-song.ogg".
+  const musicId = file.replace(/\.[^.]+$/, "");
 
-const musicChange = {
-  Action: "EditData",
-  Target: "Data/AudioChanges",
-  Entries: {
-    [musicEntryKey]: {
-      ID: musicId,
-      Category: "Music",
-      FilePaths: [musicFilePath],
-      StreamedVorbis: true,
-      Looped: false,
+  musicChange = {
+    Action: "EditData",
+    Target: "Data/AudioChanges",
+    Entries: {
+      [musicId]: {
+        ID: musicId,
+        Category: "Music",
+        FilePaths: [`{{AbsoluteFilePath: assets/${file}}}`],
+        StreamedVorbis: true,
+        Looped: false,
+      },
     },
-  },
-};
+  };
+}
 
 module.exports = { musicChange };

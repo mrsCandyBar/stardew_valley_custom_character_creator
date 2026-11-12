@@ -1,0 +1,11 @@
+{
+  "SDV_Name": "Abigail",
+  "folderLocation": "./dist",
+  "newCharacterName": "Abbey",
+  "Name": "My Character Replacement - Abigail to Abbey",
+  "Author": "YourName",
+  "Version": "1.0.0",
+  "Description": "Replaces Abigail with Abbey.",
+  "UniqueID": "YourName.AbigailToAbbey",
+  "MinimumApiVersion": "4.0.0"
+}

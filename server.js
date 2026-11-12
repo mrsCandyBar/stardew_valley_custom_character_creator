@@ -25,7 +25,6 @@ const MOD_FIELDS = [
 ];
 
 const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript" };
-
 function send(res, status, body, type = "application/json") {
   res.writeHead(status, { "Content-Type": type });
   res.end(typeof body === "string" || Buffer.isBuffer(body) ? body : JSON.stringify(body));
@@ -66,6 +65,52 @@ function pickFields(source) {
   return out;
 }
 
+// The three uploadable assets. Portrait and sprite use the fixed file names the changes/*.js files load;
+// music keeps the uploaded name, which is recorded in music.json for musicChange.js.
+const ASSETS = {
+  portrait: { file: "custom_portraits.png", type: "image/png", magic: "\x89PNG" },
+  sprite: { file: "custom_sprites.png", type: "image/png", magic: "\x89PNG" },
+  music: { type: "audio/ogg", magic: "OggS" },
+};
+const MAX_UPLOAD = 50 * 1024 * 1024;
+
+// Only accept folders that are real characters, so a request can't point anywhere else.
+function characterDir(folder) {
+  const clean = String(folder || "").replace(/\\/g, "/");
+  return listCharacters().includes(clean) ? path.resolve(ROOT, clean) : null;
+}
+
+function readMusicFile(dir) {
+  try {
+    return String(JSON.parse(fs.readFileSync(path.join(dir, "music.json"), "utf8")).file || "");
+  } catch {
+    return "";
+  }
+}
+
+function assetFile(dir, kind) {
+  const asset = ASSETS[kind];
+  if (!asset) return null;
+  const name = kind === "music" ? readMusicFile(dir) : asset.file;
+  return name ? path.join(dir, "assets", name) : null;
+}
+
+function readRaw(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > MAX_UPLOAD) {
+        reject(new Error("File is too large (50 MB max)."));
+        req.destroy();
+      } else chunks.push(chunk);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
+
 function openInExplorer(dir) {
   const [cmd, args] =
     process.platform === "win32" ? ["explorer", [dir]] : process.platform === "darwin" ? ["open", [dir]] : ["xdg-open", [dir]];
@@ -82,9 +127,61 @@ function runBuild(name, folder) {
 }
 
 async function handleApi(req, res, url) {
-  // Only accept JSON posts so other websites can't trigger writes or builds.
-  if (req.method === "POST" && !(req.headers["content-type"] || "").startsWith("application/json")) {
-    return send(res, 415, { error: "Expected JSON" });
+  // Only accept JSON (or raw file) posts. Neither content type is allowed in a cross-site form post,
+  // so other websites can't trigger writes or builds.
+  const contentType = req.headers["content-type"] || "";
+  const isUpload = url.pathname === "/api/asset";
+  if (req.method === "POST" && !contentType.startsWith(isUpload ? "application/octet-stream" : "application/json")) {
+    return send(res, 415, { error: isUpload ? "Expected a file upload" : "Expected JSON" });
+  }
+
+  // Which assets a character has, for the Assets section.
+  if (req.method === "GET" && url.pathname === "/api/assets") {
+    const dir = characterDir(url.searchParams.get("folder"));
+    if (!dir) return send(res, 404, { error: "Unknown character folder" });
+    const out = {};
+    for (const kind of Object.keys(ASSETS)) {
+      const file = assetFile(dir, kind);
+      out[kind] = { exists: !!file && fs.existsSync(file), name: file ? path.basename(file) : "" };
+    }
+    return send(res, 200, out);
+  }
+
+  // Streams one asset so the page can show or play it.
+  if (req.method === "GET" && url.pathname === "/api/asset") {
+    const dir = characterDir(url.searchParams.get("folder"));
+    const kind = url.searchParams.get("kind");
+    const file = dir && assetFile(dir, kind);
+    if (!file || !fs.existsSync(file)) return send(res, 404, { error: "No file uploaded yet" });
+    res.writeHead(200, { "Content-Type": ASSETS[kind].type, "Cache-Control": "no-store" });
+    return res.end(fs.readFileSync(file));
+  }
+
+  // Saves an uploaded file into the character's assets/ folder.
+  if (req.method === "POST" && url.pathname === "/api/asset") {
+    const dir = characterDir(url.searchParams.get("folder"));
+    const kind = url.searchParams.get("kind");
+    const asset = ASSETS[kind];
+    if (!dir || !asset) return send(res, 404, { error: "Unknown character folder or asset" });
+
+    const data = await readRaw(req);
+    if (!data.length || data.subarray(0, 4).toString("latin1") !== asset.magic) {
+      return send(res, 400, { error: kind === "music" ? "That isn't an .ogg file." : "That isn't a .png file." });
+    }
+
+    let name = asset.file;
+    if (kind === "music") {
+      // Keep the uploaded name, limited to safe characters, since it ends up in content.json.
+      const base = path.basename(String(url.searchParams.get("name") || "")).replace(/\.ogg$/i, "");
+      const safe = base.replace(/[^\w.-]+/g, "-").replace(/^[-.]+|[-.]+$/g, "");
+      if (!safe) return send(res, 400, { error: "The music file needs a name." });
+      name = `${safe}.ogg`;
+    }
+
+    fs.mkdirSync(path.join(dir, "assets"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "assets", name), data);
+    if (kind === "music") fs.writeFileSync(path.join(dir, "music.json"), JSON.stringify({ file: name }, null, 2) + "\n");
+    return send(res, 200, { saved: `assets/${name}`, name });
   }
 
   if (req.method === "GET" && url.pathname === "/api/characters") {

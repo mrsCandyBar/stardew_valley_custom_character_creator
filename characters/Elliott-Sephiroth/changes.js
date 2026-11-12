@@ -20,6 +20,6 @@ const changes = [
     scheduleChange,
     ...eventChanges,
     musicChange
-];
+].filter(Boolean); // musicChange is null until a track is uploaded
 
 module.exports = { changes };

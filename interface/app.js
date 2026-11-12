@@ -57,6 +57,7 @@ async function loadDetails() {
     const details = await api(`/api/mod-details?folder=${encodeURIComponent(folderSelect.value)}`);
     for (const key of DETAIL_FIELDS) form[key].value = details[key];
     updateModFolderName();
+    loadAssets();
     output.hidden = true;
     setStatus("");
   } catch (err) {
@@ -142,3 +143,80 @@ newForm.addEventListener("submit", async (event) => {
 });
 
 init();
+
+// --- Assets: portrait, sprite and music uploads ---
+const assetRows = [...document.querySelectorAll(".asset")];
+
+function assetUrl(kind) {
+  // The timestamp stops the browser showing an old copy after a re-upload.
+  return `/api/asset?folder=${encodeURIComponent(folderSelect.value)}&kind=${kind}&t=${Date.now()}`;
+}
+
+function showPreview(row) {
+  const kind = row.dataset.kind;
+  const preview = row.querySelector(".preview");
+  const el = document.createElement(kind === "music" ? "audio" : "img");
+  if (kind === "music") el.controls = true;
+  else el.alt = `${kind} preview`;
+  el.src = assetUrl(kind);
+  preview.replaceChildren(el);
+  preview.hidden = false;
+  if (kind === "music") el.play().catch(() => {}); // fine if the browser blocks autoplay; the controls still work
+}
+
+function hidePreview(row) {
+  const preview = row.querySelector(".preview");
+  preview.querySelector("audio")?.pause();
+  preview.replaceChildren();
+  preview.hidden = true;
+}
+
+function setAssetState(row, text, isError = false) {
+  const state = row.querySelector(".asset-state");
+  state.textContent = text;
+  state.classList.toggle("error", isError);
+}
+
+async function loadAssets() {
+  let assets;
+  try {
+    assets = await api(`/api/assets?folder=${encodeURIComponent(folderSelect.value)}`);
+  } catch (err) {
+    assets = {};
+  }
+  for (const row of assetRows) {
+    hidePreview(row);
+    const asset = assets[row.dataset.kind] || {};
+    row.querySelector(".view").disabled = !asset.exists;
+    setAssetState(row, asset.exists ? `Current: ${asset.name}` : "Nothing uploaded yet.");
+  }
+}
+
+for (const row of assetRows) {
+  const kind = row.dataset.kind;
+  const input = row.querySelector("input[type=file]");
+  const view = row.querySelector(".view");
+
+  view.addEventListener("click", () => (row.querySelector(".preview").hidden ? showPreview(row) : hidePreview(row)));
+
+  input.addEventListener("change", async () => {
+    const file = input.files[0];
+    if (!file) return;
+    setAssetState(row, "Uploading...");
+    try {
+      const res = await fetch(
+        `/api/asset?folder=${encodeURIComponent(folderSelect.value)}&kind=${kind}&name=${encodeURIComponent(file.name)}`,
+        { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: file }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setAssetState(row, `Saved to ${data.saved}`);
+      view.disabled = false;
+      if (!row.querySelector(".preview").hidden) showPreview(row); // refresh an open preview
+    } catch (err) {
+      setAssetState(row, err.message, true);
+    } finally {
+      input.value = "";
+    }
+  });
+}

@@ -56,6 +56,35 @@
         <label><span>Minimum API version</span> <input name="MinimumApiVersion" required></label>
       </section>
 
+      <section>
+        <h2>Assets</h2>
+        <p class="hint">Choosing a file uploads it straight into this character's <code>assets/</code> folder, replacing the old one.</p>
+
+        <div class="asset" data-kind="portrait" data-accept="image/png">
+          <span class="asset-label">Portraits</span>
+          <input type="file" accept=".png,image/png">
+          <button type="button" class="secondary view">View</button>
+          <small>PNG, saved as <code>custom_portraits.png</code>. <span class="asset-state"></span></small>
+          <div class="preview" hidden></div>
+        </div>
+
+        <div class="asset" data-kind="sprite" data-accept="image/png">
+          <span class="asset-label">Sprites</span>
+          <input type="file" accept=".png,image/png">
+          <button type="button" class="secondary view">View</button>
+          <small>PNG sprite sheet, saved as <code>custom_sprites.png</code>. <span class="asset-state"></span></small>
+          <div class="preview" hidden></div>
+        </div>
+
+        <div class="asset" data-kind="music" data-accept="audio/ogg">
+          <span class="asset-label">Music</span>
+          <input type="file" accept=".ogg,audio/ogg">
+          <button type="button" class="secondary view">Play</button>
+          <small>OGG track, saved under its own name and recorded in <code>music.json</code>. <span class="asset-state"></span></small>
+          <div class="preview" hidden></div>
+        </div>
+      </section>
+
       <div class="actions">
         <button type="submit" id="build">Build &amp; open dist folder</button>
       </div>

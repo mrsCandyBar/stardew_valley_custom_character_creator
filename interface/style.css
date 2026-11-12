@@ -139,3 +139,25 @@ pre {
   border-radius: 6px;
   font-size: 0.85rem;
 }
+
+/* Assets: label, file picker, view button; hint and preview underneath */
+section > .hint { margin: -4px 0 14px; color: var(--muted); font-size: 0.9rem; }
+.asset {
+  display: grid;
+  grid-template-columns: 170px 1fr auto;
+  column-gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.asset:last-child { margin-bottom: 0; }
+.asset-label { font-weight: 600; }
+.asset > small, .asset > .preview { grid-column: 2 / -1; }
+.asset-state.error { color: var(--error); }
+.asset input[type="file"] { padding: 5px; }
+.preview { margin-top: 8px; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 4px; }
+.preview img { display: block; max-width: 100%; image-rendering: pixelated; } /* keep pixel art crisp */
+.preview audio { display: block; width: 100%; }
+@media (max-width: 520px) {
+  .asset { grid-template-columns: 1fr auto; }
+  .asset-label, .asset > small, .asset > .preview { grid-column: 1 / -1; }
+}
