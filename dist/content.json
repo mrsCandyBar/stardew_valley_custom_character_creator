@@ -1,0 +1,20 @@
+{
+  "Format": "2.0.0",
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Data/AudioChanges",
+      "Entries": {
+        "title-crisis-core-theme-the-terrible-truth-takeharu-ishimoto": {
+          "ID": "crisis-core-theme-the-terrible-truth-takeharu-ishimoto",
+          "Category": "Music",
+          "FilePaths": [
+            "{{AbsoluteFilePath: assets/crisis-core-theme-the-terrible-truth-takeharu-ishimoto.ogg}}"
+          ],
+          "StreamedVorbis": true,
+          "Looped": false
+        }
+      }
+    }
+  ]
+}

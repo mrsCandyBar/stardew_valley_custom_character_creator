@@ -1,0 +1,19 @@
+{
+  "Name": "My Character Replacement - Elliot to Sephiroth",
+  "Author": "PastelBeans_",
+  "Version": "1.0.0",
+  "Description": "Replaces Elliot with Sephiroth.",
+  "UniqueID": "PastelBeans_.ElliotToSephiroth",
+  "EntryDll": null,
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [],
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  },
+  "Dependencies": [
+    {
+      "UniqueID": "Pathoschild.ContentPatcher",
+      "IsRequired": true
+    }
+  ]
+}
