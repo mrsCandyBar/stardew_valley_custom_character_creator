@@ -8,6 +8,15 @@ const { giftTastesChange } = require("./changes/giftTastesChange");
 
 const { eventChanges } = require("./changes/eventChange");
 
-const changes = [spriteChange, portraitChange, giftTastesChange, ...eventChanges, musicChange];
+const { dialogueChange } = require("./changes/dialogueChange");
+
+const changes = [
+    spriteChange, 
+    portraitChange, 
+    giftTastesChange,
+    dialogueChange,
+    ...eventChanges,
+    musicChange
+];
 
 module.exports = { changes };
