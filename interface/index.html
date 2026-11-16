@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Character Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="layout">
   <main>
     <h1>Stardew Valley Character Creator</h1>
 
@@ -75,7 +78,6 @@
           <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">Preview</button></span>
           <small>PNG, saved as <code>custom_portraits.png</code>.</small>
           <input type="file" accept=".png,image/png" hidden>
-          <div class="preview" hidden></div>
         </div>
 
         <div class="asset" data-kind="sprite" data-accept="image/png">
@@ -84,7 +86,6 @@
           <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">Preview</button></span>
           <small>PNG sprite sheet, saved as <code>custom_sprites.png</code>.</small>
           <input type="file" accept=".png,image/png" hidden>
-          <div class="preview" hidden></div>
         </div>
 
         <div class="asset" data-kind="music" data-accept="audio/ogg">
@@ -93,7 +94,6 @@
           <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">Play</button></span>
           <small>OGG track, saved under its own name and recorded in <code>music.json</code>.</small>
           <input type="file" accept=".ogg,audio/ogg" hidden>
-          <div class="preview" hidden></div>
         </div>
       </section>
 
@@ -125,6 +125,13 @@
       </div>
     </form>
   </main>
+
+  <aside id="preview-pane" aria-label="Preview">
+    <div class="preview-head"><strong id="preview-title"></strong><button type="button" id="preview-close" class="secondary">Close</button></div>
+    <p class="preview-empty">Previews show up here: sprites, portraits, music, the event map and expanded dialogue. Look for the Preview, Play, Show the map and Expand buttons.</p>
+    <div id="preview-content"></div>
+  </aside>
+  </div>
 
   <dialog id="newDialog">
     <form method="dialog" id="newForm">

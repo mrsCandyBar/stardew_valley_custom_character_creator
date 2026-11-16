@@ -18,6 +18,37 @@ const DETAIL_FIELDS = [
   "MinimumApiVersion",
 ];
 
+// --- Preview pane: the dedicated space on the right for sprites, the map, expanded dialogue and so on ---
+// One thing is shown at a time. Whoever shows something passes an onClose, so it can tidy up when replaced or closed.
+const previewPane = document.getElementById("preview-pane");
+const previewTitle = document.getElementById("preview-title");
+const previewContent = document.getElementById("preview-content");
+let paneClose = null;
+
+function showInPane(title, node, onClose) {
+  const previous = paneClose;
+  paneClose = null; // so the previous owner's own clearing doesn't touch the new content
+  previous?.();
+  paneClose = onClose || (() => {});
+  previewTitle.textContent = title;
+  previewContent.replaceChildren(node);
+  previewPane.classList.add("has-content");
+}
+
+// Empty the pane, but only if `owner` is still what is showing
+function clearPane(owner) {
+  if (owner && paneClose !== owner) return;
+  const close = paneClose;
+  paneClose = null;
+  previewContent.replaceChildren();
+  previewPane.classList.remove("has-content");
+  close?.();
+}
+
+const closePane = () => clearPane();
+document.getElementById("preview-close").addEventListener("click", closePane);
+document.addEventListener("keydown", (e) => e.key === "Escape" && !document.querySelector("dialog[open]") && closePane());
+
 function setStatus(text, isError = false) {
   status.textContent = text;
   status.classList.toggle("error", isError);
@@ -299,10 +330,21 @@ function spritePreview(image) {
   return el("div", { className: "preview-body" }, el("div", { className: "preview-stage" }, stage, caption), el("div", { className: "asset-buttons wrap" }, ...buttons), el("div", { className: "asset-buttons wrap" }, ...actionButtons), customRow, grid);
 }
 
+const PREVIEW_TITLES = { portrait: "Portraits", sprite: "Sprites", music: "Music" };
+
+// Asset previews open in the preview pane. The pane calls row.close when something else replaces them.
 async function showPreview(row) {
   const kind = row.dataset.kind;
-  const preview = row.querySelector(".preview");
-  preview.hidden = false;
+  const preview = el("div", { className: "preview" });
+  row.preview = preview;
+  row.close = () => {
+    preview.querySelector("audio")?.pause();
+    stopTimers.splice(0).forEach((stop) => stop());
+    row.preview = null;
+    row.querySelector(".view").classList.remove("selected");
+  };
+  showInPane(PREVIEW_TITLES[kind], preview, row.close);
+  row.querySelector(".view").classList.add("selected");
   if (kind === "music") {
     const audio = el("audio", { controls: true, src: assetUrl(kind) });
     preview.replaceChildren(audio);
@@ -312,20 +354,16 @@ async function showPreview(row) {
   preview.replaceChildren(el("p", { className: "hint", textContent: "Loading..." }));
   try {
     const image = await loadImage(assetUrl(kind));
-    if (preview.hidden) return; // closed while loading
+    if (row.preview !== preview) return; // closed while loading
     stopTimers.splice(0).forEach((stop) => stop());
     preview.replaceChildren(kind === "portrait" ? portraitPreview(image) : spritePreview(image));
   } catch (err) {
-    preview.replaceChildren(el("p", { className: "editor-message", textContent: err.message }));
+    if (row.preview === preview) preview.replaceChildren(el("p", { className: "editor-message", textContent: err.message }));
   }
 }
 
 function hidePreview(row) {
-  const preview = row.querySelector(".preview");
-  preview.querySelector("audio")?.pause();
-  stopTimers.splice(0).forEach((stop) => stop());
-  preview.replaceChildren();
-  preview.hidden = true;
+  if (row.preview) clearPane(row.close);
 }
 
 function setAssetState(row, text, isError = false) {
@@ -356,7 +394,7 @@ for (const row of assetRows) {
   const view = row.querySelector(".view");
 
   row.querySelector(".upload").addEventListener("click", () => input.click());
-  view.addEventListener("click", () => (row.querySelector(".preview").hidden ? showPreview(row) : hidePreview(row)));
+  view.addEventListener("click", () => (row.preview ? hidePreview(row) : showPreview(row)));
 
   input.addEventListener("change", async () => {
     const file = input.files[0];
@@ -372,7 +410,7 @@ for (const row of assetRows) {
       setAssetState(row, `Saved to ${data.saved}`);
       view.disabled = false;
       row.querySelector(".upload").textContent = "Replace";
-      if (!row.querySelector(".preview").hidden) showPreview(row); // refresh an open preview
+      if (row.preview) showPreview(row); // refresh an open preview
     } catch (err) {
       setAssetState(row, err.message, true);
     } finally {
@@ -579,33 +617,82 @@ function createEditor(section) {
         drawBody();
       },
     });
-    head.append(
-      toggle,
-      el("button", {
-        type: "button",
-        className: "secondary",
-        textContent: "Remove",
-        onclick: () => {
-          entries = entries.filter((e) => e !== entry);
-          render();
-        },
-      })
-    );
+    // Dialogue and marriage dialogue: a one-line input beside the key (click it to edit in the preview pane) and an x.
+    // Schedule keeps its Expand button and text box.
+    const compact = type !== "schedule";
+    const multiline = () => entry.text.includes("\n");
+    const inline = el("input", { className: "line-input", placeholder: "Click to write what they say" });
+    const refreshInline = () => {
+      // A line break can't live in a one-line input, so several sections are shown joined and edited in the pane
+      inline.value = multiline() ? entry.text.split("\n").join("  ↵  ") : entry.text;
+      inline.readOnly = multiline();
+      inline.title = multiline() ? "Several sections: edit them in the preview pane" : "";
+    };
+    refreshInline();
+    inline.addEventListener("input", () => {
+      entry.text = inline.value;
+      if (entry.expanded && currentPane) drawLines(currentPane);
+    });
+    inline.addEventListener("click", () => {
+      if (entry.expanded) return;
+      entry.expanded = true;
+      drawBody();
+    });
+    const removeButton = el("button", {
+      type: "button",
+      className: compact ? "secondary remove-x" : "secondary",
+      textContent: compact ? "×" : "Remove",
+      title: "Remove",
+      onclick: () => {
+        clearPane(paneClosed);
+        entries = entries.filter((e) => e !== entry);
+        render();
+      },
+    });
+    if (compact) head.append(inline, removeButton);
+    else head.append(toggle, removeButton);
+    let currentPane = null;
 
     // Collapsed: one text box, a line per section. Expanded: each line as a face + text row, like the generic reactions.
     // A line's face is written as a leading "$n" (only if the face was picked or already there).
+    // The expanded editor opens in the preview pane; the pane calls this when it is closed or replaced.
+    const paneClosed = () => {
+      entry.expanded = false;
+      toggle.textContent = "Expand";
+      currentPane = null;
+      drawBody();
+    };
     function drawBody() {
-      if (!entry.expanded) {
+      card.classList.toggle("viewing", Boolean(entry.expanded));
+      if (compact) {
+        if (!entry.expanded) {
+          clearPane(paneClosed);
+          refreshInline();
+          body.replaceChildren();
+          return;
+        }
+      } else if (!entry.expanded) {
+        clearPane(paneClosed);
         const text = el("textarea", { value: entry.text, rows: Math.max(2, entry.text.split("\n").length), placeholder: "One line per section" });
         text.addEventListener("input", () => (entry.text = text.value));
         body.replaceChildren(text);
         return;
       }
+      body.replaceChildren(compact ? "" : el("p", { className: "hint", textContent: "Editing in the preview pane on the right." }));
+      const pane = el("div", { className: type === "schedule" ? "preview-body" : "preview-body centered" });
+      currentPane = pane;
+      showInPane(entry.key || "Dialogue", pane, paneClosed);
+      drawLines(pane);
+    }
+    function drawLines(pane) {
       const lines = entry.text.split("\n").map((raw) => {
         const match = /^\$([0-8])/.exec(raw);
         return { face: match ? `$${match[1]}` : "$0", explicit: Boolean(match), text: match ? raw.slice(2) : raw };
       });
-      const sync = () => (entry.text = lines.map((l) => (l.explicit ? l.face : "") + l.text).join("\n"));
+      const sync = () => {
+        entry.text = lines.map((l) => (l.explicit ? l.face : "") + l.text).join("\n");
+        refreshInline();
+      };
       const rows = lines.map((line) => {
         const reaction = {
           get face() {
@@ -624,7 +711,7 @@ function createEditor(section) {
             sync();
           },
         };
-        const row = reactionFields(reaction);
+        const row = type === "schedule" ? reactionFields(reaction) : dialogueBox(reaction);
         const removeLine = el("button", {
           type: "button",
           className: "secondary",
@@ -634,7 +721,7 @@ function createEditor(section) {
           onclick: () => {
             lines.splice(lines.indexOf(line), 1);
             sync();
-            drawBody();
+            drawLines(pane);
           },
         });
         return el("div", { className: "dialogue-line" }, row, removeLine);
@@ -646,13 +733,14 @@ function createEditor(section) {
         onclick: () => {
           lines.push({ face: "$0", explicit: false, text: "" });
           sync();
-          drawBody();
+          drawLines(pane);
         },
       });
-      body.replaceChildren(...rows, addLine);
+      pane.replaceChildren(...rows, addLine);
     }
+    const card = el("div", { className: "entry" }, head, body);
     drawBody();
-    return el("div", { className: "entry" }, head, body);
+    return card;
   }
 
   // A clickable portrait face and a text box bound to one { face, text } object
@@ -661,6 +749,14 @@ function createEditor(section) {
     const text = el("textarea", { value: reaction.text, rows: 2, placeholder: "What they say" });
     text.addEventListener("input", () => (reaction.text = text.value));
     return el("div", { className: "reaction-row" }, text, face);
+  };
+
+  // The game-style box used in the preview pane: text on the left, framed portrait on the right
+  const dialogueBox = (reaction) => {
+    const face = faceButton(reaction, assetUrl("portrait"));
+    const text = el("textarea", { value: reaction.text, rows: 5, placeholder: "What they say" });
+    text.addEventListener("input", () => (reaction.text = text.value));
+    return el("div", { className: "dialogue-box" }, text, face);
   };
 
   function render() {
@@ -908,6 +1004,16 @@ function createGiftTastesEditor(section) {
   let newItemId = "0"; // the item the "Add item" button will add
   const addItem = el("button", { type: "button", className: "secondary", textContent: "Add item" });
   const addRow = el("div", { className: "add-row" });
+  const specificBody = el("div", { hidden: true }, itemList, addRow);
+  const toggleSpecific = el("button", {
+    type: "button",
+    className: "secondary",
+    textContent: "Show specific items",
+    onclick: () => {
+      specificBody.hidden = !specificBody.hidden;
+      toggleSpecific.textContent = specificBody.hidden ? "Show specific items" : "Hide specific items";
+    },
+  });
 
   section.append(
     el("h2", { textContent: title }),
@@ -915,16 +1021,61 @@ function createGiftTastesEditor(section) {
     message,
     el("div", { className: "entry-group" }, el("h3", { textContent: "Generic reactions" }), genericBox),
     el("div", { className: "entry-group" }, el("h3", { textContent: "Item categories" }), categoryBox),
-    el("div", { className: "entry-group" }, el("h3", { textContent: "Specific items" }), itemList, addRow)
+    // Hidden by default to keep the page simple. Clicking an item chip above still opens its reaction in the pane.
+    el("div", { className: "entry-group" }, el("h3", { textContent: "Specific items" }), toggleSpecific, specificBody)
   );
 
-  // A clickable portrait face and a text box bound to one { face, text } object
+  // Compact line: the descriptor and a View button on the left, the text box beside them.
+  // View opens the reaction in the preview pane, laid out like the game's dialogue box with its portrait face.
   let portraitUrl = "";
-  const reactionFields = (reaction) => {
-    const face = faceButton(reaction, portraitUrl);
-    const text = el("textarea", { value: reaction.text, rows: 2, placeholder: "What they say" });
-    text.addEventListener("input", () => (reaction.text = text.value));
-    return el("div", { className: "reaction-row" }, text, face); // text on the left, portrait on the right like the game
+  let live = null; // { reaction, paneText } for the reaction open in the pane
+  const openers = new Map(); // reaction -> function that opens it in the pane
+  const reactionLine = (reaction, descriptor, extra, title = "Specific item", clickToView = false) => {
+    // One-line box in the form; a line break can't live in an input, so several sections are shown joined and edited in the pane
+    const text = el("input", { placeholder: "Click to write what they say" });
+    const multi = () => reaction.text.includes("\n");
+    const refreshText = () => {
+      text.value = multi() ? reaction.text.split("\n").join("  ↵  ") : reaction.text;
+      text.readOnly = multi();
+    };
+    refreshText();
+    const view = el("button", { type: "button", className: "secondary", textContent: "View" });
+    text.addEventListener("input", () => {
+      reaction.text = text.value;
+      if (live && live.reaction === reaction) live.paneText.value = text.value;
+      refreshChips();
+    });
+    const toggleView = () => (live && live.reaction === reaction ? closePane() : open());
+    function open() {
+      if (live && live.reaction === reaction) return;
+      const paneText = el("textarea", { value: reaction.text, rows: 5, placeholder: "What they say" });
+      paneText.addEventListener("input", () => {
+        reaction.text = paneText.value;
+        refreshText();
+        refreshChips();
+      });
+      const face = faceButton(reaction, portraitUrl);
+      const me = { reaction, paneText };
+      const card = line.closest(".entry");
+      const onClose = () => {
+        if (live === me) live = null;
+        view.classList.remove("selected");
+        card?.classList.remove("viewing");
+        refreshChips();
+      };
+      live = me;
+      view.classList.add("selected");
+      card?.classList.add("viewing");
+      refreshChips();
+      showInPane(title, el("div", { className: "preview-body centered" }, el("div", { className: "dialogue-box" }, paneText, face), el("p", { className: "hint", textContent: "Click the portrait for the next face. Edits here and in the form stay in step." })), onClose);
+    }
+    view.addEventListener("click", toggleView);
+    // Specific items have no View button: clicking the text opens the view instead
+    view.hidden = true; // clicking the text opens the view instead
+    text.addEventListener("click", open);
+    const line = el("div", { className: "reaction-line" }, el("div", { className: "reaction-who" }, descriptor, view), text, extra || el("span"));
+    openers.set(reaction, open);
+    return line;
   };
 
   // One category (loves, likes...): a chip per item id and an Add button that opens the multi-select table. Ids are stored as plain numbers (no "(O)"), in tastes.categories[name].
@@ -933,6 +1084,7 @@ function createGiftTastesEditor(section) {
     const ids = () => tastes.categories[name];
 
     const draw = () => {
+      queueMicrotask(refreshChips);
       const chips = ids().map((id) => {
         const item = items.find((i) => i.id === id);
         const remove = el("button", {
@@ -947,7 +1099,10 @@ function createGiftTastesEditor(section) {
         });
         // Just the icon (name and number show on hover). Ids with no icon, like -4, show as text instead.
         const face = item ? itemIcon(item) : el("span", { className: "item-num", textContent: id });
-        return el("span", { className: "chip", title: item ? `${item.name} (${id})` : id }, face, remove);
+        const chip = el("span", { className: chipClasses(id),  title: item ? `${item.name} (${id}): click to edit its specific reaction` : id }, face, remove);
+        chip.dataset.id = id; // el() sets properties, so a "data-id" prop would not become an attribute
+        chip.addEventListener("click", (e) => e.target !== remove && goToItem(id, item));
+        return chip;
       });
 
       const choose = el("button", {
@@ -974,12 +1129,38 @@ function createGiftTastesEditor(section) {
     return row;
   }
 
+  // Chip colours: green when the item has specific dialogue, and a ring on the chip whose reaction is open in the pane
+  function chipClasses(id) {
+    const entry = tastes.items.find((e) => String(e.item) === String(id));
+    const viewing = live && live.reaction.item !== undefined && String(live.reaction.item) === String(id);
+    return ["chip", "clickable", entry && entry.text.trim() ? "has-text" : "", viewing ? "viewing" : ""].filter(Boolean).join(" ");
+  }
+  function refreshChips() {
+    for (const chip of categoryBox.querySelectorAll(".chip[data-id]")) chip.className = chipClasses(chip.dataset.id);
+  }
+
+  // Clicking an item in a category: show its specific reaction, or offer to create one
+  function goToItem(id, item) {
+    if (!item) return showMessage(`${id} isn't an item in the list, so it can't have a specific reaction.`);
+    let entry = tastes.items.find((e) => String(e.item) === String(id));
+    if (!entry) {
+      if (!confirm(`${item.name} has no specific reaction yet. Create one?`)) return;
+      entry = { item: id, face: "$0", text: "" };
+      tastes.items.push(entry);
+      render();
+    }
+    showMessage("");
+    openers.get(entry)?.(); // the chip is highlighted for as long as this stays open; declining to create leaves the last one as it was
+    if (!specificBody.hidden) itemList.children[tastes.items.indexOf(entry)]?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
   function render() {
+    openers.clear();
+    closePane(); // anything open in the pane belongs to the old rows
     portraitUrl = assetUrl("portrait"); // one fetch per render, and picks up a re-uploaded portrait
     genericBox.replaceChildren(
       ...GENERIC_ROWS.map(([name, label]) => {
-        const row = reactionFields(tastes.generic[name]);
-        return el("div", { className: "entry" }, el("div", { className: "entry-head" }, el("span", { className: "key", textContent: label })), row);
+        return el("div", { className: "entry" }, reactionLine(tastes.generic[name], el("span", { className: "key", textContent: label }), null, label));
       })
     );
 
@@ -1003,17 +1184,19 @@ function createGiftTastesEditor(section) {
                 entry.item = id;
               }
             );
-            const row = reactionFields(entry);
             const remove = el("button", {
               type: "button",
-              className: "secondary",
-              textContent: "Remove",
+              className: "secondary remove-x",
+              textContent: "×",
+              title: "Remove",
+              
               onclick: () => {
+                closePane();
                 tastes.items = tastes.items.filter((e) => e !== entry);
                 render();
               },
             });
-            return el("div", { className: "entry" }, el("div", { className: "entry-head" }, item, el("span", { className: "key" }), remove), row);
+            return el("div", { className: "entry" }, reactionLine(entry, item, remove, "Specific item", true));
           })
         : [el("p", { className: "empty", textContent: "None yet. Optional." })])
     );
@@ -1996,24 +2179,27 @@ function createMapEditor(event, onChange, onPick) {
   modeButtons.forEach((b) => b.addEventListener("click", updateHint));
   updateHint();
 
-  // The map slides in from the right so it stays in view while the form scrolls
+  // The map lives in the preview pane on the right so it stays in view while the form scrolls
   let isOpen = false;
+  const closeFromPane = () => {
+    isOpen = false;
+    openButton.textContent = "Show the map: set the viewport and place the actors";
+  };
   function setOpen(open) {
     if (open === isOpen) return;
-    if (open && closeOpenMap) closeOpenMap(); // one map at a time
-    isOpen = open;
-    panel.classList.toggle("open", open);
-    openButton.textContent = open ? "Hide the map" : "Show the map: set the viewport and place the actors";
-    document.body.classList.toggle("map-open", open);
-    closeOpenMap = open ? () => setOpen(false) : null;
-    if (open) show();
+    if (open) {
+      isOpen = true;
+      openButton.textContent = "Hide the map";
+      showInPane("Map", panel, closeFromPane); // replaces whatever else was showing, including another map
+      show();
+    } else {
+      clearPane(closeFromPane);
+    }
   }
   const openButton = el("button", { type: "button", className: "secondary", onclick: () => setOpen(!isOpen) });
-  const panel = el("aside", { className: "map-panel", "aria-label": "Map" },
-    el("div", { className: "map-panel-head" }, el("strong", { textContent: "Map" }), el("button", { type: "button", className: "secondary", textContent: "Close", onclick: () => setOpen(false) })),
-    message, toolbar, hint, banner, scroll, actorList);
+  const panel = el("div", { className: "map-panel" }, message, toolbar, hint, banner, scroll, actorList);
   openButton.textContent = "Show the map: set the viewport and place the actors";
-  const node = el("div", { className: "map-editor" }, openButton, panel);
+  const node = el("div", { className: "map-editor" }, openButton);
   return {
     node,
     // The Move commands' "Show on map" buttons
@@ -2035,8 +2221,6 @@ function createMapEditor(event, onChange, onPick) {
   };
 }
 
-let closeOpenMap = null; // closes whichever map panel is open
-document.addEventListener("keydown", (e) => e.key === "Escape" && closeOpenMap?.());
 let eventAudio = null; // the music preview currently playing, if any
 
 function createEventsEditor(section) {
@@ -2202,7 +2386,7 @@ function createEventsEditor(section) {
   }
 
   function render() {
-    closeOpenMap?.();
+    closePane();
     list.replaceChildren(...(events.length ? events.map(card) : [el("p", { className: "empty", textContent: "None yet." })]));
   }
 
@@ -2286,8 +2470,7 @@ function showTab(name, focus = false) {
   }
   for (const panel of tabPanels) panel.hidden = panel.dataset.panel !== name;
   eventAudio?.pause();
-  closeOpenMap?.();
-  document.querySelectorAll(".preview audio").forEach((audio) => audio.pause()); // don't keep playing from a hidden tab
+  closePane(); // the pane belongs to the tab that filled it; this also stops any audio playing in it
   try {
     history.replaceState(null, "", `#${name}`); // a refresh stays on this tab
   } catch {}

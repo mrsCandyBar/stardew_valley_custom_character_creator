@@ -25,7 +25,7 @@ const MOD_FIELDS = [
   "MinimumApiVersion",
 ];
 
-const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".png": "image/png" };
+const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".ttf": "font/ttf", ".woff2": "font/woff2" };
 function send(res, status, body, type = "application/json") {
   res.writeHead(status, { "Content-Type": type });
   res.end(typeof body === "string" || Buffer.isBuffer(body) ? body : JSON.stringify(body));

@@ -19,10 +19,33 @@ body {
   line-height: 1.4;
 }
 
+/* Form on the left, preview pane on the right (half the screen, at least 600px) */
+.layout { display: flex; align-items: flex-start; min-height: 100vh; }
 main {
-  max-width: 760px;
-  margin: 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 24px 16px 140px; /* room so the fixed save bar never covers the form */
+}
+
+#preview-pane {
+  position: sticky;
+  top: 0;
+  flex: none;
+  width: max(50vw, 600px);
+  height: 100vh;
+  padding: 12px 16px;
+  overflow-y: auto;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+}
+.preview-head { display: none; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+#preview-pane.has-content .preview-head { display: flex; }
+#preview-pane.has-content .preview-empty { display: none; }
+.preview-empty { margin: 40vh 10% 0; text-align: center; color: var(--muted); }
+@media (max-width: 1000px) {
+  .layout { flex-direction: column; }
+  #preview-pane { position: static; width: 100%; height: auto; min-height: 50vh; border-left: 0; border-top: 1px solid var(--border); }
+  .preview-empty { margin-top: 24px; }
 }
 
 /* Always visible, bottom right */
@@ -179,7 +202,7 @@ pre {
 .asset-state { font-size: 0.9rem; color: var(--muted); }
 .asset-buttons { display: flex; gap: 8px; }
 .asset-buttons button { padding: 6px 14px; }
-.preview { margin-top: 8px; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 4px; }
+.preview { padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 4px; }
 .preview img { display: block; max-width: 100%; image-rendering: pixelated; } /* keep pixel art crisp */
 .preview audio { display: block; width: 100%; }
 .preview-body > * + * { margin-top: 10px; }
@@ -224,7 +247,7 @@ pre {
 .chips .empty { margin: 0; }
 .item-table td:first-child input { margin: 0; }
 .entry-head select { min-width: 5.5em; }
-.face-button { box-sizing: content-box; width: 105px; height: 123px; padding: 0; flex: none; background-color: #fff; background-repeat: no-repeat; image-rendering: pixelated; border: 2px solid var(--border); border-radius: 4px; cursor: pointer; font-family: monospace; font-weight: 600; }
+.face-button { box-sizing: content-box; width: 133px; height: 135px; padding: 0; flex: none; background-color: #fff; background-repeat: no-repeat; image-rendering: pixelated; border: 2px solid var(--border); border-radius: 4px; cursor: pointer; font-family: monospace; font-weight: 600; }
 .dialogue-line { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px; }
 .dialogue-line .reaction-row { flex: 1; }
 .dialogue-line > button { padding: 6px 10px; }
@@ -317,23 +340,14 @@ pre {
 .actor-row input:not([type=number]) { width: 9em; flex: none; }
 .actor-row select { width: auto; }
 .actor-row label { display: inline-flex; align-items: center; gap: 4px; }
-.entry button.selected { color: #fff; background: var(--accent); }
+.entry button.selected, .asset-buttons button.selected { color: #fff; background: var(--accent); }
 .map-banner { display: flex; align-items: center; gap: 10px; margin: 6px 0; padding: 6px 10px; background: #fff6d6; border: 1px solid #e0c060; border-radius: 4px; font-size: 0.9rem; }
 .map-banner span { flex: 1; }
 .check-inline { display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem; }
 .check-inline input { width: auto; }
 
-/* The map slides in from the right */
-:root { --map-width: min(760px, 52vw); }
-.map-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 20; width: var(--map-width); padding: 12px 14px 140px; overflow-y: auto; background: var(--card); border-left: 1px solid var(--border); box-shadow: -6px 0 18px rgba(0, 0, 0, 0.18); transform: translateX(105%); visibility: hidden; transition: transform 0.25s ease, visibility 0s linear 0.25s; }
-.map-panel.open { transform: none; visibility: visible; transition: transform 0.25s ease; }
-.map-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.map-panel .map-scroll { max-height: 55vh; }
-body { transition: padding-right 0.25s ease; }
-body.map-open { padding-right: var(--map-width); }
-body.map-open main { margin-left: 0; }
-@media (max-width: 900px) { body.map-open { padding-right: 0; } .map-panel { width: 92vw; } }
-@media (prefers-reduced-motion: reduce) { .map-panel, body { transition: none; } }
+/* The map lives in the preview pane */
+.map-panel .map-scroll { max-height: 70vh; }
 
 /* Speech in an event command: portrait and words, like the dialogue pages */
 .command-fields .reaction-row.wide { flex: 1 1 100%; }
@@ -348,3 +362,49 @@ body.map-open main { margin-left: 0; }
 .emote-choice { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; background: #fff; color: inherit; border: 2px solid var(--border); border-radius: 6px; cursor: pointer; font-family: monospace; }
 .emote-choice:hover, .emote-choice:focus-visible { border-color: var(--accent); background: #eef6e8; }
 .emote-choice.current { border-color: var(--accent); background: #fff6d6; }
+
+/* Gift tastes: descriptor and View on the left, text beside them */
+.reaction-line { display: grid; grid-template-columns: 170px 1fr auto; gap: 10px; align-items: start; }
+.reaction-who { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.reaction-who .key { margin-right: 0; }
+.reaction-who button.secondary { padding: 4px 14px; }
+.reaction-line textarea { min-height: 3.2em; resize: vertical; }
+.remove-x { padding: 4px 10px; font-size: 1.1rem; line-height: 1; }
+.reaction-who button.selected { color: #fff; background: var(--accent); }
+
+/* Only the dialogue text uses the game-style font; everything else keeps the default. */
+.dialogue-box { display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: #f9d9a0; border: 4px solid #8b5a2b; border-radius: 6px; box-shadow: inset 0 0 0 3px #d9a35b; }
+.dialogue-box textarea { flex: 1; font-family: "Press Start 2P", system-ui, sans-serif; font-size: 0.85rem; line-height: 1.6; color: #4a2f12; background: transparent; border: 0; resize: vertical; }
+.dialogue-box textarea:focus { outline: 2px dashed #8b5a2b; }
+@media (max-width: 520px) { .reaction-line { grid-template-columns: 1fr; } }
+
+/* Preview content sits in the vertical middle of the pane; dialogue views are a centred column up to 400px */
+#preview-pane { display: flex; flex-direction: column; }
+#preview-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+#preview-content > * { margin-top: auto; margin-bottom: auto; } /* centres, but still scrolls when taller than the pane */
+.preview-body.centered { width: 100%; max-width: 550px; margin-left: auto; margin-right: auto; }
+@media (max-width: 1000px) { #preview-pane { display: block; } }
+
+/* Portrait framed like the game's dialogue box: a wooden border around a warm backdrop */
+.dialogue-box .face-button { background-color: #fbe6bd; border: 4px solid #8b5a2b; border-radius: 4px; box-shadow: inset 0 0 0 3px #d9a35b, 2px 3px 0 rgba(74, 47, 18, 0.35); }
+.dialogue-box .face-button:hover, .dialogue-box .face-button:focus-visible { border-color: #5e3a17; }
+.dialogue-box { flex: 1; }
+.dialogue-line .dialogue-box { min-width: 0; }
+
+/* The reaction open in the preview pane */
+.entry.viewing { background: #e6dcc6; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.entry.viewing textarea { background: #f3ecdc; }
+.chip.clickable { cursor: pointer; }
+.chip.clickable:hover { border-color: var(--accent); }
+.reaction-line textarea { cursor: pointer; }
+
+/* Item chips: white by default, yellow once the item has its own dialogue, green while it is the one open in the pane */
+.chip.has-text { background: #fff1b8; border-color: #d9b23c; }
+.chip.viewing, .chip.has-text.viewing { background: #cfe8bf; border-color: var(--accent-dark); box-shadow: 0 0 0 2px var(--accent); }
+.entry-group > button.secondary { margin-bottom: 10px; }
+
+/* One-line dialogue inputs: beside the key, click to open in the pane */
+.entry-head input.line-input { flex: 1 1 240px; min-width: 200px; font-family: inherit; cursor: pointer; }
+.entry-head input.line-input[readonly], .reaction-line input[readonly] { background: #efe9dc; color: var(--muted); }
+.reaction-line input { cursor: pointer; }
+.entry-head .remove-x { margin-left: auto; }
