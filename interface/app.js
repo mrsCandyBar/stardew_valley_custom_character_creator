@@ -254,7 +254,7 @@ const dayHeartsGroup = {
   addLabel: "Add day dialogue",
   fields: [
     { title: "Day", options: options(DAYS) },
-    { title: "Heart count (optional)", options: [{ value: "", label: "No heart count" }, ...options(range(1, MAX_HEARTS), (h) => `${h} hearts`)] },
+    { title: "Heart count (optional)", options: [{ value: "", label: "No heart count" }, ...options(range(1, MAX_HEARTS), (h) => `${"♥".repeat(h)} (${h})`)] },
   ],
   parse(key) {
     const match = new RegExp(`^(${DAYS.join("|")})(\\d{1,2})?$`).exec(key);
@@ -418,7 +418,19 @@ function createEditor(section) {
       key.addEventListener("input", () => (entry.key = key.value));
       head.append(key);
     }
+    const body = el("div");
+    const toggle = el("button", {
+      type: "button",
+      className: "secondary",
+      textContent: entry.expanded ? "Minimize" : "Expand",
+      onclick: () => {
+        entry.expanded = !entry.expanded;
+        toggle.textContent = entry.expanded ? "Minimize" : "Expand";
+        drawBody();
+      },
+    });
     head.append(
+      toggle,
       el("button", {
         type: "button",
         className: "secondary",
@@ -430,10 +442,76 @@ function createEditor(section) {
       })
     );
 
-    const text = el("textarea", { value: entry.text, rows: Math.max(2, entry.text.split("\n").length), placeholder: "One line per section" });
-    text.addEventListener("input", () => (entry.text = text.value));
-    return el("div", { className: "entry" }, head, text);
+    // Collapsed: one text box, a line per section. Expanded: each line as a face + text row, like the generic reactions.
+    // A line's face is written as a leading "$n" (only if the face was picked or already there).
+    function drawBody() {
+      if (!entry.expanded) {
+        const text = el("textarea", { value: entry.text, rows: Math.max(2, entry.text.split("\n").length), placeholder: "One line per section" });
+        text.addEventListener("input", () => (entry.text = text.value));
+        body.replaceChildren(text);
+        return;
+      }
+      const lines = entry.text.split("\n").map((raw) => {
+        const match = /^\$([0-8])/.exec(raw);
+        return { face: match ? `$${match[1]}` : "$0", explicit: Boolean(match), text: match ? raw.slice(2) : raw };
+      });
+      const sync = () => (entry.text = lines.map((l) => (l.explicit ? l.face : "") + l.text).join("\n"));
+      const rows = lines.map((line) => {
+        const reaction = {
+          get face() {
+            return line.face;
+          },
+          set face(value) {
+            line.face = value;
+            line.explicit = true;
+            sync();
+          },
+          get text() {
+            return line.text;
+          },
+          set text(value) {
+            line.text = value;
+            sync();
+          },
+        };
+        const row = reactionFields(reaction);
+        const removeLine = el("button", {
+          type: "button",
+          className: "secondary",
+          textContent: "×",
+          title: "Remove this line",
+          hidden: lines.length < 2,
+          onclick: () => {
+            lines.splice(lines.indexOf(line), 1);
+            sync();
+            drawBody();
+          },
+        });
+        return el("div", { className: "dialogue-line" }, row, removeLine);
+      });
+      const addLine = el("button", {
+        type: "button",
+        className: "secondary",
+        textContent: "Add line",
+        onclick: () => {
+          lines.push({ face: "$0", explicit: false, text: "" });
+          sync();
+          drawBody();
+        },
+      });
+      body.replaceChildren(...rows, addLine);
+    }
+    drawBody();
+    return el("div", { className: "entry" }, head, body);
   }
+
+  // A clickable portrait face and a text box bound to one { face, text } object
+  const reactionFields = (reaction) => {
+    const face = faceButton(reaction, assetUrl("portrait"));
+    const text = el("textarea", { value: reaction.text, rows: 2, placeholder: "What they say" });
+    text.addEventListener("input", () => (reaction.text = text.value));
+    return el("div", { className: "reaction-row" }, text, face);
+  };
 
   function render() {
     const none = (text) => el("p", { className: "empty", textContent: text });

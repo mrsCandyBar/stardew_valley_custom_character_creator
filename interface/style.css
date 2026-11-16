@@ -215,6 +215,9 @@ pre {
 .item-table td:first-child input { margin: 0; }
 .entry-head select { min-width: 5.5em; }
 .face-button { box-sizing: content-box; width: 105px; height: 123px; padding: 0; flex: none; background-color: #fff; background-repeat: no-repeat; image-rendering: pixelated; border: 2px solid var(--border); border-radius: 4px; cursor: pointer; font-family: monospace; font-weight: 600; }
+.dialogue-line { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px; }
+.dialogue-line .reaction-row { flex: 1; }
+.dialogue-line > button { padding: 6px 10px; }
 .reaction-row { display: flex; gap: 10px; align-items: flex-start; }
 .reaction-row textarea { flex: 1; min-height: 123px; }
 .face-button:hover, .face-button:focus-visible { border-color: var(--muted); }
