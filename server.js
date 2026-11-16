@@ -4,6 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { execFile } = require("child_process");
+const { readMap, tilesheetFile } = require("./maps");
 
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
@@ -314,6 +315,18 @@ async function handleApi(req, res, url) {
       fs.writeFileSync(file, JSON.stringify({ events }, null, 2) + "\n");
       return send(res, 200, { saved: "events.json", count: events.length });
     }
+  }
+
+  // A game map (from game_assets/Maps) for the events editor: its tile layers and tilesheets as JSON, and the tilesheet images.
+  if (req.method === "GET" && url.pathname === "/api/map") {
+    const map = readMap(url.searchParams.get("name") || "");
+    if (!map) return send(res, 404, { error: "No map for this place in game_assets/Maps. Unpack the game's maps with StardewXnbHack (see the README)." });
+    return send(res, 200, map);
+  }
+  if (req.method === "GET" && url.pathname === "/api/map-image") {
+    const file = tilesheetFile(url.searchParams.get("name") || "");
+    if (!file) return send(res, 404, { error: "No such tilesheet" });
+    return send(res, 200, fs.readFileSync(file), "image/png");
   }
 
   // Which assets a character has, for the Assets section.

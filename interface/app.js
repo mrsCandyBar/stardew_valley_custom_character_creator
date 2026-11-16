@@ -1168,7 +1168,222 @@ const COMMAND_TYPES = {
   end: noFields("End"),
 };
 
-const COMMON_LOCATIONS = ["Farm", "FarmHouse", "Town", "Beach", "Forest", "Mountain", "ElliottHouse", "ArchaeologyHouse", "Saloon", "SeedShop", "Hospital", "Railroad", "Woods", "Desert"];
+// Maps with a Data/Events/<place> file in the game: [value, label]
+const LOCATIONS = [
+  ["Farm", "Farm"], ["FarmHouse", "Farmhouse"], ["Cellar", "Cellar"], ["Town", "Pelican Town"], ["Beach", "Beach"], ["Forest", "Cindersap Forest"],
+  ["Mountain", "Mountain"], ["Backwoods", "Backwoods"], ["BusStop", "Bus Stop"], ["Woods", "Secret Woods"], ["Railroad", "Railroad"], ["Desert", "Calico Desert"],
+  ["Mine", "The Mines"], ["Sewer", "Sewers"], ["WitchSwamp", "Witch's Swamp"], ["Tent", "Linus' Tent"], ["Temp", "Temporary map (cutscenes)"],
+  ["ArchaeologyHouse", "Museum / Library"], ["ElliottHouse", "Elliott's Cabin"], ["Saloon", "Stardrop Saloon"], ["SeedShop", "Pierre's General Store"],
+  ["Hospital", "Harvey's Clinic"], ["HarveyRoom", "Harvey's Room"], ["Blacksmith", "Clint's Blacksmith"], ["AnimalShop", "Marnie's Ranch"],
+  ["ScienceHouse", "Carpenter's Shop"], ["SebastianRoom", "Sebastian's Room"], ["Sunroom", "Robin's Sunroom"], ["HaleyHouse", "2 Willow Lane (Haley & Emily)"],
+  ["JoshHouse", "1 River Road (Alex)"], ["LeahHouse", "Leah's Cottage"], ["ManorHouse", "Mayor's Manor"], ["Trailer", "Trailer (Penny)"],
+  ["Trailer_Big", "Trailer (upgraded)"], ["WizardHouse", "Wizard's Tower"], ["SandyHouse", "Oasis"], ["Club", "Casino"], ["BathHouse_Pool", "Spa pool"],
+  ["CommunityCenter", "Community Center"],
+];
+
+// Music tracks usable as the event's starting music (or "playMusic"): [value, label]
+const MUSIC = [
+  ["none", "None (silent)"],
+  ["spring1", "Spring 1"], ["spring2", "Spring 2"], ["spring3", "Spring 3"], ["summer1", "Summer 1"], ["summer2", "Summer 2"], ["summer3", "Summer 3"],
+  ["fall1", "Fall 1"], ["fall2", "Fall 2"], ["fall3", "Fall 3"], ["winter1", "Winter 1"], ["winter2", "Winter 2"], ["winter3", "Winter 3"],
+  ["sweet", "Sweet (romantic)"], ["tribal", "Tribal"], ["wavy", "Wavy"], ["woodsTheme", "Secret Woods"], ["SettlingIn", "Settling In"], ["springtown", "Spring Town"],
+  ["ragtime", "Ragtime"], ["echos", "Echos"], ["CloudCountry", "Cloud Country"], ["crane_game", "Crane game"], ["distantBanjo", "Distant Banjo"], ["desolate", "Desolate"],
+  ["jaunty", "Jaunty"], ["heavy", "Heavy"], ["libraryTheme", "Library"], ["marlon", "Marlon"], ["musicboxsong", "Music box"], ["night_market", "Night market"],
+  ["Orange", "Orange"], ["playful", "Playful"], ["poppy", "Poppy"], ["sadpiano", "Sad piano"], ["shimmeringbastion", "Shimmering Bastion"], ["tickTock", "Tick tock"],
+  ["WizardSong", "Wizard"], ["EarthMine", "Earth Mine"], ["FrogCave", "Frog Cave"], ["Icicles", "Icicles"], ["Cavern", "Cavern"], ["moonlightJellies", "Moonlight Jellies"],
+];
+const OTHER_CHOICE = "__other__";
+
+// A dropdown of [value, label] choices. A value that isn't in the list (e.g. typed by hand earlier) is kept as its own choice.
+function choiceSelect(choices, value, title) {
+  const list = choices.some(([v]) => v === value) || value === "" ? choices : [...choices, [value, `${value} (custom)`]];
+  const select = el("select", { title }, ...list.map(([v, label]) => el("option", { value: v, textContent: label })));
+  select.value = value;
+  return select;
+}
+
+// --- Conditions ---
+// Friendship (f), time of day (t) and weather (w) get their own controls; any other condition stays a line of text.
+const HOUR_CHOICES = [];
+for (let t = 600; t <= 2600; t += 50) HOUR_CHOICES.push(t % 100 ? t - 20 : t); // 600, 630, 700 ... 2600
+const clockLabel = (t) => {
+  const h = Math.floor(t / 100) % 24;
+  const m = String(t % 100).padStart(2, "0");
+  return `${h % 12 || 12}:${m} ${h < 12 ? "am" : "pm"}${t >= 2400 ? " (next day)" : ""}`;
+};
+const WEATHER = [["sunny", "☀️", "Sunny"], ["rainy", "🌧️", "Rainy"]];
+const MAX_EVENT_HEARTS = 14;
+const SVG_NS = "http://www.w3.org/2000/svg";
+const svg = (tag, attrs = {}, ...children) => {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  node.append(...children);
+  return node;
+};
+
+// A 24-hour clock face: midnight at the bottom, noon at the top. The day half is bright, the night half dark,
+// and the chosen time range is drawn over it.
+function createClock(start, end) {
+  const C = 50, R = 44;
+  const hoursOf = (time) => (((Math.floor(time / 100) + (time % 100) / 60) % 24) + 24) % 24;
+  const point = (time) => {
+    const angle = (hoursOf(time) / 24) * 2 * Math.PI; // 0 = midnight, at the bottom
+    return [C - R * Math.sin(angle), C + R * Math.cos(angle)];
+  };
+  const wedge = (from, to, fill, extra = {}) => {
+    const [x1, y1] = point(from);
+    const [x2, y2] = point(to);
+    const span = (((hoursOf(to) - hoursOf(from)) % 24) + 24) % 24;
+    return svg("path", { d: `M ${C} ${C} L ${x1} ${y1} A ${R} ${R} 0 ${span > 12 ? 1 : 0} 0 ${x2} ${y2} Z`, fill, ...extra });
+  };
+  const node = svg("svg", { viewBox: "0 0 100 100", width: 96, height: 96, class: "clock", role: "img", "aria-label": `${clockLabel(start)} to ${clockLabel(end)}` });
+  node.append(
+    svg("circle", { cx: C, cy: C, r: R, fill: "#1f2a4d" }),
+    wedge(600, 1800, "#ffe7a0"), // day: 6am to 6pm
+    ...(hoursOf(start) === hoursOf(end) ? [] : [wedge(start, end, "rgba(79,138,61,0.75)", { stroke: "#2f6a1f", "stroke-width": 1 })]),
+    svg("circle", { cx: C, cy: C, r: R, fill: "none", stroke: "#2f2a22", "stroke-width": 2 })
+  );
+  const sun = svg("text", { x: C, y: 17, "text-anchor": "middle", "font-size": 10 });
+  sun.textContent = "☀";
+  const moon = svg("text", { x: C, y: 91, "text-anchor": "middle", "font-size": 10, fill: "#fff" });
+  moon.textContent = "☾";
+  node.append(sun, moon);
+  return node;
+}
+
+// Edits event.conditions (a list of strings) through toggles. Anything it doesn't understand is kept as a text line.
+function createConditions(event) {
+  const parsed = {};
+  const parse = (conditions) => {
+    Object.assign(parsed, { friendship: null, who: "{name}", time: null, weather: null, other: [] });
+    for (const condition of conditions) {
+      let m;
+      if (parsed.friendship === null && (m = /^f (\S+) (\d+)$/.exec(condition))) [parsed.who, parsed.friendship] = [m[1], Number(m[2])];
+      else if (!parsed.time && (m = /^t (\d+) (\d+)$/.exec(condition))) parsed.time = [Number(m[1]), Number(m[2])];
+      else if (!parsed.weather && (m = /^w (sunny|rainy)$/.exec(condition))) parsed.weather = m[1];
+      else parsed.other.push(condition);
+    }
+  };
+  parse(event.conditions);
+
+  // The conditions as typed text, "/" between them. It always matches the toggles below.
+  const summary = el("input", { value: event.conditions.join("/"), placeholder: "None. e.g. f {name} 1000/t 600 1200", title: "Conditions, separated by /" });
+  const commit = () => {
+    event.conditions = [
+      ...(parsed.friendship !== null ? [`f ${parsed.who} ${parsed.friendship}`] : []),
+      ...(parsed.time ? [`t ${parsed.time[0]} ${parsed.time[1]}`] : []),
+      ...(parsed.weather ? [`w ${parsed.weather}`] : []),
+      ...parsed.other.filter((condition) => condition.trim()),
+    ];
+    summary.value = event.conditions.join("/");
+  };
+
+  const box = el("div", { className: "conditions" });
+  summary.addEventListener("input", () => {
+    event.conditions = summary.value.split("/").map((c) => c.trim()).filter(Boolean);
+    parse(event.conditions);
+    render();
+  });
+  const section = (label, active, onToggle, body, note) => {
+    const check = el("input", { type: "checkbox", checked: active });
+    check.addEventListener("change", () => onToggle(check.checked));
+    return el("div", { className: "condition" }, el("label", { className: "check" }, check, el("span", { textContent: label })), ...(active ? [body(), el("small", { textContent: note })] : []));
+  };
+  const toggle = (key, on, value) => {
+    parsed[key] = on ? value : null;
+    commit();
+    render();
+  };
+
+  function render() {
+    // Friendship: click heart n to need n hearts (1000 points each); click the last full heart again to lower it
+    const friendshipBody = () => {
+      const hearts = Math.floor(parsed.friendship / 1000);
+      const row = el("div", { className: "hearts" });
+      for (let n = 1; n <= MAX_EVENT_HEARTS; n++) {
+        row.append(el("button", {
+          type: "button", className: `heart${n <= hearts ? " full" : ""}`, textContent: n <= hearts ? "♥" : "♡", title: `${n} heart${n === 1 ? "" : "s"} (${n * 1000} points)`,
+          onclick: () => {
+            parsed.friendship = (n === hearts ? n - 1 : n) * 1000;
+            commit();
+            render();
+          },
+        }));
+      }
+      return el("div", {}, row, el("span", { className: "heart-count", textContent: `${hearts} heart${hearts === 1 ? "" : "s"} = ${parsed.friendship} friendship points` }));
+    };
+
+    // Time of day: two dropdowns and a clock face showing the range
+    const timeBody = () => {
+      const timeOptions = (list, value) => (list.includes(value) ? list : [...list, value]).map((t) => el("option", { value: String(t), textContent: clockLabel(t) }));
+      const from = el("select", { title: "From" }, ...timeOptions(HOUR_CHOICES, parsed.time[0]));
+      const to = el("select", { title: "Until" });
+      // "Until" only offers times from the start time onwards
+      const fillTo = () => {
+        const end = parsed.time[1];
+        to.replaceChildren(...timeOptions(HOUR_CHOICES.filter((t) => t >= parsed.time[0]), end < parsed.time[0] ? parsed.time[0] : end));
+        to.value = String(Math.max(end, parsed.time[0]));
+      };
+      from.value = String(parsed.time[0]);
+      const clockHolder = el("div", { className: "clock-holder" }, createClock(...parsed.time));
+      const change = () => {
+        parsed.time = [Number(from.value), Math.max(Number(to.value), Number(from.value))];
+        fillTo();
+        commit();
+        clockHolder.replaceChildren(createClock(...parsed.time));
+      };
+      fillTo();
+      from.addEventListener("change", change);
+      to.addEventListener("change", change);
+      return el("div", { className: "time-row" }, clockHolder, el("div", { className: "time-fields" }, el("label", {}, el("span", { textContent: "From" }), from), el("label", {}, el("span", { textContent: "Until" }), to)));
+    };
+
+    // Weather: icon buttons
+    const weatherBody = () =>
+      el("div", { className: "weather" }, ...WEATHER.map(([value, icon, label]) =>
+        el("button", {
+          type: "button", className: `weather-option${parsed.weather === value ? " selected" : ""}`, title: label, ariaPressed: String(parsed.weather === value),
+          onclick: () => {
+            parsed.weather = value;
+            commit();
+            render();
+          },
+        }, el("span", { className: "weather-icon", textContent: icon }), el("span", { textContent: label }))
+      ));
+
+    const others = parsed.other.map((condition, i) => {
+      const input = el("input", { value: condition, placeholder: "e.g. e 9999001 (another event seen first)" });
+      input.addEventListener("input", () => {
+        parsed.other[i] = input.value;
+        commit();
+      });
+      return el("div", { className: "add-row" }, input, el("button", {
+        type: "button", className: "secondary", textContent: "Remove",
+        onclick: () => {
+          parsed.other.splice(i, 1);
+          commit();
+          render();
+        },
+      }));
+    });
+
+    box.replaceChildren(
+      section("Friendship", parsed.friendship !== null, (on) => toggle("friendship", on, 2000), friendshipBody, "Each heart is 1000 friendship points."),
+      section("Time of day", parsed.time !== null, (on) => toggle("time", on, [600, 1200]), timeBody, "Day (6am to 6pm) is the bright half of the clock, night the dark half. The green wedge is when the event can start."),
+      section("Weather", parsed.weather !== null, (on) => toggle("weather", on, "sunny"), weatherBody, "Rainy covers rain and storms; sunny is every other kind of weather."),
+      el("div", { className: "condition" }, el("span", { className: "other-title", textContent: "Other conditions" }), ...others, el("button", {
+        type: "button", className: "secondary", textContent: "Add condition",
+        onclick: () => {
+          parsed.other.push("");
+          render();
+        },
+      }))
+    );
+  }
+  render();
+  const options = el("details", { className: "condition-options" }, el("summary", { textContent: "Condition options (hearts, time of day, weather)" }), box);
+  return el("div", {}, summary, options);
+}
 
 function commandField(field, value, onInput) {
   let node;
@@ -1278,9 +1493,312 @@ function createCommandList(commands, getForkName) {
   return box;
 }
 
+// --- Map view for the viewport and actors ---
+// Draws the event's map (from the game's unpacked maps) so the viewport and actors can be set by clicking and dragging.
+const TILE = 16; // pixels per tile in the game's tilesheets
+const VIEW_TILES = [20, 11.25]; // the game window (1280x720 at 64px a tile), in tiles
+const ACTOR_COLORS = ["#d6405a", "#3b7dd8", "#e0a020", "#8a4fb8", "#2f9e7a", "#d86f2a"];
+const mapCache = new Map(); // place -> Promise of { map, base: a canvas with the whole map drawn at 1 pixel per source pixel }
+
+function loadMap(place) {
+  if (!mapCache.has(place)) {
+    const promise = (async () => {
+      const map = await api(`/api/map?name=${encodeURIComponent(place)}`);
+      const sheets = await Promise.all(map.tilesets.map((set) => (set.found ? loadImage(`/api/map-image?name=${encodeURIComponent(set.image)}`) : null)));
+      const base = el("canvas", { width: map.width * TILE, height: map.height * TILE });
+      const ctx = base.getContext("2d");
+      for (const layer of map.layers) {
+        if (layer.name === "Paths") continue; // game logic, not scenery
+        layer.tiles.forEach((gid, i) => {
+          const id = gid & 0x1fffffff; // the top bits are flip flags
+          if (!id) return;
+          let s = -1;
+          map.tilesets.forEach((set, k) => set.firstgid <= id && (s < 0 || set.firstgid > map.tilesets[s].firstgid) && (s = k));
+          const set = map.tilesets[s];
+          if (!set || !sheets[s]) return;
+          const index = id - set.firstgid;
+          ctx.drawImage(sheets[s], (index % set.columns) * set.tileWidth, Math.floor(index / set.columns) * set.tileHeight, set.tileWidth, set.tileHeight, (i % map.width) * TILE, Math.floor(i / map.width) * TILE, TILE, TILE);
+        });
+      }
+      return { map, base };
+    })();
+    promise.catch(() => mapCache.delete(place)); // try again next time, e.g. after the maps are added
+    mapCache.set(place, promise);
+  }
+  return mapCache.get(place);
+}
+
+// "farmer 15 16 0 Elliott 11 10 0" <-> [{ name, x, y, facing }]. Null if the text isn't made of whole "name x y facing" groups.
+function parseActors(text) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length % 4) return null;
+  const actors = [];
+  for (let i = 0; i < words.length; i += 4) {
+    const [name, x, y, facing] = words.slice(i, i + 4);
+    if (![x, y, facing].every((n) => /^-?\d+$/.test(n))) return null;
+    actors.push({ name, x: Number(x), y: Number(y), facing: Number(facing) });
+  }
+  return actors;
+}
+const composeActors = (actors) => actors.map((a) => `${a.name} ${a.x} ${a.y} ${a.facing}`).join(" ");
+const parseViewport = (text) => {
+  const m = /^\s*(-?\d+)\s+(-?\d+)\s*$/.exec(text);
+  return m ? { x: Number(m[1]), y: Number(m[2]) } : null;
+};
+
+// The editor under an event's Viewport/Actors fields. `onChange` is told when a drag or list edit changed event.viewport / event.actors.
+function createMapEditor(event, onChange) {
+  let zoom = 0;
+  let loaded = null; // { map, base } for the place currently shown
+  let mode = "viewport";
+  let drag = null;
+
+  const message = el("p", { className: "editor-message", hidden: true });
+  const stage = el("canvas");
+  const overlay = el("canvas", { className: "map-overlay" });
+  const scroll = el("div", { className: "map-scroll", hidden: true }, el("div", { className: "map-stack" }, stage, overlay));
+  const actorList = el("div", { className: "map-actors" });
+  const zoomSelect = fieldSelect({ title: "Zoom", options: options([1, 2, 3, 4], (z) => `${z}x`) }, "2");
+  const modeButtons = [["viewport", "Camera (viewport)"], ["actors", "Actors"]].map(([value, label]) =>
+    el("button", { type: "button", className: "secondary mode", textContent: label, onclick: () => { mode = value; refreshModes(); } })
+  );
+  const refreshModes = () => modeButtons.forEach((b, i) => b.classList.toggle("selected", ["viewport", "actors"][i] === mode));
+  refreshModes();
+  const hint = el("small", { textContent: "" });
+  const updateHint = () => (hint.textContent = mode === "viewport" ? "Click or drag on the map to place the camera. The bright box is what the player sees (about 20 x 11 tiles)." : "Drag an actor to move them. Click an actor to turn them (the arrow is the way they face).");
+
+  const toolbar = el("div", { className: "map-toolbar" }, ...modeButtons, el("span", { className: "grow" }), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
+  const tileSize = () => TILE * zoom;
+
+  // --- drawing ---
+  function drawStage() {
+    if (!loaded) return;
+    const { map, base } = loaded;
+    for (const canvas of [stage, overlay]) {
+      canvas.width = map.width * tileSize();
+      canvas.height = map.height * tileSize();
+    }
+    const ctx = stage.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(base, 0, 0, stage.width, stage.height);
+    drawOverlay();
+  }
+
+  function drawOverlay() {
+    if (!loaded) return;
+    const ts = tileSize();
+    const ctx = overlay.getContext("2d");
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+    const view = parseViewport(event.viewport);
+    if (view) {
+      const [w, h] = VIEW_TILES;
+      const left = (view.x + 0.5 - w / 2) * ts;
+      const top = (view.y + 0.5 - h / 2) * ts;
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.beginPath();
+      ctx.rect(0, 0, overlay.width, overlay.height);
+      ctx.rect(left, top, w * ts, h * ts);
+      ctx.fill("evenodd");
+      ctx.strokeStyle = "#ffd84d";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(left, top, w * ts, h * ts);
+      ctx.fillStyle = "#ffd84d";
+      ctx.fillRect((view.x + 0.35) * ts, (view.y + 0.35) * ts, 0.3 * ts, 0.3 * ts);
+    }
+
+    (parseActors(event.actors) || []).forEach((actor, i) => {
+      const color = ACTOR_COLORS[i % ACTOR_COLORS.length];
+      const x = actor.x * ts;
+      const y = actor.y * ts;
+      ctx.fillStyle = color + "aa";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.fillRect(x, y, ts, ts);
+      ctx.strokeRect(x + 1, y + 1, ts - 2, ts - 2);
+      // an arrow towards the way they face: 0 up, 1 right, 2 down, 3 left
+      const [dx, dy] = [[0, -1], [1, 0], [0, 1], [-1, 0]][actor.facing] || [0, 0];
+      const cx = x + ts / 2;
+      const cy = y + ts / 2;
+      ctx.strokeStyle = "#fff";
+      ctx.fillStyle = "#fff";
+      ctx.lineWidth = Math.max(2, ts / 8);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + dx * ts * 0.4, cy + dy * ts * 0.4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx + dx * ts * 0.4, cy + dy * ts * 0.4, Math.max(2, ts / 8), 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.font = `bold ${Math.max(11, ts * 0.6)}px sans-serif`;
+      ctx.textBaseline = "bottom";
+      const label = actor.name === "{name}" ? "NPC" : actor.name;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#000";
+      ctx.strokeText(label, x, y - 1);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(label, x, y - 1);
+    });
+  }
+
+  // --- the actor list under the map ---
+  function renderActors() {
+    const actors = parseActors(event.actors);
+    if (!actors) {
+      actorList.replaceChildren(el("p", { className: "hint", textContent: "The Actors text isn't in the form name x y facing, so it can't be shown on the map. Fix it above to see the actors." }));
+      return;
+    }
+    const save = () => {
+      event.actors = composeActors(actors);
+      onChange();
+      drawOverlay();
+    };
+    const rows = actors.map((actor, i) => {
+      const name = el("input", { value: actor.name, title: "Who", size: 10 });
+      name.addEventListener("input", () => {
+        actor.name = name.value.replace(/\s+/g, "") || "actor";
+        save();
+      });
+      const number = (key, title) => {
+        const input = el("input", { type: "number", value: actor[key], title });
+        input.addEventListener("input", () => {
+          if (input.value === "") return;
+          actor[key] = Math.round(Number(input.value));
+          save();
+        });
+        return input;
+      };
+      const facing = fieldSelect({ title: "Facing", options: FACING }, String(actor.facing));
+      facing.addEventListener("change", () => {
+        actor.facing = Number(facing.value);
+        save();
+      });
+      return el("div", { className: "add-row actor-row" },
+        el("span", { className: "swatch", style: `background:${ACTOR_COLORS[i % ACTOR_COLORS.length]}` }), name,
+        el("label", {}, "x ", number("x", "Tile across")), el("label", {}, "y ", number("y", "Tile down")), facing,
+        el("button", { type: "button", className: "secondary", textContent: "Remove", onclick: () => { actors.splice(i, 1); save(); renderActors(); } }));
+    });
+    actorList.replaceChildren(...rows, el("button", {
+      type: "button",
+      className: "secondary",
+      textContent: "Add actor",
+      onclick: () => {
+        const view = parseViewport(event.viewport) || { x: 5, y: 5 };
+        const name = !actors.some((a) => a.name === "farmer") ? "farmer" : !actors.some((a) => a.name === "{name}") ? "{name}" : `actor${actors.length + 1}`;
+        actors.push({ name, x: view.x, y: view.y, facing: 2 });
+        save();
+        renderActors();
+      },
+    }));
+  }
+
+  // --- mouse ---
+  const tileAt = (e) => {
+    const rect = overlay.getBoundingClientRect();
+    return { x: Math.floor((e.clientX - rect.left) / tileSize()), y: Math.floor((e.clientY - rect.top) / tileSize()) };
+  };
+  overlay.addEventListener("pointerdown", (e) => {
+    if (!loaded) return;
+    const tile = tileAt(e);
+    if (mode === "viewport") {
+      drag = { kind: "viewport" };
+      event.viewport = `${tile.x} ${tile.y}`;
+    } else {
+      const actors = parseActors(event.actors);
+      const index = actors ? actors.findLastIndex((a) => a.x === tile.x && a.y === tile.y) : -1;
+      if (index < 0) return;
+      drag = { kind: "actor", index, moved: false, from: tile };
+    }
+    overlay.setPointerCapture(e.pointerId);
+    onChange();
+    drawOverlay();
+  });
+  overlay.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const tile = tileAt(e);
+    if (drag.kind === "viewport") {
+      if (event.viewport !== `${tile.x} ${tile.y}`) {
+        event.viewport = `${tile.x} ${tile.y}`;
+        onChange();
+        drawOverlay();
+      }
+      return;
+    }
+    const actors = parseActors(event.actors);
+    const actor = actors && actors[drag.index];
+    if (!actor || (actor.x === tile.x && actor.y === tile.y)) return;
+    drag.moved = true;
+    Object.assign(actor, tile);
+    event.actors = composeActors(actors);
+    onChange();
+    drawOverlay();
+  });
+  const endDrag = () => {
+    if (drag && drag.kind === "actor" && !drag.moved) {
+      // a click without a drag turns the actor to face the next way
+      const actors = parseActors(event.actors);
+      if (actors && actors[drag.index]) {
+        actors[drag.index].facing = (actors[drag.index].facing + 1) % 4;
+        event.actors = composeActors(actors);
+        onChange();
+      }
+    }
+    if (drag) {
+      drag = null;
+      renderActors();
+      drawOverlay();
+    }
+  };
+  overlay.addEventListener("pointerup", endDrag);
+  overlay.addEventListener("pointercancel", endDrag);
+
+  // --- loading ---
+  async function show() {
+    message.hidden = true;
+    scroll.hidden = true;
+    loaded = null;
+    try {
+      loaded = await loadMap(event.location);
+    } catch (err) {
+      message.textContent = `${event.location}: ${err.message}`;
+      message.hidden = false;
+      return;
+    }
+    if (!zoom) zoom = Math.min(4, Math.max(1, Math.floor(900 / (loaded.map.width * TILE))));
+    zoomSelect.value = String(zoom);
+    scroll.hidden = false;
+    drawStage();
+    renderActors();
+  }
+  zoomSelect.addEventListener("change", () => {
+    zoom = Number(zoomSelect.value);
+    drawStage();
+  });
+  modeButtons.forEach((b) => b.addEventListener("click", updateHint));
+  updateHint();
+
+  const node = el("details", { className: "map-editor" }, el("summary", { textContent: "Show the map: set the viewport and place the actors" }), message, toolbar, hint, scroll, actorList);
+  node.addEventListener("toggle", () => node.open && show());
+  return {
+    node,
+    // The Viewport/Actors text changed (typed by hand)
+    redraw() {
+      drawOverlay();
+      if (!drag) renderActors();
+    },
+    // The Place changed
+    setLocation() {
+      if (node.open) show();
+    },
+  };
+}
+
+let eventAudio = null; // the music preview currently playing, if any
+
 function createEventsEditor(section) {
   const { title, hint } = section.dataset;
   let events = [];
+  let customTrack = ""; // the id of the character's uploaded track, if there is one
   let loaded = false;
 
   const message = el("p", { className: "editor-message", hidden: true });
@@ -1291,15 +1809,10 @@ function createEventsEditor(section) {
 
   const list = el("div");
   const addId = el("input", { placeholder: "Event ID, e.g. 9999016", title: "Event ID" });
-  const addLocation = el("input", { placeholder: "Place, e.g. Beach", title: "Location", value: "Beach" });
-  addLocation.setAttribute("list", "event-locations");
+  const addLocation = choiceSelect(LOCATIONS, "Beach", "Place");
   const addButton = el("button", { type: "button", className: "secondary", textContent: "Add event" });
   const addRow = el("div", { className: "add-row" }, addId, addLocation, addButton);
-  const datalists = [
-    el("datalist", { id: "event-locations" }, ...COMMON_LOCATIONS.map((value) => el("option", { value }))),
-  ];
-
-  section.append(el("h2", { textContent: title }), el("p", { className: "hint", textContent: hint }), message, list, addRow, ...datalists);
+  section.append(el("h2", { textContent: title }), el("p", { className: "hint", textContent: hint }), message, list, addRow);
 
   const labelOf = (event) => `${event.id || "(no ID)"} in ${event.location || "(no place)"}`;
 
@@ -1316,43 +1829,59 @@ function createEventsEditor(section) {
     };
     const labelled = (label, node, note) => el("label", {}, el("span", { textContent: label }), node, ...(note ? [el("small", { textContent: note })] : []));
 
-    const locationInput = text("location", { title: "Location" });
-    locationInput.setAttribute("list", "event-locations");
+    const locationInput = choiceSelect(LOCATIONS, event.location, "Place");
+    locationInput.addEventListener("change", () => {
+      event.location = locationInput.value;
+      refresh();
+      mapEditor.setLocation();
+    });
 
-    // Conditions are optional: one line each
-    const conditionBox = el("div");
-    const renderConditions = () => {
-      conditionBox.replaceChildren(
-        ...event.conditions.map((condition, i) => {
-          const input = el("input", { value: condition, placeholder: "e.g. f {name} 1000" });
-          input.addEventListener("input", () => (event.conditions[i] = input.value));
-          return el(
-            "div",
-            { className: "add-row" },
-            input,
-            el("button", {
-              type: "button",
-              className: "secondary",
-              textContent: "Remove",
-              onclick: () => {
-                event.conditions.splice(i, 1);
-                renderConditions();
-              },
-            })
-          );
-        }),
-        el("button", {
-          type: "button",
-          className: "secondary",
-          textContent: "Add condition",
-          onclick: () => {
-            event.conditions.push("");
-            renderConditions();
-          },
-        })
-      );
+    // Viewport and actors: text fields, plus the map view that edits the same two values
+    const viewportInput = text("viewport", { title: "Viewport" });
+    const actorsInput = text("actors", { title: "Actors" });
+    const mapEditor = createMapEditor(event, () => {
+      viewportInput.value = event.viewport;
+      actorsInput.value = event.actors;
+    });
+    viewportInput.addEventListener("input", () => mapEditor.redraw());
+    actorsInput.addEventListener("input", () => mapEditor.redraw());
+
+    // Music: a dropdown of the known tracks, or "Other" to type one
+    const musicBox = el("div", { className: "music-row" });
+    const choices = [...(customTrack ? [[customTrack, `Your track: ${customTrack}`]] : []), ...MUSIC];
+    const known = choices.some(([v]) => v === event.music);
+    const musicSelect = choiceSelect([...choices, [OTHER_CHOICE, "Other (type a track name)..."]], known ? event.music : OTHER_CHOICE, "Starting music");
+    // Only the character's own uploaded track can be previewed; the game's tracks are locked in its sound bank
+    const playButton = el("button", { type: "button", className: "secondary", textContent: "Play" });
+    const syncPlay = () => {
+      const playable = !!customTrack && musicSelect.value === customTrack;
+      playButton.disabled = !playable;
+      playButton.title = playable ? "Preview your uploaded track" : "Only your own uploaded track can be previewed here";
     };
-    renderConditions();
+    playButton.addEventListener("click", () => {
+      if (eventAudio && !eventAudio.paused) {
+        eventAudio.pause();
+        playButton.textContent = "Play";
+        return;
+      }
+      eventAudio?.pause();
+      eventAudio = new Audio(assetUrl("music"));
+      eventAudio.addEventListener("ended", () => (playButton.textContent = "Play"));
+      eventAudio.play().then(() => (playButton.textContent = "Stop")).catch(() => {});
+    });
+    const musicCustom = el("input", { value: known ? "" : event.music, placeholder: "Track name", title: "Track name", hidden: known });
+    musicSelect.addEventListener("change", () => {
+      const other = musicSelect.value === OTHER_CHOICE;
+      event.music = other ? musicCustom.value : musicSelect.value;
+      musicCustom.hidden = !other;
+      eventAudio?.pause();
+      playButton.textContent = "Play";
+      syncPlay();
+      if (other) musicCustom.focus();
+    });
+    musicCustom.addEventListener("input", () => (event.music = musicCustom.value));
+    musicBox.append(musicSelect, playButton, musicCustom);
+    syncPlay();
 
     const skippable = el("input", { type: "checkbox", checked: event.skippable });
     skippable.addEventListener("change", () => (event.skippable = skippable.checked));
@@ -1384,12 +1913,13 @@ function createEventsEditor(section) {
       summary,
       labelled("Event ID", text("id", { title: "Event ID" }), "A unique number. Part of the event's key in the game."),
       labelled("Place", locationInput, "The map the event happens in (Data/Events/<place>)."),
-      el("div", { className: "label" }, el("span", { textContent: "Conditions" }), conditionBox,
-        el("small", { textContent: "All optional. Examples: f {name} 1000 (friendship points), t 600 1200 (time of day), w sunny (weather)." })),
+      el("div", { className: "label" }, el("span", { textContent: "Conditions" }), createConditions(event),
+        el("small", { textContent: "All optional. Switch one on to limit when the event can trigger." })),
       el("h4", { textContent: "Setup" }),
-      labelled("Starting music", text("music", { title: "Starting music" }), "A track name, or none."),
-      labelled("Viewport", text("viewport", { title: "Viewport" }), "The map tile the camera starts on, as x y."),
-      labelled("Actors", text("actors", { title: "Actors" }), "Who is in the scene and where: name x y facing, repeated (e.g. farmer 15 16 0 {name} 11 10 0)."),
+      labelled("Starting music", musicBox, "The track playing as the event opens. Pick None for silence. Play previews your uploaded track (Assets tab); Stardew's own tracks can't be previewed here."),
+      labelled("Viewport", viewportInput, "The map tile the camera starts on, as x y."),
+      labelled("Actors", actorsInput, "Who is in the scene and where: name x y facing, repeated (e.g. farmer 15 16 0 {name} 11 10 0)."),
+      mapEditor.node,
       el("label", { className: "check" }, skippable, el("span", { textContent: "Skippable" })),
       el("h4", { textContent: "Commands" }),
       createCommandList(event.commands, () => event.forkName || ""),
@@ -1448,6 +1978,12 @@ function createEventsEditor(section) {
         loaded = false;
         showMessage(err.message);
       }
+      try {
+        const music = (await api(`/api/assets?folder=${encodeURIComponent(folder)}`)).music;
+        customTrack = music.exists ? music.name.replace(/\.[^.]+$/, "") : "";
+      } catch {
+        customTrack = "";
+      }
       addRow.hidden = !loaded;
       render();
     },
@@ -1488,6 +2024,7 @@ function showTab(name, focus = false) {
     if (active && focus) tab.focus();
   }
   for (const panel of tabPanels) panel.hidden = panel.dataset.panel !== name;
+  eventAudio?.pause();
   document.querySelectorAll(".preview audio").forEach((audio) => audio.pause()); // don't keep playing from a hidden tab
   try {
     history.replaceState(null, "", `#${name}`); // a refresh stays on this tab
