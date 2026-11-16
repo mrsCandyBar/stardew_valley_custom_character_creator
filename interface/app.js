@@ -497,13 +497,156 @@ function createEditor(section) {
 // Three parts: the character's generic reactions (a face + text each), the item ids for each category,
 // and optional explicit reactions for specific items. Face and item are dropdowns for now.
 // TODO (README): swap both dropdowns for clickable pictures.
-const FACES = range(0, 8).map((n) => ({ value: `$${n}`, label: `$${n}` }));
-const MAX_ITEM_ID = 999;
-const itemOptions = (extra) => {
-  const ids = range(0, MAX_ITEM_ID);
-  if (extra !== undefined && !ids.includes(Number(extra))) ids.push(Number(extra)); // an id from the file that's beyond the dropdown
-  return options(ids, (n) => `(O)${n}`);
-};
+const FACE_COUNT = 9; // $0 to $8
+const PORTRAIT_SHEET_WIDTH = 270; // the sheet is scaled to this width (two faces per row), so each face tile is half of it
+
+// A button showing the portrait for reaction.face ("$4" etc). Clicking steps to the next face.
+// If no portrait is uploaded the image fails to load and the "$n" text shows instead.
+function faceButton(reaction, portraitUrl) {
+  const button = el("button", { type: "button", className: "face-button", title: "Click for the next face" });
+  button.style.backgroundSize = `${PORTRAIT_SHEET_WIDTH}px auto`;
+  const probe = new Image();
+  let hasImage = true;
+  probe.onerror = () => {
+    hasImage = false;
+    draw();
+  };
+  probe.src = portraitUrl;
+
+  function draw() {
+    const n = Number(reaction.face.slice(1)) || 0;
+    button.setAttribute("aria-label", `Portrait face ${reaction.face}. Click for the next face.`);
+    if (hasImage) {
+      button.textContent = "";
+      button.style.backgroundImage = `url("${portraitUrl}")`;
+      const tile = PORTRAIT_SHEET_WIDTH / 2;
+      button.style.backgroundPosition = `-${(n % 2) * tile}px -${Math.floor(n / 2) * tile}px`;
+    } else {
+      button.style.backgroundImage = "";
+      button.textContent = reaction.face;
+    }
+  }
+
+  button.addEventListener("click", () => {
+    reaction.face = `$${(Number(reaction.face.slice(1)) + 1) % FACE_COUNT}`;
+    draw();
+  });
+  draw();
+  return button;
+}
+
+// --- Item picker ---
+// gameSprites/items.json is { id, name, sprite }[] built by gameSprites/makeItems.js from the unpacked game files.
+// "sprite" is a tile index in gameSprites/springobjects.png (24 tiles per row, 16px each).
+const SHEET_COLUMNS = 24;
+const SHEET_ROWS = 39;
+const ICON_SCALE = 2; // draw each 16px tile at 32px
+let itemsPromise = null;
+const loadItems = () => (itemsPromise ??= api("/gameSprites/items.json").catch((err) => ((itemsPromise = null), Promise.reject(err))));
+
+function itemIcon(item) {
+  const size = 16 * ICON_SCALE;
+  const icon = el("span", { className: "item-icon" });
+  if (item) {
+    icon.style.backgroundImage = 'url("/gameSprites/springobjects.png")';
+    icon.style.backgroundSize = `${SHEET_COLUMNS * size}px ${SHEET_ROWS * size}px`;
+    icon.style.backgroundPosition = `-${(item.sprite % SHEET_COLUMNS) * size}px -${Math.floor(item.sprite / SHEET_COLUMNS) * size}px`;
+  }
+  return icon;
+}
+
+// One shared dialog with a search box and a table (icon, name, number).
+// Single mode resolves to the chosen id, or null if closed. Multi mode (checkboxes, "Done" button) resolves to the array of
+// ticked ids, or null if cancelled; `current` is then the array of ids already ticked, and numbers are shown without "(O)".
+let itemDialog;
+function pickItem(items, current, multi = false) {
+  if (!itemDialog) {
+    const search = el("input", { type: "search", placeholder: "Search by name or number", className: "item-search" });
+    const tbody = el("tbody");
+    const thead = el("thead");
+    const empty = el("p", { className: "empty", textContent: "No items match.", hidden: true });
+    const done = el("button", { type: "button", textContent: "Done" });
+    const close = el("button", { type: "button", className: "secondary", textContent: "Cancel" });
+    const table = el("table", { className: "item-table" }, thead, tbody);
+    itemDialog = el("dialog", { className: "item-dialog" }, el("div", { className: "item-dialog-head" }, search, done, close), el("div", { className: "item-scroll" }, table, empty));
+    Object.assign(itemDialog, { search, tbody, thead, empty, done });
+    close.addEventListener("click", () => itemDialog.close());
+    itemDialog.addEventListener("click", (event) => event.target === itemDialog && itemDialog.close()); // click on the backdrop
+    document.body.append(itemDialog);
+  }
+  const { search, tbody, thead, empty, done } = itemDialog;
+
+  return new Promise((resolve) => {
+    let chosen = null;
+    const selected = new Set(multi ? current : []);
+    const heads = [...(multi ? [""] : []), "Icon", "Name", "Number"];
+    thead.replaceChildren(el("tr", {}, ...heads.map((h) => el("th", { textContent: h }))));
+    done.hidden = !multi;
+    done.onclick = () => {
+      chosen = [...selected];
+      itemDialog.close();
+    };
+
+    const fill = () => {
+      const q = search.value.trim().toLowerCase();
+      const shown = items.filter((i) => !q || i.name.toLowerCase().includes(q) || i.id.toLowerCase().includes(q));
+      tbody.replaceChildren(
+        ...shown.map((i) => {
+          const isCurrent = multi ? selected.has(i.id) : i.id === current;
+          const box = multi ? el("input", { type: "checkbox", checked: isCurrent, tabIndex: -1 }) : null;
+          const row = el(
+            "tr",
+            { tabIndex: 0, className: isCurrent ? "current" : "" },
+            ...(multi ? [el("td", {}, box)] : []),
+            el("td", {}, itemIcon(i)),
+            el("td", { textContent: i.name }),
+            el("td", { className: "num", textContent: multi ? i.id : `(O)${i.id}` })
+          );
+          const choose = () => {
+            if (multi) {
+              selected.has(i.id) ? selected.delete(i.id) : selected.add(i.id);
+              box.checked = selected.has(i.id);
+              row.classList.toggle("current", box.checked);
+            } else {
+              chosen = i.id;
+              itemDialog.close();
+            }
+          };
+          row.addEventListener("click", (event) => {
+            if (event.target === box) event.preventDefault(); // the row toggles it; avoid toggling twice
+            choose();
+          });
+          row.addEventListener("keydown", (event) => (event.key === "Enter" || event.key === " ") && (event.preventDefault(), choose()));
+          return row;
+        })
+      );
+      empty.hidden = shown.length > 0;
+    };
+    search.oninput = fill;
+    itemDialog.onclose = () => resolve(chosen);
+    search.value = "";
+    fill();
+    itemDialog.showModal();
+    tbody.querySelector(".current")?.scrollIntoView({ block: "center" });
+    search.focus();
+  });
+}
+
+// A button showing the chosen item's icon, name and number. Clicking opens the table to pick another.
+function itemButton(items, getId, onPick) {
+  const button = el("button", { type: "button", className: "item-button", title: "Click to choose an item" });
+  const draw = () => {
+    const id = getId();
+    const item = items.find((i) => i.id === id);
+    button.replaceChildren(itemIcon(item), el("span", { className: "item-name", textContent: item ? item.name : "Unknown item" }), el("span", { className: "item-num", textContent: `(O)${id}` }));
+  };
+  button.addEventListener("click", async () => {
+    const id = await pickItem(items, getId());
+    if (id !== null && onPick(id) !== false) draw();
+  });
+  draw();
+  return button;
+}
 const GENERIC_ROWS = [
   ["love", "Loved gift"],
   ["like", "Liked gift"],
@@ -533,9 +676,10 @@ function createGiftTastesEditor(section) {
   const genericBox = el("div");
   const categoryBox = el("div");
   const itemList = el("div");
-  const itemSelect = fieldSelect({ title: "Item", options: itemOptions() }, "0");
+  let items = []; // the picker's item list, loaded with the tab
+  let newItemId = "0"; // the item the "Add item" button will add
   const addItem = el("button", { type: "button", className: "secondary", textContent: "Add item" });
-  const addRow = el("div", { className: "add-row" }, itemSelect, addItem);
+  const addRow = el("div", { className: "add-row" });
 
   section.append(
     el("h2", { textContent: title }),
@@ -546,46 +690,91 @@ function createGiftTastesEditor(section) {
     el("div", { className: "entry-group" }, el("h3", { textContent: "Specific items" }), itemList, addRow)
   );
 
-  // A face dropdown and a text box bound to one { face, text } object
+  // A clickable portrait face and a text box bound to one { face, text } object
+  let portraitUrl = "";
   const reactionFields = (reaction) => {
-    const face = fieldSelect({ title: "Sprite face", options: FACES }, reaction.face);
-    face.addEventListener("change", () => (reaction.face = face.value));
+    const face = faceButton(reaction, portraitUrl);
     const text = el("textarea", { value: reaction.text, rows: 2, placeholder: "What they say" });
     text.addEventListener("input", () => (reaction.text = text.value));
-    return [face, text];
+    return el("div", { className: "reaction-row" }, text, face); // text on the left, portrait on the right like the game
   };
 
+  // One category (loves, likes...): a chip per item id and an Add button that opens the multi-select table. Ids are stored as plain numbers (no "(O)"), in tastes.categories[name].
+  function categoryRow(name, label) {
+    const row = el("div", { className: "category-row" });
+    const ids = () => tastes.categories[name];
+
+    const draw = () => {
+      const chips = ids().map((id) => {
+        const item = items.find((i) => i.id === id);
+        const remove = el("button", {
+          type: "button",
+          className: "chip-remove",
+          title: "Remove",
+          textContent: "×",
+          onclick: () => {
+            tastes.categories[name] = ids().filter((x) => x !== id);
+            draw();
+          },
+        });
+        // Just the icon (name and number show on hover). Ids with no icon, like -4, show as text instead.
+        const face = item ? itemIcon(item) : el("span", { className: "item-num", textContent: id });
+        return el("span", { className: "chip", title: item ? `${item.name} (${id})` : id }, face, remove);
+      });
+
+      const choose = el("button", {
+        type: "button",
+        className: "secondary",
+        textContent: "Add",
+        onclick: async () => {
+          const ticked = await pickItem(items, ids(), true);
+          if (!ticked) return;
+          const known = new Set(items.map((i) => i.id));
+          // keep ids the table doesn't know (negative categories etc.) and the order of what was already there
+          const kept = ids().filter((id) => !known.has(id) || ticked.includes(id));
+          tastes.categories[name] = [...kept, ...ticked.filter((id) => !kept.includes(id))];
+          draw();
+        },
+      });
+      row.replaceChildren(
+        el("span", { className: "category-label", textContent: label }),
+        el("div", { className: "category-body" }, el("div", { className: "chips" }, ...(chips.length ? chips : [el("span", { className: "empty", textContent: "None" })])), choose)
+      );
+    };
+    draw();
+    return row;
+  }
+
   function render() {
+    portraitUrl = assetUrl("portrait"); // one fetch per render, and picks up a re-uploaded portrait
     genericBox.replaceChildren(
       ...GENERIC_ROWS.map(([name, label]) => {
-        const [face, text] = reactionFields(tastes.generic[name]);
-        return el("div", { className: "entry" }, el("div", { className: "entry-head" }, el("span", { className: "key", textContent: label }), face), text);
+        const row = reactionFields(tastes.generic[name]);
+        return el("div", { className: "entry" }, el("div", { className: "entry-head" }, el("span", { className: "key", textContent: label })), row);
       })
     );
 
     categoryBox.replaceChildren(
-      ...CATEGORY_ROWS.map(([name, label]) => {
-        const input = el("input", { value: tastes.categories[name].join(" "), placeholder: "e.g. 769 74 637" });
-        input.addEventListener("input", () => (tastes.categories[name] = input.value.split(/\s+/).filter(Boolean)));
-        return el("label", { className: "category-row" }, el("span", { textContent: label }), input);
-      }),
-      el("p", { className: "hint", textContent: "Item numbers separated by spaces. Negative numbers are whole categories (e.g. -4 for fish) and universal_neutral works too." })
+      ...CATEGORY_ROWS.map(([name, label]) => categoryRow(name, label)),
+      el("p", { className: "hint", textContent: "Click Add to choose items from the table. Ids that aren't items in the file (like -4 for fish, or universal_neutral) are kept if they're already there." })
     );
 
     itemList.replaceChildren(
       ...(tastes.items.length
         ? tastes.items.map((entry) => {
-            const item = fieldSelect({ title: "Item", options: itemOptions(entry.item) }, entry.item);
-            item.addEventListener("change", () => {
-              if (tastes.items.some((e) => e !== entry && e.item === item.value)) {
-                showMessage(`(O)${item.value} already exists.`);
-                item.value = entry.item;
-                return;
+            const item = itemButton(
+              items,
+              () => entry.item,
+              (id) => {
+                if (tastes.items.some((e) => e !== entry && e.item === id)) {
+                  showMessage(`(O)${id} already exists.`);
+                  return false; // keep showing the old item
+                }
+                showMessage("");
+                entry.item = id;
               }
-              showMessage("");
-              entry.item = item.value;
-            });
-            const [face, text] = reactionFields(entry);
+            );
+            const row = reactionFields(entry);
             const remove = el("button", {
               type: "button",
               className: "secondary",
@@ -595,22 +784,30 @@ function createGiftTastesEditor(section) {
                 render();
               },
             });
-            return el("div", { className: "entry" }, el("div", { className: "entry-head" }, item, face, el("span", { className: "key" }), remove), text);
+            return el("div", { className: "entry" }, el("div", { className: "entry-head" }, item, el("span", { className: "key" }), remove), row);
           })
         : [el("p", { className: "empty", textContent: "None yet. Optional." })])
     );
+
+    addRow.replaceChildren(itemButton(items, () => newItemId, (id) => void (newItemId = id)), addItem);
   }
 
   addItem.addEventListener("click", () => {
-    if (tastes.items.some((e) => e.item === itemSelect.value)) return showMessage(`(O)${itemSelect.value} already exists.`);
+    if (tastes.items.some((e) => e.item === newItemId)) return showMessage(`(O)${newItemId} already exists.`);
     showMessage("");
-    tastes.items.push({ item: itemSelect.value, face: "$0", text: "" });
+    tastes.items.push({ item: newItemId, face: "$0", text: "" });
     render();
   });
 
   return {
     async load(folder) {
       showMessage("");
+      try {
+        items = await loadItems();
+      } catch (err) {
+        items = [];
+        showMessage(`Couldn't load the item list (gameSprites/items.json): ${err.message}`);
+      }
       try {
         tastes = await api(`/api/gift-tastes?folder=${encodeURIComponent(folder)}`);
         loaded = true;

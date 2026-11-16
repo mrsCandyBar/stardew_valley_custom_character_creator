@@ -24,7 +24,7 @@ const MOD_FIELDS = [
   "MinimumApiVersion",
 ];
 
-const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript" };
+const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".png": "image/png" };
 function send(res, status, body, type = "application/json") {
   res.writeHead(status, { "Content-Type": type });
   res.end(typeof body === "string" || Buffer.isBuffer(body) ? body : JSON.stringify(body));
@@ -144,7 +144,7 @@ function cleanGiftTastes(body) {
   const seen = new Set();
   const items = (Array.isArray(body?.items) ? body.items : []).map((entry) => {
     const item = String(entry?.item ?? "");
-    if (!/^\d{1,6}$/.test(item)) throw new Error(`"${item}" isn't a valid item number.`);
+    if (!/^\w{1,60}$/.test(item)) throw new Error(`"${item}" isn't a valid item id.`); // numbers, plus named ids like MossSoup
     if (seen.has(item)) throw new Error(`The item (O)${item} is used twice.`);
     seen.add(item);
     return { item, ...cleanReaction(entry, `Item (O)${item}`) };
