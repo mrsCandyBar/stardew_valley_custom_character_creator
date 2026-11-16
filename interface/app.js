@@ -737,8 +737,9 @@ function createGiftTastesEditor(section) {
         },
       });
       row.replaceChildren(
-        el("span", { className: "category-label", textContent: label }),
-        el("div", { className: "category-body" }, el("div", { className: "chips" }, ...(chips.length ? chips : [el("span", { className: "empty", textContent: "None" })])), choose)
+        el("h4", { className: "category-label", textContent: label }),
+        el("div", { className: "chips" }, ...(chips.length ? chips : [el("span", { className: "empty", textContent: "None" })])),
+        choose
       );
     };
     draw();
@@ -755,7 +756,7 @@ function createGiftTastesEditor(section) {
     );
 
     categoryBox.replaceChildren(
-      ...CATEGORY_ROWS.map(([name, label]) => categoryRow(name, label)),
+      el("div", { className: "category-grid" }, ...CATEGORY_ROWS.map(([name, label]) => categoryRow(name, label))),
       el("p", { className: "hint", textContent: "Click Add to choose items from the table. Ids that aren't items in the file (like -4 for fish, or universal_neutral) are kept if they're already there." })
     );
 

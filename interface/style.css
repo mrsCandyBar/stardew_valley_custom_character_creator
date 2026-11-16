@@ -201,8 +201,10 @@ pre {
 .add-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .add-row select, .add-row input { width: auto; flex: 0 1 auto; }
 .add-row input { flex: 1 1 200px; }
-.category-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; margin-bottom: 14px; }
-.category-label { font-weight: 600; padding-top: 4px; }
+.category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 8px; }
+.category-row { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.category-label { margin: 0 0 8px; font-size: 1rem; font-weight: 600; }
+@media (max-width: 700px) { .category-grid { grid-template-columns: 1fr; } }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
 .chip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 4px 2px 6px; background: #fff; border: 1px solid var(--border); border-radius: 16px; font-size: 0.85rem; }
 .chip .item-icon { margin: 0; }
