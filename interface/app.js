@@ -1069,9 +1069,9 @@ function createGiftTastesEditor(section) {
 const FACING = options([0, 1, 2, 3], (n) => ["up", "right", "down", "left"][n]);
 const CUSTOM = "custom";
 const actorText = { kind: "text", title: "Who", placeholder: "{name}", size: 10 };
-const actorAndWords = (label) => ({
+const actorAndWords = (label, wordsKind = "textarea") => ({
   label,
-  fields: [actorText, { kind: "textarea", title: "Words", placeholder: "A $1 at the start changes the portrait" }],
+  fields: [actorText, { kind: wordsKind, title: "Words", placeholder: wordsKind === "dialogue" ? "What they say" : "A $1 at the start changes the portrait" }],
   defaults: ["{name}", ""],
   parse: (args) => {
     const match = /^(\S+) "(.*)"$/s.exec(args);
@@ -1086,7 +1086,7 @@ const spaced = (pattern) => (args) => {
 const noFields = (label) => ({ label, fields: [], defaults: [], parse: (args) => (args === "" ? [] : null), compose: () => "" });
 
 const COMMAND_TYPES = {
-  speak: actorAndWords("Speak"),
+  speak: actorAndWords("Speak", "dialogue"),
   textAboveHead: actorAndWords("Text above head"),
   pause: {
     label: "Pause",
@@ -1104,7 +1104,7 @@ const COMMAND_TYPES = {
   },
   emote: {
     label: "Emote",
-    fields: [actorText, { kind: "number", title: "Emote number", min: 0 }],
+    fields: [actorText, { kind: "emote", title: "Emote" }],
     defaults: ["{name}", "32"],
     parse: spaced(/^(\S+) (\d+)$/),
     compose: (values) => values.join(" "),
@@ -1385,7 +1385,90 @@ function createConditions(event) {
   return el("div", {}, summary, options);
 }
 
+// A line of speech: a clickable portrait face and the words, like the dialogue pages. The face is the "$n" the words start with.
+function dialogueField(words, onInput) {
+  const m = /^(\$\d+)([\s\S]*)$/.exec(words);
+  const state = { face: m ? m[1] : null, text: m ? m[2] : words }; // no "$n" at the start means the default (neutral) face
+  const emit = () => onInput((state.face ?? "") + state.text);
+  const reaction = {
+    get face() {
+      return state.face ?? "$0";
+    },
+    set face(value) {
+      state.face = value;
+      emit();
+    },
+  };
+  const text = el("textarea", { value: state.text, rows: 2, title: "Words", placeholder: "What they say" });
+  text.addEventListener("input", () => {
+    state.text = text.value;
+    emit();
+  });
+  return el("div", { className: "reaction-row wide" }, text, faceButton(reaction, assetUrl("portrait")));
+}
+
+// --- Emote picker ---
+// gameSprites/emotes.png is the game's emote sheet: 16px frames, four to a row. An emote's number is its first frame (4, 8, 12 ...).
+const EMOTE_COLUMNS = 4;
+const EMOTE_ROWS = 16;
+const EMOTE_SCALE = 3;
+const emoteIcon = (n) => {
+  const size = 16 * EMOTE_SCALE;
+  const icon = el("span", { className: "emote-icon" });
+  icon.style.cssText = `width:${size}px;height:${size}px;background-image:url("/gameSprites/emotes.png");background-size:${EMOTE_COLUMNS * size}px ${EMOTE_ROWS * size}px;background-position:-${(n % EMOTE_COLUMNS) * size}px -${Math.floor(n / EMOTE_COLUMNS) * size}px`;
+  return icon;
+};
+let emoteDialog = null;
+function chooseEmote(current, onChoose) {
+  if (!emoteDialog) {
+    const grid = el("div", { className: "emote-grid" });
+    const close = el("button", { type: "button", className: "secondary", textContent: "Close" });
+    emoteDialog = el("dialog", { className: "item-dialog emote-dialog" }, el("div", { className: "item-dialog-head" }, el("strong", { textContent: "Choose an emote", style: "flex:1" }), close), el("div", { className: "item-scroll" }, grid));
+    emoteDialog.grid = grid;
+    close.addEventListener("click", () => emoteDialog.close());
+    emoteDialog.addEventListener("click", (event) => event.target === emoteDialog && emoteDialog.close());
+    document.body.append(emoteDialog);
+  }
+  emoteDialog.grid.replaceChildren(
+    ...Array.from({ length: EMOTE_ROWS - 1 }, (_, i) => (i + 1) * EMOTE_COLUMNS).map((n) =>
+      el(
+        "button",
+        {
+          type: "button",
+          className: `emote-choice${String(n) === String(current) ? " current" : ""}`,
+          title: `Emote ${n}`,
+          onclick: () => {
+            onChoose(String(n));
+            emoteDialog.close();
+          },
+        },
+        emoteIcon(n),
+        el("span", { textContent: n })
+      )
+    )
+  );
+  emoteDialog.showModal();
+}
+function emoteField(value, onInput) {
+  const button = el("button", { type: "button", className: "emote-button", title: "Choose an emote" });
+  const draw = () => {
+    const n = Number(value);
+    button.replaceChildren(...(value !== "" && Number.isInteger(n) && n >= 0 && n < EMOTE_COLUMNS * EMOTE_ROWS ? [emoteIcon(n)] : []), el("span", { textContent: value === "" ? "Choose..." : value }));
+  };
+  button.addEventListener("click", () =>
+    chooseEmote(value, (chosen) => {
+      value = chosen;
+      onInput(chosen);
+      draw();
+    })
+  );
+  draw();
+  return button;
+}
+
 function commandField(field, value, onInput) {
+  if (field.kind === "dialogue") return dialogueField(value, onInput);
+  if (field.kind === "emote") return emoteField(value, onInput);
   let node;
   if (field.kind === "select") node = fieldSelect(field, value);
   else if (field.kind === "textarea") node = el("textarea", { value, rows: 2, title: field.title, placeholder: field.placeholder || "" });
@@ -1400,8 +1483,9 @@ function commandField(field, value, onInput) {
 }
 
 // The list of commands for an event (or for its fork). `commands` is edited in place.
-function createCommandList(commands, getForkName) {
+function createCommandList(commands, getForkName, map) {
   const box = el("div", { className: "commands" });
+  const rowOf = new Map(); // command -> its row, for the Up/Down animation
 
   const typeOptions = [...Object.entries(COMMAND_TYPES).map(([value, def]) => ({ value, label: def.label })), { value: CUSTOM, label: "Custom command..." }];
   const addType = fieldSelect({ title: "Command type", options: typeOptions }, "speak");
@@ -1439,15 +1523,30 @@ function createCommandList(commands, getForkName) {
     const move = (by) => {
       const target = index + by;
       if (target < 0 || target >= commands.length) return;
+      const before = new Map(commands.map((c) => [c, rowOf.get(c).getBoundingClientRect().top]));
       [commands[index], commands[target]] = [commands[target], commands[index]];
       render();
+      // Slide each command from where it was to where it is now, and flash the one that was moved, so the change can be seen
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      for (const c of commands) {
+        const node = rowOf.get(c);
+        const shift = before.get(c) - node.getBoundingClientRect().top;
+        if (shift) node.animate([{ transform: `translateY(${shift}px)` }, { transform: "none" }], { duration: 350, easing: "ease-in-out" });
+      }
+      rowOf.get(command).animate([{ boxShadow: "0 0 0 3px var(--accent)", backgroundColor: "#e6f2dc" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 900, easing: "ease-out" });
     };
+    // A Move can be set by clicking its destination on the map
+    const choosing = !!map.picked() && map.picked().command === command;
+    const mapButton = command.type === "move" && !custom
+      ? [el("button", { type: "button", className: `secondary${choosing ? " selected" : ""}`, textContent: choosing ? "Choosing on map" : "Show on map", onclick: () => map.pick({ commands, command, rerender: render }) })]
+      : [];
     const head = el(
       "div",
       { className: "entry-head" },
       el("span", { className: "step", textContent: String(index + 1) }),
       type,
       el("span", { className: "key" }),
+      ...mapButton,
       el("button", { type: "button", className: "secondary", textContent: "Up", disabled: index === 0, onclick: () => move(-1) }),
       el("button", { type: "button", className: "secondary", textContent: "Down", disabled: index === commands.length - 1, onclick: () => move(1) }),
       el("button", {
@@ -1476,11 +1575,14 @@ function createCommandList(commands, getForkName) {
           commandField(field, values[i], (value) => {
             values[i] = value;
             command.args = def.compose(values);
+            map.changed();
           })
         )
       );
     }
-    return el("div", { className: "entry command" }, head, body);
+    const node = el("div", { className: "entry command" }, head, body);
+    rowOf.set(command, node);
+    return node;
   };
 
   function render() {
@@ -1488,7 +1590,9 @@ function createCommandList(commands, getForkName) {
       ...(commands.length ? commands.map(row) : [el("p", { className: "empty", textContent: "No commands yet." })]),
       el("div", { className: "add-row" }, addType, addButton)
     );
+    map.changed();
   }
+  map.register(box, render);
   render();
   return box;
 }
@@ -1547,11 +1651,36 @@ const parseViewport = (text) => {
 };
 
 // The editor under an event's Viewport/Actors fields. `onChange` is told when a drag or list edit changed event.viewport / event.actors.
-function createMapEditor(event, onChange) {
+function createMapEditor(event, onChange, onPick) {
   let zoom = 0;
   let loaded = null; // { map, base } for the place currently shown
   let mode = "viewport";
   let drag = null;
+  let picked = null; // { commands, command, rerender }: the Move command whose destination is being chosen on the map
+  const showAllPaths = el("input", { type: "checkbox" });
+  showAllPaths.addEventListener("change", () => drawOverlay());
+  const banner = el("div", { className: "map-banner", hidden: true });
+
+  // Every Move in the event, in order, with where the actor starts and ends. The start is the actor's tile in the Actors field
+  // moved along by their earlier Moves (the fork's Moves carry on from the end of the main ones).
+  function replaySteps() {
+    const actors = parseActors(event.actors) || []; // moved along as the Moves are replayed
+    const position = new Map(actors.map((a) => [a.name, a]));
+    const steps = [];
+    for (const list of [event.commands, event.forkCommands || []]) {
+      for (const command of list) {
+        const m = command.type === "move" && /^(\S+) (-?\d+) (-?\d+) ([0-3])/.exec(command.args);
+        if (!m) continue;
+        const actor = position.get(m[1]);
+        const from = actor ? { x: actor.x, y: actor.y } : null;
+        const to = from && { x: from.x + Number(m[2]), y: from.y + Number(m[3]) };
+        // `before` is where everyone stands as this step begins
+        steps.push({ command, who: m[1], from, to, n: steps.length + 1, before: actors.map((a) => ({ ...a })) });
+        if (actor) Object.assign(actor, to, { facing: Number(m[4]) });
+      }
+    }
+    return steps;
+  }
 
   const message = el("p", { className: "editor-message", hidden: true });
   const stage = el("canvas");
@@ -1567,7 +1696,8 @@ function createMapEditor(event, onChange) {
   const hint = el("small", { textContent: "" });
   const updateHint = () => (hint.textContent = mode === "viewport" ? "Click or drag on the map to place the camera. The bright box is what the player sees (about 20 x 11 tiles)." : "Drag an actor to move them. Click an actor to turn them (the arrow is the way they face).");
 
-  const toolbar = el("div", { className: "map-toolbar" }, ...modeButtons, el("span", { className: "grow" }), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
+  const toolbar = el("div", { className: "map-toolbar" }, ...modeButtons, el("span", { className: "grow" }),
+    el("label", { className: "check-inline" }, showAllPaths, el("span", { textContent: " Show all move paths" })), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
   const tileSize = () => TILE * zoom;
 
   // --- drawing ---
@@ -1607,7 +1737,58 @@ function createMapEditor(event, onChange) {
       ctx.fillRect((view.x + 0.35) * ts, (view.y + 0.35) * ts, 0.3 * ts, 0.3 * ts);
     }
 
-    (parseActors(event.actors) || []).forEach((actor, i) => {
+    // Move paths: all of them if asked for, otherwise just the one being chosen
+    const actorNames = (parseActors(event.actors) || []).map((a) => a.name);
+    for (const step of replaySteps()) {
+      const isPicked = !!picked && step.command === picked.command;
+      if (!step.to || !(showAllPaths.checked || isPicked)) continue;
+      const color = ACTOR_COLORS[Math.max(0, actorNames.indexOf(step.who)) % ACTOR_COLORS.length];
+      const [x1, y1, x2, y2] = [step.from.x + 0.5, step.from.y + 0.5, step.to.x + 0.5, step.to.y + 0.5].map((n) => n * ts);
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const stroke = (style, width) => {
+        ctx.strokeStyle = style;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      };
+      if (isPicked) {
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(step.from.x * ts + 1, step.from.y * ts + 1, ts - 2, ts - 2); // where they start this step
+        ctx.setLineDash([]);
+        stroke("#fff", Math.max(4, ts / 4));
+      }
+      stroke(color, Math.max(2, ts / 8));
+      if (x1 !== x2 || y1 !== y2) {
+        ctx.fillStyle = isPicked ? "#fff" : color;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - ts * 0.4 * Math.cos(angle - 0.5), y2 - ts * 0.4 * Math.sin(angle - 0.5));
+        ctx.lineTo(x2 - ts * 0.4 * Math.cos(angle + 0.5), y2 - ts * 0.4 * Math.sin(angle + 0.5));
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc((x1 + x2) / 2, (y1 + y2) / 2, Math.max(7, ts * 0.4), 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.font = `bold ${Math.max(9, ts * 0.5)}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(step.n, (x1 + x2) / 2, (y1 + y2) / 2 + 1);
+      ctx.textAlign = "start";
+    }
+
+    // While choosing a move, everyone is shown where they stand at that step, so the destination can be judged against them
+    const pickedStep = picked && replaySteps().find((st) => st.command === picked.command);
+    (pickedStep ? pickedStep.before : parseActors(event.actors) || []).forEach((actor, i) => {
       const color = ACTOR_COLORS[i % ACTOR_COLORS.length];
       const x = actor.x * ts;
       const y = actor.y * ts;
@@ -1700,6 +1881,7 @@ function createMapEditor(event, onChange) {
   overlay.addEventListener("pointerdown", (e) => {
     if (!loaded) return;
     const tile = tileAt(e);
+    if (picked) return chooseDestination(tile);
     if (mode === "viewport") {
       drag = { kind: "viewport" };
       event.viewport = `${tile.x} ${tile.y}`;
@@ -1752,6 +1934,42 @@ function createMapEditor(event, onChange) {
   overlay.addEventListener("pointerup", endDrag);
   overlay.addEventListener("pointercancel", endDrag);
 
+  // --- choosing a Move's destination ---
+  function updateBanner() {
+    const step = picked && replaySteps().find((st) => st.command === picked.command);
+    banner.hidden = !picked;
+    if (!picked) return;
+    banner.replaceChildren(
+      el("span", { textContent: step && step.from ? `Step ${step.n}: click the tile ${step.who} should walk to (from ${step.from.x}, ${step.from.y}). Everyone is shown where they stand at this step. A corner becomes two moves.` : `${step && step.who} isn't in the Actors field, so there's no start tile to move from. Add them above.` }),
+      el("button", { type: "button", className: "secondary", textContent: "Done", onclick: () => api_pick(null) })
+    );
+  }
+  function chooseDestination(tile) {
+    const step = replaySteps().find((st) => st.command === picked.command);
+    const m = /^(\S+) (-?\d+) (-?\d+) ([0-3])/.exec(picked.command.args);
+    if (!step || !step.from || !m) return;
+    const [dx, dy] = [tile.x - step.from.x, tile.y - step.from.y];
+    if (dx && dy) {
+      // A move only goes in a straight line: walk across first, then up or down
+      picked.command.args = `${m[1]} ${dx} 0 ${dx > 0 ? 1 : 3}`;
+      const second = { type: "move", args: `${m[1]} 0 ${dy} ${m[4]}` };
+      picked.commands.splice(picked.commands.indexOf(picked.command) + 1, 0, second);
+      picked.command = second;
+    } else {
+      picked.command.args = `${m[1]} ${dx} ${dy} ${m[4]}`;
+    }
+    picked.rerender();
+    updateBanner();
+    drawOverlay();
+  }
+  function api_pick(info) {
+    picked = info && picked && picked.command === info.command ? null : info; // choosing the same one again turns it off
+    if (picked) setOpen(true);
+    updateBanner();
+    drawOverlay();
+    onPick();
+  }
+
   // --- loading ---
   async function show() {
     message.hidden = true;
@@ -1769,6 +1987,7 @@ function createMapEditor(event, onChange) {
     scroll.hidden = false;
     drawStage();
     renderActors();
+    updateBanner();
   }
   zoomSelect.addEventListener("change", () => {
     zoom = Number(zoomSelect.value);
@@ -1777,10 +1996,33 @@ function createMapEditor(event, onChange) {
   modeButtons.forEach((b) => b.addEventListener("click", updateHint));
   updateHint();
 
-  const node = el("details", { className: "map-editor" }, el("summary", { textContent: "Show the map: set the viewport and place the actors" }), message, toolbar, hint, scroll, actorList);
-  node.addEventListener("toggle", () => node.open && show());
+  // The map slides in from the right so it stays in view while the form scrolls
+  let isOpen = false;
+  function setOpen(open) {
+    if (open === isOpen) return;
+    if (open && closeOpenMap) closeOpenMap(); // one map at a time
+    isOpen = open;
+    panel.classList.toggle("open", open);
+    openButton.textContent = open ? "Hide the map" : "Show the map: set the viewport and place the actors";
+    document.body.classList.toggle("map-open", open);
+    closeOpenMap = open ? () => setOpen(false) : null;
+    if (open) show();
+  }
+  const openButton = el("button", { type: "button", className: "secondary", onclick: () => setOpen(!isOpen) });
+  const panel = el("aside", { className: "map-panel", "aria-label": "Map" },
+    el("div", { className: "map-panel-head" }, el("strong", { textContent: "Map" }), el("button", { type: "button", className: "secondary", textContent: "Close", onclick: () => setOpen(false) })),
+    message, toolbar, hint, banner, scroll, actorList);
+  openButton.textContent = "Show the map: set the viewport and place the actors";
+  const node = el("div", { className: "map-editor" }, openButton, panel);
   return {
     node,
+    // The Move commands' "Show on map" buttons
+    pick: api_pick,
+    picked: () => picked,
+    drawPaths: () => {
+      drawOverlay();
+      updateBanner();
+    },
     // The Viewport/Actors text changed (typed by hand)
     redraw() {
       drawOverlay();
@@ -1788,11 +2030,13 @@ function createMapEditor(event, onChange) {
     },
     // The Place changed
     setLocation() {
-      if (node.open) show();
+      if (isOpen) show();
     },
   };
 }
 
+let closeOpenMap = null; // closes whichever map panel is open
+document.addEventListener("keydown", (e) => e.key === "Escape" && closeOpenMap?.());
 let eventAudio = null; // the music preview currently playing, if any
 
 function createEventsEditor(section) {
@@ -1839,11 +2083,27 @@ function createEventsEditor(section) {
     // Viewport and actors: text fields, plus the map view that edits the same two values
     const viewportInput = text("viewport", { title: "Viewport" });
     const actorsInput = text("actors", { title: "Actors" });
-    const mapEditor = createMapEditor(event, () => {
-      viewportInput.value = event.viewport;
-      actorsInput.value = event.actors;
-    });
+    const mapEditor = createMapEditor(
+      event,
+      () => {
+        viewportInput.value = event.viewport;
+        actorsInput.value = event.actors;
+      },
+      () => refreshLists()
+    );
     viewportInput.addEventListener("input", () => mapEditor.redraw());
+    // The command lists (main and fork) share the map: their Move commands can be chosen on it
+    let lists = [];
+    const refreshLists = () => {
+      lists = lists.filter((l) => l.box.isConnected);
+      lists.forEach((l) => l.render());
+    };
+    const mapHooks = {
+      register: (box, render) => lists.push({ box, render }),
+      picked: () => mapEditor.picked(),
+      pick: (info) => mapEditor.pick(info),
+      changed: () => mapEditor.drawPaths(),
+    };
     actorsInput.addEventListener("input", () => mapEditor.redraw());
 
     // Music: a dropdown of the known tracks, or "Other" to type one
@@ -1892,7 +2152,7 @@ function createEventsEditor(section) {
     const hasFork = el("input", { type: "checkbox", checked: event.forkName !== undefined });
     const renderFork = () => {
       forkName.hidden = !hasFork.checked;
-      forkBox.replaceChildren(...(hasFork.checked ? [createCommandList(event.forkCommands, () => event.forkName || "")] : []));
+      forkBox.replaceChildren(...(hasFork.checked ? [createCommandList(event.forkCommands, () => event.forkName || "", mapHooks)] : []));
     };
     hasFork.addEventListener("change", () => {
       if (hasFork.checked) {
@@ -1922,7 +2182,7 @@ function createEventsEditor(section) {
       mapEditor.node,
       el("label", { className: "check" }, skippable, el("span", { textContent: "Skippable" })),
       el("h4", { textContent: "Commands" }),
-      createCommandList(event.commands, () => event.forkName || ""),
+      createCommandList(event.commands, () => event.forkName || "", mapHooks),
       el("h4", { textContent: "Fork" }),
       el("label", { className: "check" }, hasFork, el("span", { textContent: "This event has a fork (a question's answer jumps to it)" })),
       forkName,
@@ -1942,6 +2202,7 @@ function createEventsEditor(section) {
   }
 
   function render() {
+    closeOpenMap?.();
     list.replaceChildren(...(events.length ? events.map(card) : [el("p", { className: "empty", textContent: "None yet." })]));
   }
 
@@ -2025,6 +2286,7 @@ function showTab(name, focus = false) {
   }
   for (const panel of tabPanels) panel.hidden = panel.dataset.panel !== name;
   eventAudio?.pause();
+  closeOpenMap?.();
   document.querySelectorAll(".preview audio").forEach((audio) => audio.pause()); // don't keep playing from a hidden tab
   try {
     history.replaceState(null, "", `#${name}`); // a refresh stays on this tab
