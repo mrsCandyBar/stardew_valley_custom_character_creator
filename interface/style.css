@@ -408,3 +408,27 @@ pre {
 .entry-head input.line-input[readonly], .reaction-line input[readonly] { background: #efe9dc; color: var(--muted); }
 .reaction-line input { cursor: pointer; }
 .entry-head .remove-x { margin-left: auto; }
+
+/* Day cards: a card per day with a row per heart count; the dialogue reads as text on the card, not an input */
+.day-card > h4 { margin: 0 0 8px; font-size: 1rem; }
+.entry-row { margin-bottom: 6px; padding: 4px; border-radius: 4px; }
+.entry-row .entry-head { margin-bottom: 0; flex-wrap: nowrap; }
+.entry-row.viewing { background: #e6dcc6; box-shadow: 0 0 0 2px var(--accent); border-top-color: transparent; }
+.day-card > .add-row { margin-top: 8px; }
+.line-text { flex: 1 1 0; min-width: 0; padding: 6px 4px; background: none; border: 0; border-radius: 4px; color: inherit; font: inherit; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.line-text:hover, .line-text:focus-visible { background: rgba(0, 0, 0, 0.05); }
+.line-text.empty-line { color: var(--muted); font-style: italic; }
+.entry-head .remove-x { margin-left: 0; }
+
+/* Schedule stops: a row of toggles per stop */
+.stops > * + * { margin-top: 8px; }
+.stop { padding: 8px 10px; background: #fbf8f0; border: 1px solid var(--border); border-radius: 6px; }
+.stop-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.stop-head .step { min-width: 1.6em; color: var(--muted); font-size: 0.85rem; }
+.stop-head input { flex: 1 1 200px; width: auto; font-family: monospace; }
+.stop-head .remove-x { margin-left: auto; }
+.chip { padding: 5px 10px; background: #fff; border: 1px solid var(--border); border-radius: 999px; color: inherit; font: inherit; font-size: 0.9rem; cursor: pointer; }
+.chip:hover { border-color: var(--accent); }
+.chip.selected { color: #fff; background: var(--accent); border-color: var(--accent-dark); }
+.stop-editor { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.stop-editor select { width: auto; }

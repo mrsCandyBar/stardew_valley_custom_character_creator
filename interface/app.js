@@ -437,9 +437,10 @@ const SEASON_OPTIONS = options(SEASONS, (s) => (s === "fall" ? "fall (autumn)" :
 
 // Mon, Mon4 ... Sun14: a day with an optional heart count.
 const dayHeartsGroup = {
+  dayCard: true, // shown as one card per day, with a row per heart count inside
   title: "Day dialogue",
   empty: "None yet. Days and heart counts are optional.",
-  addLabel: "Add day dialogue",
+  addLabel: "Add day",
   fields: [
     { title: "Day", options: options(DAYS) },
     { title: "Heart count (optional)", options: [{ value: "", label: "No heart count" }, ...options(range(1, MAX_HEARTS), (h) => `${"♥".repeat(h)} (${h})`)] },
@@ -453,16 +454,42 @@ const dayHeartsGroup = {
   compose: ([day, hearts]) => day + hearts,
 };
 
+// Keys the game looks for beyond day + hearts, offered in the "Other" dropdown (anything else can be typed as a custom key).
+// Compiled from the keys used in this project's templates and Stardew's dialogue modding docs; {name} becomes the replaced character's name.
+const numbered = (prefix, from, to) => range(from, to).map((n) => `${prefix}${n}`);
+const SEASON_DAY_KEYS = SEASONS.flatMap((season) => DAYS.map((day) => `${season}_${day}`));
+const DIALOGUE_KEYS = [
+  { label: "First meeting & gifts", keys: ["Introduction", "AcceptGift", "AcceptGift_Positive", "AcceptGift_Neutral", "AcceptGift_Negative", "AcceptBirthdayGift_Positive", "AcceptBirthdayGift_Neutral", "AcceptBirthdayGift_Negative"] },
+  { label: "Festivals", keys: ["Festival_Egg", "Festival_Dance", "Festival_Luau", "Festival_DanceOfJellies", "Festival_Fair", "Festival_Spirit", "Festival_Ice"] },
+  { label: "Beach resort", keys: ["Resort", "Resort_Entering", "Resort_Leaving", "Resort_Bar", "Resort_Chair", "Resort_Shore", "Resort_Towel", "Resort_Umbrella", "Resort_Wander"] },
+  { label: "Special", keys: ["GreenRain", "danceRejection", "divorced", "dumped"] },
+  { label: "Season + weekday", keys: SEASON_DAY_KEYS },
+  { label: "Numbered lines (one to eight)", keys: ["one", "two", "three", "four", "five", "six", "seven", "eight"] },
+];
+const MARRIAGE_KEYS = [
+  { label: "Indoors", keys: [...numbered("Indoor_Day_", 0, 4), ...numbered("Indoor_Night_", 0, 4), "Indoor_Morning_{name}", "Indoor_Night_{name}", "OneRoom_{name}"] },
+  { label: "Outdoors & rain", keys: [...numbered("Outdoor_", 0, 4), "Outdoor_{name}", ...numbered("Rainy_Day_", 0, 4), ...numbered("Rainy_Night_", 0, 4), "Rainy_Day_{name}", "Rainy_Night_{name}"] },
+  { label: "Mood", keys: [...numbered("Good_", 0, 2), ...numbered("Neutral_", 0, 2), ...numbered("Bad_", 0, 2)] },
+  { label: "Their own routine", keys: ["patio_{name}", "spouseRoom_{name}", "funLeave_{name}", "funReturn_{name}", "jobLeave_{name}", "jobReturn_{name}"] },
+  { label: "Children", keys: [...numbered("OneKid_", 0, 3), ...numbered("TwoKids_", 0, 3)] },
+];
+const SCHEDULE_KEYS = [
+  { label: "Common", keys: ["default", "Rain", "Rain2", "GreenRain", "marriage"] },
+  { label: "Married weekday", keys: DAYS.map((day) => `marriage_${day}`) },
+];
+
 const EDITORS = {
   dialogue: {
     groups: [dayHeartsGroup],
     otherTitle: "Other dialogue",
     otherPlaceholder: "e.g. Introduction, one, Festival_Egg",
+    suggestions: DIALOGUE_KEYS,
   },
   marriage: {
     groups: [dayHeartsGroup],
     otherTitle: "Other dialogue",
     otherPlaceholder: "e.g. Indoor_Morning_{name}, fun_12",
+    suggestions: MARRIAGE_KEYS,
   },
   schedule: {
     groups: [
@@ -499,6 +526,7 @@ const EDITORS = {
     ],
     otherTitle: "Other schedules",
     otherPlaceholder: "e.g. Rain, marriage_Mon",
+    suggestions: SCHEDULE_KEYS,
   },
 };
 
@@ -516,7 +544,7 @@ function fieldSelect(field, value) {
 
 function createEditor(section) {
   const { type, title, hint } = section.dataset;
-  const { groups, otherTitle, otherPlaceholder } = EDITORS[type];
+  const { groups, otherTitle, otherPlaceholder, suggestions } = EDITORS[type];
   const OTHER = -1;
   let entries = []; // { key, text (one line per section), group: index into groups, or OTHER }
   let loaded = false;
@@ -535,37 +563,65 @@ function createEditor(section) {
 
   const lists = []; // one list element per group, then the "other" list last
   const addRows = [];
+  const dayPickers = {}; // group index -> the "Add day" dropdown and button, kept to the days without a card yet
+  // Replace a dropdown's choices, keeping the current pick when it is still there
+  const setChoices = (select, choices) => {
+    const current = select.value;
+    select.replaceChildren(...choices.map((o) => el("option", { value: o.value, textContent: o.label })));
+    if (choices.some((o) => o.value === current)) select.value = current;
+  };
 
   // One block per group: heading, cards, and a row of dropdowns to add another
   groups.forEach((group, index) => {
     const list = el("div");
-    const selects = group.fields.map((field) => fieldSelect(field, field.options[0].value));
+    // A day-card group only picks the day here; heart counts are added inside each day's card
+    const selects = (group.dayCard ? group.fields.slice(0, 1) : group.fields).map((field) => fieldSelect(field, field.options[0].value));
     const button = el("button", { type: "button", className: "secondary", textContent: group.addLabel });
     button.addEventListener("click", () => {
-      const key = group.compose(selects.map((s) => s.value));
+      const key = group.compose(group.dayCard ? [selects[0].value, ""] : selects.map((s) => s.value));
       if (hasKey(key)) return showMessage(`${key} already exists.`);
       add({ key, text: "", group: index });
     });
     const row = el("div", { className: "add-row" }, ...selects, button);
+    if (group.dayCard) dayPickers[index] = { select: selects[0], row };
     lists.push(list);
     addRows.push(row);
     section.append(el("div", { className: "entry-group" }, el("h3", { textContent: group.title }), list, row));
   });
 
   const otherList = el("div");
-  const addKey = el("input", { placeholder: otherPlaceholder, title: "Key" });
+  // A dropdown of known keys that aren't used yet, plus "Custom key" which shows a text box for anything else
+  const CUSTOM = "\u0000custom";
+  const addSelect = el("select", { title: "Key" });
+  const addKey = el("input", { placeholder: otherPlaceholder, title: "Custom key", hidden: true });
   const addOtherButton = el("button", { type: "button", className: "secondary", textContent: "Add" });
-  const otherRow = el("div", { className: "add-row" }, addKey, addOtherButton);
+  const otherRow = el("div", { className: "add-row" }, addSelect, addKey, addOtherButton);
   addRows.push(otherRow);
   section.append(el("div", { className: "entry-group" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
 
+  function refreshSuggestions() {
+    const current = addSelect.value;
+    const sets = suggestions
+      .map(({ label, keys }) => ({ label, keys: keys.filter((key) => !hasKey(key)) }))
+      .filter((set) => set.keys.length);
+    addSelect.replaceChildren(
+      ...sets.map(({ label, keys }) => el("optgroup", { label }, ...keys.map((key) => el("option", { value: key, textContent: key })))),
+      el("option", { value: CUSTOM, textContent: "Custom key…" })
+    );
+    addSelect.value = [...addSelect.options].some((o) => o.value === current) ? current : addSelect.options[0].value;
+    addKey.hidden = addSelect.value !== CUSTOM;
+  }
+  addSelect.addEventListener("change", () => {
+    addKey.hidden = addSelect.value !== CUSTOM;
+    if (!addKey.hidden) addKey.focus();
+  });
   addKey.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
     addOtherButton.click();
   });
   addOtherButton.addEventListener("click", () => {
-    const key = addKey.value.trim();
+    const key = (addSelect.value === CUSTOM ? addKey.value : addSelect.value).trim();
     if (!key) return showMessage("Type a key first.");
     if (hasKey(key)) return showMessage(`${key} already exists.`);
     add({ key, text: "", group: groupOf(key) }); // a key that fits a group moves into it
@@ -581,10 +637,12 @@ function createEditor(section) {
 
   function card(entry) {
     const head = el("div", { className: "entry-head" });
+    const dayRow = entry.group !== OTHER && groups[entry.group].dayCard; // a heart-count row inside a day card
     if (entry.group !== OTHER) {
       const group = groups[entry.group];
       const values = group.parse(entry.key);
       const selects = group.fields.map((field, i) => fieldSelect(field, values[i]));
+      const shown = dayRow ? selects.slice(1) : selects; // the day is the card's title
       const label = el("span", { className: "key", textContent: entry.key });
       const rename = () => {
         const next = selects.map((s) => s.value);
@@ -600,7 +658,8 @@ function createEditor(section) {
         label.textContent = key;
       };
       selects.forEach((s) => s.addEventListener("change", rename));
-      head.append(...selects, label);
+      head.append(...shown);
+      if (!dayRow) head.append(label);
     } else {
       const key = el("input", { value: entry.key, title: "Key" });
       key.addEventListener("input", () => (entry.key = key.value));
@@ -621,18 +680,15 @@ function createEditor(section) {
     // Schedule keeps its Expand button and text box.
     const compact = type !== "schedule";
     const multiline = () => entry.text.includes("\n");
-    const inline = el("input", { className: "line-input", placeholder: "Click to write what they say" });
+    // Plain text that looks part of the card: one line, cut off with an ellipsis, click to edit in the pane
+    const inline = el("button", { type: "button", className: "line-text" });
     const refreshInline = () => {
-      // A line break can't live in a one-line input, so several sections are shown joined and edited in the pane
-      inline.value = multiline() ? entry.text.split("\n").join("  ↵  ") : entry.text;
-      inline.readOnly = multiline();
-      inline.title = multiline() ? "Several sections: edit them in the preview pane" : "";
+      const text = multiline() ? entry.text.split("\n").join("  ↵  ") : entry.text;
+      inline.textContent = text || "Click to write what they say";
+      inline.classList.toggle("empty-line", !text);
+      inline.title = text || "";
     };
     refreshInline();
-    inline.addEventListener("input", () => {
-      entry.text = inline.value;
-      if (entry.expanded && currentPane) drawLines(currentPane);
-    });
     inline.addEventListener("click", () => {
       if (entry.expanded) return;
       entry.expanded = true;
@@ -649,8 +705,9 @@ function createEditor(section) {
         render();
       },
     });
+    const isSchedule = type === "schedule"; // stops with their own toggles, no Expand button
     if (compact) head.append(inline, removeButton);
-    else head.append(toggle, removeButton);
+    else head.append(...(isSchedule ? [] : [toggle]), removeButton);
     let currentPane = null;
 
     // Collapsed: one text box, a line per section. Expanded: each line as a face + text row, like the generic reactions.
@@ -662,7 +719,9 @@ function createEditor(section) {
       currentPane = null;
       drawBody();
     };
+    let stopsNode = null;
     function drawBody() {
+      if (isSchedule) return body.replaceChildren((stopsNode ??= scheduleStops(entry)));
       card.classList.toggle("viewing", Boolean(entry.expanded));
       if (compact) {
         if (!entry.expanded) {
@@ -738,7 +797,7 @@ function createEditor(section) {
       });
       pane.replaceChildren(...rows, addLine);
     }
-    const card = el("div", { className: "entry" }, head, body);
+    const card = el("div", { className: dayRow ? "entry-row" : "entry" }, head, body);
     drawBody();
     return card;
   }
@@ -760,15 +819,37 @@ function createEditor(section) {
   };
 
   function render() {
+    if (type === "schedule") clearPane(stopPaneOwner); // a stop's map belongs to the cards drawn before this
     const none = (text) => el("p", { className: "empty", textContent: text });
     groups.forEach((group, index) => {
       // Sort by each dropdown's position, so Mon, Mon2, Mon4 ... Tue and spring, spring:1 ... summer read in order
       const rank = (e) => group.parse(e.key).reduce((total, v, i) => total * 100 + group.fields[i].options.findIndex((o) => o.value === v), 0);
       const mine = entries.filter((e) => e.group === index).sort((a, b) => rank(a) - rank(b));
-      lists[index].replaceChildren(...(mine.length ? mine.map(card) : [none(group.empty)]));
+      if (!group.dayCard) return lists[index].replaceChildren(...(mine.length ? mine.map(card) : [none(group.empty)]));
+      const days = DAYS.filter((day) => mine.some((e) => group.parse(e.key)[0] === day));
+      const freeDays = group.fields[0].options.filter((o) => !days.includes(o.value));
+      setChoices(dayPickers[index].select, freeDays);
+      dayPickers[index].row.hidden = !loaded || !freeDays.length; // nothing left to add: hide the picker
+      lists[index].replaceChildren(...(days.length ? days.map((day) => dayCard(group, index, day, mine.filter((e) => group.parse(e.key)[0] === day))) : [none(group.empty)]));
     });
     const others = entries.filter((e) => e.group === OTHER);
     otherList.replaceChildren(...(others.length ? others.map(card) : [none("None yet.")]));
+    refreshSuggestions();
+  }
+
+  // One card per day: its heart-count dialogue rows, and a picker to add another heart count
+  function dayCard(group, index, day, rows) {
+    const free = group.fields[1].options.filter((o) => !hasKey(group.compose([day, o.value])));
+    const select = el("select", { title: group.fields[1].title });
+    setChoices(select, free);
+    const button = el("button", { type: "button", className: "secondary", textContent: "Add heart count" });
+    const addRow = el("div", { className: "add-row", hidden: !free.length }, select, button); // nothing left to add: hide it
+    button.addEventListener("click", () => {
+      const key = group.compose([day, select.value]);
+      if (hasKey(key)) return showMessage(`${key} already exists.`);
+      add({ key, text: "", group: index });
+    });
+    return el("div", { className: "entry day-card" }, el("h4", { textContent: day }), ...rows.map(card), addRow);
   }
 
   function add(entry) {
@@ -780,6 +861,7 @@ function createEditor(section) {
   function setLoaded(ok) {
     loaded = ok;
     for (const row of addRows) row.hidden = !ok;
+    // The day pickers also hide when every day is taken; render() settles that
   }
 
   return {
@@ -815,6 +897,292 @@ function createEditor(section) {
       }
     },
   };
+}
+
+// --- Schedule stops ---
+// A schedule is a list of stops, one line each: "<time> <place> <x> <y> <facing>" with an optional animation/dialogue after it.
+// Every stop is a row of four toggles (time, location, position, facing); a toggle opens that setting's editor.
+// A line that isn't in that form (e.g. "GOTO Mon" or an "a1740" arrival time) is kept as a plain text line.
+const STOP_PATTERN = /^(\d{3,4}) (\S+) (-?\d+) (-?\d+) ([0-3])(?: (.+))?$/;
+const STOP_TIMES = []; // 6:00 am to 2:00 am (2600) in 10-minute steps, the game's own clock
+for (let t = 600; t <= 2600; t += t % 100 === 50 ? 50 : 10) STOP_TIMES.push(t);
+const ARROWS = ["↑", "→", "↓", "←"]; // up, right, down, left, the same order as FACING
+
+const parseStop = (line) => {
+  const m = STOP_PATTERN.exec(line.trim());
+  return m ? { time: Number(m[1]), place: m[2], x: Number(m[3]), y: Number(m[4]), facing: Number(m[5]), extra: m[6] || "" } : { raw: line };
+};
+const composeStop = (s) => (s.raw !== undefined ? s.raw : `${s.time} ${s.place} ${s.x} ${s.y} ${s.facing}${s.extra ? ` ${s.extra}` : ""}`);
+const placeLabel = (place) => (LOCATIONS.find(([v]) => v === place) || [place, place])[1];
+
+let stopPaneOwner = null; // the close handler of the stop whose map is in the preview pane
+
+// The map for one stop's position: click or drag to put them on a tile. Other stops on the same map are shown as numbered dots.
+function createStopMap(stop, stops, onChange) {
+  let zoom = 0;
+  let loaded = null;
+  const message = el("p", { className: "editor-message", hidden: true });
+  const stage = el("canvas");
+  const overlay = el("canvas", { className: "map-overlay" });
+  const scroll = el("div", { className: "map-scroll", hidden: true }, el("div", { className: "map-stack" }, stage, overlay));
+  const zoomSelect = fieldSelect({ title: "Zoom", options: options([1, 2, 3, 4], (z) => `${z}x`) }, "2");
+  const tileSize = () => TILE * zoom;
+
+  const number = (key, title) => {
+    const input = el("input", { type: "number", value: stop[key], title });
+    input.addEventListener("input", () => {
+      if (input.value === "") return;
+      stop[key] = Math.round(Number(input.value));
+      onChange();
+      drawOverlay();
+    });
+    return input;
+  };
+  const xInput = number("x", "Tile across");
+  const yInput = number("y", "Tile down");
+  const facingButtons = FACING.map((o, i) =>
+    el("button", { type: "button", className: "secondary mode", textContent: ARROWS[i], title: `Face ${o.label}`, onclick: () => { stop.facing = i; onChange(); refreshFacing(); drawOverlay(); } })
+  );
+  const refreshFacing = () => facingButtons.forEach((b, i) => b.classList.toggle("selected", stop.facing === i));
+  refreshFacing();
+  const toolbar = el("div", { className: "map-toolbar" },
+    el("label", {}, "x ", xInput), el("label", {}, "y ", yInput), ...facingButtons, el("span", { className: "grow" }), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
+
+  function drawStage() {
+    if (!loaded) return;
+    const { map, base } = loaded;
+    for (const canvas of [stage, overlay]) {
+      canvas.width = map.width * tileSize();
+      canvas.height = map.height * tileSize();
+    }
+    const ctx = stage.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(base, 0, 0, stage.width, stage.height);
+    drawOverlay();
+  }
+
+  function drawOverlay() {
+    if (!loaded) return;
+    const ts = tileSize();
+    const ctx = overlay.getContext("2d");
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    // Where the other stops on this map are, in order
+    stops.forEach((other, i) => {
+      if (other === stop || other.raw !== undefined || other.place !== stop.place) return;
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.strokeStyle = "#2f2a22";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc((other.x + 0.5) * ts, (other.y + 0.5) * ts, Math.max(6, ts * 0.35), 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#2f2a22";
+      ctx.font = `bold ${Math.max(9, ts * 0.45)}px sans-serif`;
+      ctx.fillText(i + 1, (other.x + 0.5) * ts, (other.y + 0.5) * ts + 1);
+    });
+    // The stop being placed, with an arrow for the way they face
+    const [x, y] = [stop.x * ts, stop.y * ts];
+    ctx.fillStyle = "#d6405aaa";
+    ctx.strokeStyle = "#d6405a";
+    ctx.lineWidth = 2;
+    ctx.fillRect(x, y, ts, ts);
+    ctx.strokeRect(x + 1, y + 1, ts - 2, ts - 2);
+    const [dx, dy] = [[0, -1], [1, 0], [0, 1], [-1, 0]][stop.facing] || [0, 0];
+    const [cx, cy] = [x + ts / 2, y + ts / 2];
+    ctx.strokeStyle = ctx.fillStyle = "#fff";
+    ctx.lineWidth = Math.max(2, ts / 8);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + dx * ts * 0.4, cy + dy * ts * 0.4);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + dx * ts * 0.4, cy + dy * ts * 0.4, Math.max(2, ts / 8), 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.textAlign = "start";
+  }
+
+  let dragging = false;
+  const place = (e) => {
+    const rect = overlay.getBoundingClientRect();
+    const tile = { x: Math.floor((e.clientX - rect.left) / tileSize()), y: Math.floor((e.clientY - rect.top) / tileSize()) };
+    if (tile.x === stop.x && tile.y === stop.y) return;
+    Object.assign(stop, tile);
+    xInput.value = tile.x;
+    yInput.value = tile.y;
+    onChange();
+    drawOverlay();
+  };
+  overlay.addEventListener("pointerdown", (e) => {
+    if (!loaded) return;
+    dragging = true;
+    overlay.setPointerCapture(e.pointerId);
+    place(e);
+  });
+  overlay.addEventListener("pointermove", (e) => dragging && place(e));
+  overlay.addEventListener("pointerup", () => (dragging = false));
+  overlay.addEventListener("pointercancel", () => (dragging = false));
+  zoomSelect.addEventListener("change", () => {
+    zoom = Number(zoomSelect.value);
+    drawStage();
+  });
+
+  const node = el("div", { className: "map-panel" }, message, toolbar,
+    el("small", { textContent: "Click or drag on the map to choose the tile. The arrow is the way they face. Numbered dots are the other stops on this map." }), scroll);
+  return {
+    node,
+    async show() {
+      try {
+        loaded = await loadMap(stop.place);
+      } catch (err) {
+        message.textContent = `${stop.place}: ${err.message}`;
+        message.hidden = false;
+        return;
+      }
+      if (!zoom) zoom = Math.min(4, Math.max(1, Math.floor(560 / (loaded.map.width * TILE))));
+      zoomSelect.value = String(zoom);
+      scroll.hidden = false;
+      drawStage();
+      scroll.scrollLeft = (stop.x + 0.5) * tileSize() - scroll.clientWidth / 2; // bring the stop into view
+      scroll.scrollTop = (stop.y + 0.5) * tileSize() - scroll.clientHeight / 2;
+    },
+  };
+}
+
+// The stops of one schedule entry. Reads and writes entry.text (one line per stop), so saving needs nothing new.
+function scheduleStops(entry) {
+  const stops = entry.text.split("\n").filter((line) => line.trim()).map(parseStop);
+  const root = el("div", { className: "stops" });
+  const sync = () => (entry.text = stops.map(composeStop).join("\n"));
+
+  const closeEditors = () => {
+    if (stopPaneOwner) clearPane(stopPaneOwner); // the owner redraws us when the pane closes
+    stops.forEach((s) => (s.open = null));
+  };
+  function openMap(stop, i) {
+    const view = createStopMap(stop, stops, () => {
+      sync();
+      summaries.get(stop)?.();
+    });
+    const owner = () => {
+      if (stopPaneOwner === owner) stopPaneOwner = null;
+      if (stop.open === "position") stop.open = null;
+      draw();
+    };
+    stopPaneOwner = owner;
+    showInPane(`Stop ${i + 1}: ${clockLabel(stop.time)}, ${placeLabel(stop.place)}`, view.node, owner);
+    view.show();
+  }
+
+  const summaries = new Map(); // stop -> a function refreshing its toggle labels
+  function stopRow(stop, i) {
+    const remove = el("button", {
+      type: "button", className: "secondary remove-x", textContent: "×", title: "Remove this stop",
+      onclick: () => {
+        closeEditors();
+        stops.splice(i, 1);
+        sync();
+        draw();
+      },
+    });
+    if (stop.raw !== undefined) {
+      const input = el("input", { value: stop.raw, title: "A line the editor doesn't have controls for", placeholder: "e.g. GOTO Mon" });
+      input.addEventListener("input", () => {
+        stop.raw = input.value;
+        sync();
+      });
+      return el("div", { className: "stop" }, el("div", { className: "stop-head" }, el("span", { className: "step", textContent: i + 1 }), input, remove));
+    }
+
+    const chips = {};
+    const toggle = (kind, label) => {
+      const chip = el("button", {
+        type: "button", className: "chip", ariaPressed: "false",
+        onclick: () => {
+          const wasOpen = stop.open === kind;
+          closeEditors();
+          if (!wasOpen) {
+            stop.open = kind;
+            if (kind === "position") openMap(stop, i);
+          }
+          draw();
+        },
+      });
+      chips[kind] = [chip, label];
+      return chip;
+    };
+    const refresh = () => {
+      const text = {
+        time: `🕐 ${clockLabel(stop.time)}`,
+        place: `📍 ${placeLabel(stop.place)}`,
+        position: `⌖ ${stop.x}, ${stop.y}`,
+        facing: `${ARROWS[stop.facing]} ${FACING[stop.facing].label}`,
+      };
+      for (const [kind, [chip]] of Object.entries(chips)) {
+        chip.textContent = text[kind];
+        chip.classList.toggle("selected", stop.open === kind);
+        chip.setAttribute("aria-pressed", String(stop.open === kind));
+      }
+    };
+    summaries.set(stop, refresh);
+    const head = el("div", { className: "stop-head" }, el("span", { className: "step", textContent: i + 1 }),
+      toggle("time", "Time"), toggle("place", "Location"), toggle("position", "Position"), toggle("facing", "Facing"), remove);
+    refresh();
+
+    let editor = null;
+    if (stop.open === "time") {
+      const select = el("select", { title: "Time" }, ...(STOP_TIMES.includes(stop.time) ? STOP_TIMES : [...STOP_TIMES, stop.time].sort((a, b) => a - b)).map((t) => el("option", { value: String(t), textContent: clockLabel(t) })));
+      select.value = String(stop.time);
+      const clock = el("div", { className: "clock-holder" }, createClock(stop.time, stop.time + 20));
+      select.addEventListener("change", () => {
+        stop.time = Number(select.value);
+        sync();
+        refresh();
+        clock.replaceChildren(createClock(stop.time, stop.time + 20));
+      });
+      editor = el("div", { className: "time-row" }, clock, el("label", {}, el("span", { textContent: "They arrive at " }), select));
+    } else if (stop.open === "place") {
+      const select = choiceSelect(LOCATIONS, stop.place, "Location");
+      select.addEventListener("change", () => {
+        stop.place = select.value;
+        sync();
+        refresh();
+      });
+      editor = el("div", { className: "add-row" }, select, el("small", { textContent: "Then pick the exact tile with Position." }));
+    } else if (stop.open === "facing") {
+      editor = el("div", { className: "add-row" }, ...FACING.map((o, n) =>
+        el("button", {
+          type: "button", className: `secondary mode${stop.facing === n ? " selected" : ""}`, textContent: `${ARROWS[n]} ${o.label}`,
+          onclick: () => {
+            stop.facing = n;
+            sync();
+            draw();
+          },
+        })
+      ));
+    } else if (stop.open === "position") {
+      editor = el("p", { className: "hint", textContent: "Choosing the tile in the preview pane on the right." });
+    }
+    return el("div", { className: "stop" }, head, ...(editor ? [el("div", { className: "stop-editor" }, editor)] : []));
+  }
+
+  const addStop = el("button", {
+    type: "button", className: "secondary", textContent: "Add stop",
+    onclick: () => {
+      closeEditors();
+      const last = stops.findLast((s) => s.raw === undefined);
+      stops.push({ time: last ? Math.min(2600, last.time + 100) : 600, place: last?.place || "Town", x: last?.x ?? 0, y: last?.y ?? 0, facing: last?.facing ?? 2, extra: "" });
+      sync();
+      draw();
+    },
+  });
+  function draw() {
+    summaries.clear();
+    root.replaceChildren(...stops.map(stopRow), addStop);
+  }
+  draw();
+  return root;
 }
 
 // --- Gift tastes ---
