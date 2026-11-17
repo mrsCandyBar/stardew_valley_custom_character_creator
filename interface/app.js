@@ -2415,7 +2415,7 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
   const updateHint = () => (hint.textContent = mode === "viewport" ? "Click or drag on the map to place the camera. The bright box is what the player sees (about 20 x 11 tiles)." : "Drag an actor to move them. Click an actor to turn them (the arrow is the way they face).");
 
   const toolbar = el("div", { className: "map-toolbar" }, ...modeButtons, el("span", { className: "grow" }),
-    el("label", { className: "check-inline" }, showAllPaths, el("span", { textContent: " Show all move paths" })), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
+    el("label", { className: "check-inline" }, showAllPaths, el("span", { textContent: " Show all move paths" })), el("span", { className: "grow" }), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
   const tileSize = () => TILE * zoom;
 
   // --- drawing ---
