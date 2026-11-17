@@ -1619,11 +1619,12 @@ function createGiftTastesEditor(section) {
 // A command type that has a definition below gets its own fields; anything else is a "custom" command (type + args typed in).
 const FACING = options([0, 1, 2, 3], (n) => ["up", "right", "down", "left"][n]);
 const CUSTOM = "custom";
-const actorText = { kind: "text", title: "Who", placeholder: "{name}", size: 10 };
+const actorText = { kind: "text", title: "Who", placeholder: "{name}", narrow: true };
 const actorAndWords = (label, wordsKind = "textarea") => ({
   label,
   fields: [actorText, { kind: wordsKind, title: "Words", placeholder: wordsKind === "dialogue" ? "What they say" : "A $1 at the start changes the portrait" }],
   defaults: ["{name}", ""],
+  inHead: 2,
   parse: (args) => {
     const match = /^(\S+) "(.*)"$/s.exec(args);
     return match && [match[1], match[2]];
@@ -1638,10 +1639,10 @@ const noFields = (label) => ({ label, fields: [], defaults: [], parse: (args) =>
 
 const COMMAND_TYPES = {
   speak: actorAndWords("Speak", "dialogue"),
-  textAboveHead: actorAndWords("Text above head"),
+  textAboveHead: actorAndWords("Text above head", "text"),
   pause: {
     label: "Pause",
-    fields: [{ kind: "number", title: "Milliseconds", min: 0 }],
+    fields: [{ kind: "number", title: "Milliseconds", min: 0, small: true }],
     defaults: ["500"],
     parse: spaced(/^(\d+)$/),
     compose: ([ms]) => ms,
@@ -1650,6 +1651,7 @@ const COMMAND_TYPES = {
     label: "Move",
     fields: [actorText, { kind: "number", title: "Tiles right (negative is left)" }, { kind: "number", title: "Tiles down (negative is up)" }, { kind: "select", title: "Face", options: FACING }],
     defaults: ["farmer", "0", "0", "2"],
+    hide: [1, 2, 3], // set with "Show on map" instead
     parse: spaced(/^(\S+) (-?\d+) (-?\d+) ([0-3])$/),
     compose: (values) => values.join(" "),
   },
@@ -1657,6 +1659,7 @@ const COMMAND_TYPES = {
     label: "Emote",
     fields: [actorText, { kind: "emote", title: "Emote" }],
     defaults: ["{name}", "32"],
+    inHead: 2,
     parse: spaced(/^(\S+) (\d+)$/),
     compose: (values) => values.join(" "),
   },
@@ -1683,8 +1686,8 @@ const COMMAND_TYPES = {
   },
   playMusic: {
     label: "Play music",
-    fields: [{ kind: "text", title: "Track name", placeholder: "e.g. sweet" }],
-    defaults: [""],
+    fields: [{ kind: "music", title: "Track" }],
+    defaults: ["sweet"],
     parse: spaced(/^(\S+)$/),
     compose: ([track]) => track,
   },
@@ -1695,26 +1698,6 @@ const COMMAND_TYPES = {
     defaults: [""],
     parse: spaced(/^(\S+)$/),
     compose: ([sound]) => sound,
-  },
-  question: {
-    label: "Question",
-    fields: [
-      { kind: "text", title: "Question ID", placeholder: "fork1", size: 8 },
-      { kind: "textarea", title: "Question, then each answer", placeholder: "Question?#Answer one#Answer two" },
-    ],
-    defaults: ["fork1", ""],
-    parse: (args) => {
-      const match = /^(\S+) "(.*)"$/s.exec(args);
-      return match && [match[1], match[2]];
-    },
-    compose: ([id, words]) => `${id} "${words}"`,
-  },
-  fork: {
-    label: "Fork (jump to the answer's path)",
-    fields: [{ kind: "text", title: "Fork name", placeholder: "the event's fork name" }],
-    defaults: [""],
-    parse: spaced(/^(\S+)$/),
-    compose: ([name]) => name,
   },
   end: noFields("End"),
 };
@@ -1909,7 +1892,7 @@ function createConditions(event) {
         commit();
       });
       return el("div", { className: "add-row" }, input, el("button", {
-        type: "button", className: "secondary", textContent: "Remove",
+        type: "button", className: "secondary remove-x", textContent: "×", title: "Remove",
         onclick: () => {
           parsed.other.splice(i, 1);
           commit();
@@ -1932,15 +1915,25 @@ function createConditions(event) {
     );
   }
   render();
-  const options = el("details", { className: "condition-options" }, el("summary", { textContent: "Condition options (hearts, time of day, weather)" }), box);
-  return el("div", {}, summary, options);
+  // The text input stays in the form; the toggles live in `panel`, which the event card shows in the preview pane
+  return { input: summary, panel: el("div", { className: "preview-body" }, box) };
 }
 
 // A line of speech: a clickable portrait face and the words, like the dialogue pages. The face is the "$n" the words start with.
-function dialogueField(words, onInput) {
+// In the form it is one line of plain text, cut off with an ellipsis. Clicking it opens the portrait and a text box in the preview pane.
+// `panes` collects this field's pane owner so the command list can close it when the list is redrawn.
+function dialogueField(words, onInput, panes = []) {
   const m = /^(\$\d+)([\s\S]*)$/.exec(words);
   const state = { face: m ? m[1] : null, text: m ? m[2] : words }; // no "$n" at the start means the default (neutral) face
   const emit = () => onInput((state.face ?? "") + state.text);
+  const inline = el("button", { type: "button", className: "line-text" });
+  const refresh = () => {
+    const line = ((state.face ?? "") + state.text).split("\n").join("  ↵  ");
+    inline.textContent = line || "Click to write what they say";
+    inline.classList.toggle("empty-line", !line);
+    inline.title = line;
+  };
+  refresh();
   const reaction = {
     get face() {
       return state.face ?? "$0";
@@ -1948,14 +1941,34 @@ function dialogueField(words, onInput) {
     set face(value) {
       state.face = value;
       emit();
+      refresh();
     },
   };
-  const text = el("textarea", { value: state.text, rows: 2, title: "Words", placeholder: "What they say" });
-  text.addEventListener("input", () => {
-    state.text = text.value;
-    emit();
+  let card = null;
+  let open = false;
+  const closed = () => {
+    open = false;
+    card?.classList.remove("viewing");
+  };
+  panes.push(closed);
+  inline.addEventListener("click", () => {
+    if (open) return;
+    const text = el("textarea", { value: state.text, rows: 5, title: "Words", placeholder: "What they say" });
+    text.addEventListener("input", () => {
+      state.text = text.value;
+      emit();
+      refresh();
+    });
+    const pane = el("div", { className: "preview-body centered" },
+      el("div", { className: "dialogue-box" }, text, faceButton(reaction, assetUrl("portrait"))),
+      el("p", { className: "hint", textContent: "Click the portrait for the next face. Edits here and in the form stay in step." }));
+    showInPane("Speak", pane, closed);
+    open = true;
+    card = inline.closest(".entry");
+    card?.classList.add("viewing");
+    text.focus();
   });
-  return el("div", { className: "reaction-row wide" }, text, faceButton(reaction, assetUrl("portrait")));
+  return inline;
 }
 
 // --- Emote picker ---
@@ -1963,8 +1976,8 @@ function dialogueField(words, onInput) {
 const EMOTE_COLUMNS = 4;
 const EMOTE_ROWS = 16;
 const EMOTE_SCALE = 3;
-const emoteIcon = (n) => {
-  const size = 16 * EMOTE_SCALE;
+const emoteIcon = (n, scale = EMOTE_SCALE) => {
+  const size = 16 * scale;
   const icon = el("span", { className: "emote-icon" });
   icon.style.cssText = `width:${size}px;height:${size}px;background-image:url("/gameSprites/emotes.png");background-size:${EMOTE_COLUMNS * size}px ${EMOTE_ROWS * size}px;background-position:-${(n % EMOTE_COLUMNS) * size}px -${Math.floor(n / EMOTE_COLUMNS) * size}px`;
   return icon;
@@ -2017,9 +2030,16 @@ function emoteField(value, onInput) {
   return button;
 }
 
-function commandField(field, value, onInput) {
-  if (field.kind === "dialogue") return dialogueField(value, onInput);
+function commandField(field, value, onInput, panes) {
+  if (field.kind === "dialogue") return dialogueField(value, onInput, panes);
   if (field.kind === "emote") return emoteField(value, onInput);
+  if (field.kind === "music") {
+    // The game's tracks, plus the character's own uploaded one
+    const tracks = [...(eventCustomTrack ? [[eventCustomTrack, `Your track: ${eventCustomTrack}`]] : []), ...MUSIC.filter(([v]) => v !== "none")];
+    const select = choiceSelect(tracks, value, field.title);
+    select.addEventListener("change", () => onInput(select.value));
+    return select;
+  }
   let node;
   if (field.kind === "select") node = fieldSelect(field, value);
   else if (field.kind === "textarea") node = el("textarea", { value, rows: 2, title: field.title, placeholder: field.placeholder || "" });
@@ -2030,33 +2050,191 @@ function commandField(field, value, onInput) {
   }
   node.addEventListener(field.kind === "select" ? "change" : "input", () => onInput(node.value));
   if (field.kind === "textarea") node.classList.add("wide");
+  if (field.narrow) node.classList.add("narrow");
+  if (field.small) node.classList.add("small");
   return node;
 }
 
+// A fork is two commands in the script, a "question" then a "fork": `question fork0 "Question#Answer one#Answer two"` and `fork <name>`.
+// The editor shows the pair as one Fork card. The fork's own steps live in the event's forkCommands (shown under the main steps).
+const FORK_CARD = "__fork__";
+const parseQuestion = (args) => {
+  const match = /^(fork\d+) "(.*)"$/s.exec(args);
+  if (!match) return null;
+  const [question, ...answers] = match[2].split("#");
+  return { orientation: match[1], question, answers };
+};
+const composeQuestion = ({ orientation, question, answers }) => `${orientation} "${[question, ...answers].join("#")}"`;
+const FORK_ORIENTATIONS = [["fork0", "fork0"], ["fork1", "fork1"]];
+
+// The question as one line of plain text, cut off with an ellipsis; clicking it edits the whole question in the preview pane.
+function questionField(state, onInput, panes) {
+  const inline = el("button", { type: "button", className: "line-text" });
+  const refresh = () => {
+    inline.textContent = state.question || "Click to write the question";
+    inline.classList.toggle("empty-line", !state.question);
+    inline.title = state.question;
+  };
+  refresh();
+  let card = null;
+  let open = false;
+  const closed = () => {
+    open = false;
+    card?.classList.remove("viewing");
+  };
+  panes.push(closed);
+  inline.addEventListener("click", () => {
+    if (open) return;
+    const text = el("textarea", { value: state.question, rows: 5, title: "Question", placeholder: "What the player is asked" });
+    text.addEventListener("input", () => {
+      state.question = text.value.replaceAll("#", ""); // a # would start a new answer
+      onInput();
+      refresh();
+    });
+    const pane = el("div", { className: "preview-body centered" },
+      el("div", { className: "dialogue-box" }, text),
+      el("p", { className: "hint", textContent: "The question the player sees. Edits here and in the form stay in step." }));
+    showInPane("Question", pane, closed);
+    open = true;
+    card = inline.closest(".entry");
+    card?.classList.add("viewing");
+    text.focus();
+  });
+  return inline;
+}
+
 // The list of commands for an event (or for its fork). `commands` is edited in place.
-function createCommandList(commands, getForkName, map) {
+// `forks` is how this list reaches the event's fork: { name(), has(), create(name), setName(name), remove() }, or null inside the fork itself (no forks within forks).
+function createCommandList(commands, forks, map) {
   const box = el("div", { className: "commands" });
   const rowOf = new Map(); // command -> its row, for the Up/Down animation
+  const panes = []; // pane owners of the speech fields below, closed whenever the list is redrawn
+  let units = []; // what is drawn: one command each, except a question + fork pair, which is one Fork card
 
-  const typeOptions = [...Object.entries(COMMAND_TYPES).map(([value, def]) => ({ value, label: def.label })), { value: CUSTOM, label: "Custom command..." }];
-  const addType = fieldSelect({ title: "Command type", options: typeOptions }, "speak");
+  const rowTypes = [...Object.entries(COMMAND_TYPES).map(([value, def]) => ({ value, label: def.label })), { value: CUSTOM, label: "Custom command..." }];
+  const addTypes = forks ? [{ value: FORK_CARD, label: "Fork (question, answers and steps)" }, ...rowTypes] : rowTypes;
+  const addType = fieldSelect({ title: "Command type", options: addTypes }, "speak");
   const addButton = el("button", { type: "button", className: "secondary", textContent: "Add command" });
+  // An event has one fork, so once it has one the Fork option can't be added again
+  const syncAdd = () => {
+    const blocked = addType.value === FORK_CARD && forks.has();
+    addButton.disabled = blocked;
+    addButton.title = blocked ? "This event already has a fork" : "";
+  };
+  addType.addEventListener("change", syncAdd);
   addButton.addEventListener("click", () => {
-    const def = COMMAND_TYPES[addType.value];
-    if (!def) commands.push({ type: "raw", args: "" });
-    else {
-      const defaults = addType.value === "fork" ? [getForkName()] : def.defaults;
-      commands.push({ type: addType.value, args: def.compose(defaults) });
+    if (addType.value === FORK_CARD) {
+      const name = `fork_${forks.eventId()}`;
+      commands.push({ type: "question", args: composeQuestion({ orientation: "fork0", question: "", answers: ["", ""] }) }, { type: "fork", args: name });
+      forks.create(name); // the fork's own steps appear under these ones, ready to fill in
+    } else {
+      const def = COMMAND_TYPES[addType.value];
+      commands.push(def ? { type: addType.value, args: def.compose(def.defaults) } : { type: "raw", args: "" });
     }
     render();
   });
 
-  const row = (command, index) => {
+  const unitsOf = () => {
+    const out = [];
+    for (let i = 0; i < commands.length; i++) {
+      const [q, f] = [commands[i], commands[i + 1]];
+      if (forks && q.type === "question" && f && f.type === "fork" && /^\S+$/.test(f.args) && parseQuestion(q.args)) {
+        out.push({ commands: [q, f], fork: true });
+        i++;
+      } else out.push({ commands: [q] });
+    }
+    return out;
+  };
+
+  // The arrows and x at the right of a card's head
+  const controls = (unit, index) => {
+    const move = (by) => {
+      const target = index + by;
+      if (target < 0 || target >= units.length) return;
+      const before = new Map(commands.map((c) => [c, rowOf.get(c).getBoundingClientRect().top]));
+      [units[index], units[target]] = [units[target], units[index]];
+      commands.splice(0, commands.length, ...units.flatMap((u) => u.commands));
+      render();
+      // Slide each command from where it was to where it is now, and flash the one that was moved, so the change can be seen
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      for (const c of commands) {
+        const node = rowOf.get(c);
+        const shift = before.get(c) - node.getBoundingClientRect().top;
+        if (shift) node.animate([{ transform: `translateY(${shift}px)` }, { transform: "none" }], { duration: 350, easing: "ease-in-out" });
+      }
+      rowOf.get(unit.commands[0]).animate([{ boxShadow: "0 0 0 3px var(--accent)", backgroundColor: "#e6f2dc" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 900, easing: "ease-out" });
+    };
+    return [
+      el("button", { type: "button", className: "secondary arrow", textContent: "↑", title: "Move up", disabled: index === 0, onclick: () => move(-1) }),
+      el("button", { type: "button", className: "secondary arrow", textContent: "↓", title: "Move down", disabled: index === units.length - 1, onclick: () => move(1) }),
+      el("button", {
+        type: "button",
+        className: "secondary remove-x",
+        textContent: "×",
+        title: unit.fork ? "Remove the fork and its steps" : "Remove",
+        onclick: () => {
+          if (unit.fork && forks.stepCount() > 1 && !confirm(`Remove this fork and its ${forks.stepCount()} steps?`)) return;
+          commands.splice(commands.indexOf(unit.commands[0]), unit.commands.length);
+          if (unit.fork) forks.remove();
+          render();
+        },
+      }),
+    ];
+  };
+
+  // The Fork card: question, fork0/fork1, the fork's name and the answers
+  const forkRow = (unit, index) => {
+    const [q, f] = unit.commands;
+    const state = parseQuestion(q.args);
+    const commit = () => (q.args = composeQuestion(state));
+    const orientation = choiceSelect(FORK_ORIENTATIONS, state.orientation, "Fork orientation (fork0 or fork1)");
+    orientation.addEventListener("change", () => {
+      state.orientation = orientation.value;
+      commit();
+    });
+    const name = el("input", { value: f.args, title: "Fork name: the entry the answer jumps to", placeholder: "fork name" });
+    name.classList.add("fork-name");
+    name.addEventListener("input", () => {
+      name.value = name.value.replace(/\W/g, "");
+      f.args = name.value;
+      forks.setName(name.value);
+    });
+    const answers = state.answers.map((answer, i) => {
+      const input = el("input", { value: answer, title: `Answer ${i + 1}`, placeholder: `Answer ${i + 1}` });
+      input.addEventListener("input", () => {
+        state.answers[i] = input.value.replaceAll("#", "");
+        commit();
+      });
+      return el("div", { className: "answer-row" }, el("span", { className: "step", textContent: `${i + 1}.` }), input, el("button", {
+        type: "button", className: "secondary remove-x", textContent: "×", title: "Remove this answer", disabled: state.answers.length < 2,
+        onclick: () => {
+          state.answers.splice(i, 1);
+          commit();
+          render();
+        },
+      }));
+    });
+    const addAnswer = el("button", {
+      type: "button", className: "secondary", textContent: "Add answer",
+      onclick: () => {
+        state.answers.push("");
+        commit();
+        render();
+      },
+    });
+    const head = el("div", { className: "entry-head" }, el("strong", { className: "fork-label", textContent: "Fork" }), orientation, name, el("span", { className: "key" }), ...controls(unit, index));
+    const body = el("div", { className: "command-fields fork-fields" }, questionField(state, commit, panes), ...answers, el("div", {}, addAnswer));
+    return el("div", { className: "entry command cmd-fork" }, head, body);
+  };
+
+  const row = (unit, index) => {
+    if (unit.fork) return forkRow(unit, index);
+    const command = unit.commands[0];
     const def = COMMAND_TYPES[command.type];
     let values = def ? def.parse(command.args) : null;
     const custom = !values;
 
-    const type = fieldSelect({ title: "Command type", options: typeOptions }, custom ? CUSTOM : command.type);
+    const type = fieldSelect({ title: "Command type", options: rowTypes }, custom ? CUSTOM : command.type);
     type.addEventListener("change", () => {
       const next = COMMAND_TYPES[type.value];
       if (!next) {
@@ -2066,84 +2244,73 @@ function createCommandList(commands, getForkName, map) {
         Object.assign(command, space < 0 ? { type: text || "raw", args: "" } : { type: text.slice(0, space), args: text.slice(space + 1) });
       } else {
         command.type = type.value;
-        command.args = next.compose(type.value === "fork" ? [getForkName()] : next.defaults);
+        command.args = next.compose(next.defaults);
       }
       render();
     });
 
-    const move = (by) => {
-      const target = index + by;
-      if (target < 0 || target >= commands.length) return;
-      const before = new Map(commands.map((c) => [c, rowOf.get(c).getBoundingClientRect().top]));
-      [commands[index], commands[target]] = [commands[target], commands[index]];
-      render();
-      // Slide each command from where it was to where it is now, and flash the one that was moved, so the change can be seen
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      for (const c of commands) {
-        const node = rowOf.get(c);
-        const shift = before.get(c) - node.getBoundingClientRect().top;
-        if (shift) node.animate([{ transform: `translateY(${shift}px)` }, { transform: "none" }], { duration: 350, easing: "ease-in-out" });
-      }
-      rowOf.get(command).animate([{ boxShadow: "0 0 0 3px var(--accent)", backgroundColor: "#e6f2dc" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 900, easing: "ease-out" });
-    };
     // A Move can be set by clicking its destination on the map
     const choosing = !!map.picked() && map.picked().command === command;
     const mapButton = command.type === "move" && !custom
-      ? [el("button", { type: "button", className: `secondary${choosing ? " selected" : ""}`, textContent: choosing ? "Choosing on map" : "Show on map", onclick: () => map.pick({ commands, command, rerender: render }) })]
+      ? [el("button", { type: "button", className: `secondary map-pick${choosing ? " selected" : ""}`, textContent: choosing ? "Choosing on map" : "Show on map", onclick: () => map.pick({ commands, command, rerender: render }) })]
       : [];
-    const head = el(
-      "div",
-      { className: "entry-head" },
-      el("span", { className: "step", textContent: String(index + 1) }),
-      type,
-      el("span", { className: "key" }),
-      ...mapButton,
-      el("button", { type: "button", className: "secondary", textContent: "Up", disabled: index === 0, onclick: () => move(-1) }),
-      el("button", { type: "button", className: "secondary", textContent: "Down", disabled: index === commands.length - 1, onclick: () => move(1) }),
-      el("button", {
-        type: "button",
-        className: "secondary",
-        textContent: "Remove",
-        onclick: () => {
-          commands.splice(index, 1);
-          render();
-        },
-      })
-    );
-
-    let body;
+    // The first field (two for speech, text above head and emote) sits beside the type dropdown; any others go on a line below.
+    // A Move's tiles and facing are hidden: "Show on map" sets them.
+    let first = [];
+    let rest = [];
     if (custom) {
       const name = el("input", { value: command.type === "raw" ? "" : command.type, title: "Command name", placeholder: "command", size: 14 });
       name.addEventListener("input", () => (command.type = name.value.trim() || "raw"));
       const args = el("input", { value: command.args, title: "Everything after the command name", placeholder: "arguments" });
       args.addEventListener("input", () => (command.args = args.value));
-      body = el("div", { className: "command-fields" }, name, args);
+      [first, rest] = [[name], [args]];
     } else {
-      body = el(
-        "div",
-        { className: "command-fields" },
-        ...def.fields.map((field, i) =>
+      const shown = def.fields
+        .map((field, i) =>
           commandField(field, values[i], (value) => {
             values[i] = value;
             command.args = def.compose(values);
             map.changed();
-          })
+          }, panes)
         )
-      );
+        .filter((_, i) => !(def.hide || []).includes(i));
+      first = shown.slice(0, def.inHead || 1);
+      rest = shown.slice(def.inHead || 1);
     }
-    const node = el("div", { className: "entry command" }, head, body);
-    rowOf.set(command, node);
-    return node;
+
+    const head = el("div", { className: "entry-head" }, type, ...first, el("span", { className: "key" }), ...mapButton, ...controls(unit, index));
+    return el("div", { className: `entry command${custom ? "" : ` cmd-${command.type}`}${choosing ? " viewing" : ""}` }, head, ...(rest.length ? [el("div", { className: "command-fields" }, ...rest)] : []));
   };
 
   function render() {
+    panes.splice(0).forEach((owner) => clearPane(owner)); // a speech open in the pane belongs to a row that is about to be replaced
+    rowOf.clear();
+    units = unitsOf();
+    const nodes = units.map((unit, i) => {
+      const node = row(unit, i);
+      unit.commands.forEach((c) => rowOf.set(c, node));
+      return node;
+    });
     box.replaceChildren(
-      ...(commands.length ? commands.map(row) : [el("p", { className: "empty", textContent: "No commands yet." })]),
+      ...(nodes.length ? nodes : [el("p", { className: "empty", textContent: "No commands yet." })]),
       el("div", { className: "add-row" }, addType, addButton)
     );
+    if (forks) syncAdd();
     map.changed();
   }
-  map.register(box, render);
+  // Highlights the Move being chosen on the map, without redrawing (the map closing must not rebuild rows)
+  const sync = () => {
+    for (const [command, node] of rowOf) {
+      const on = !!map.picked() && map.picked().command === command;
+      node.classList.toggle("viewing", on);
+      const button = node.querySelector(".map-pick");
+      if (button) {
+        button.classList.toggle("selected", on);
+        button.textContent = on ? "Choosing on map" : "Show on map";
+      }
+    }
+  };
+  map.register(box, render, sync);
   render();
   return box;
 }
@@ -2202,7 +2369,7 @@ const parseViewport = (text) => {
 };
 
 // The editor under an event's Viewport/Actors fields. `onChange` is told when a drag or list edit changed event.viewport / event.actors.
-function createMapEditor(event, onChange, onPick) {
+function createMapEditor(event, onChange, onPick, onUnpick) {
   let zoom = 0;
   let loaded = null; // { map, base } for the place currently shown
   let mode = "viewport";
@@ -2408,7 +2575,7 @@ function createMapEditor(event, onChange, onPick) {
       return el("div", { className: "add-row actor-row" },
         el("span", { className: "swatch", style: `background:${ACTOR_COLORS[i % ACTOR_COLORS.length]}` }), name,
         el("label", {}, "x ", number("x", "Tile across")), el("label", {}, "y ", number("y", "Tile down")), facing,
-        el("button", { type: "button", className: "secondary", textContent: "Remove", onclick: () => { actors.splice(i, 1); save(); renderActors(); } }));
+        el("button", { type: "button", className: "secondary remove-x", textContent: "×", title: "Remove", onclick: () => { actors.splice(i, 1); save(); renderActors(); } }));
     });
     actorList.replaceChildren(...rows, el("button", {
       type: "button",
@@ -2515,7 +2682,12 @@ function createMapEditor(event, onChange, onPick) {
   }
   function api_pick(info) {
     picked = info && picked && picked.command === info.command ? null : info; // choosing the same one again turns it off
-    if (picked) setOpen(true);
+    if (picked) {
+      mode = "actors"; // opened from a Move: the Actors tool is the one wanted afterwards
+      refreshModes();
+      updateHint();
+      setOpen(true);
+    }
     updateBanner();
     drawOverlay();
     onPick();
@@ -2551,25 +2723,31 @@ function createMapEditor(event, onChange, onPick) {
   let isOpen = false;
   const closeFromPane = () => {
     isOpen = false;
-    openButton.textContent = "Show the map: set the viewport and place the actors";
+    if (picked) {
+      // The map is gone, so the Move is no longer being chosen: only the highlight changes, the rows are not redrawn
+      picked = null;
+      onUnpick();
+    }
   };
   function setOpen(open) {
     if (open === isOpen) return;
     if (open) {
       isOpen = true;
-      openButton.textContent = "Hide the map";
       showInPane("Map", panel, closeFromPane); // replaces whatever else was showing, including another map
       show();
     } else {
       clearPane(closeFromPane);
     }
   }
-  const openButton = el("button", { type: "button", className: "secondary", onclick: () => setOpen(!isOpen) });
   const panel = el("div", { className: "map-panel" }, message, toolbar, hint, banner, scroll, actorList);
-  openButton.textContent = "Show the map: set the viewport and place the actors";
-  const node = el("div", { className: "map-editor" }, openButton);
   return {
-    node,
+    // Clicking the Viewport or Actors field opens the map on the matching tool
+    open(nextMode) {
+      mode = nextMode;
+      refreshModes();
+      updateHint();
+      setOpen(true);
+    },
     // The Move commands' "Show on map" buttons
     pick: api_pick,
     picked: () => picked,
@@ -2589,6 +2767,7 @@ function createMapEditor(event, onChange, onPick) {
   };
 }
 
+let eventCustomTrack = ""; // the id of the character's uploaded track, for the Play music command's dropdown
 let eventAudio = null; // the music preview currently playing, if any
 
 function createEventsEditor(section) {
@@ -2641,7 +2820,8 @@ function createEventsEditor(section) {
         viewportInput.value = event.viewport;
         actorsInput.value = event.actors;
       },
-      () => refreshLists()
+      () => refreshLists(),
+      () => lists.forEach((l) => l.sync())
     );
     viewportInput.addEventListener("input", () => mapEditor.redraw());
     // The command lists (main and fork) share the map: their Move commands can be chosen on it
@@ -2651,12 +2831,28 @@ function createEventsEditor(section) {
       lists.forEach((l) => l.render());
     };
     const mapHooks = {
-      register: (box, render) => lists.push({ box, render }),
+      register: (box, render, sync) => lists.push({ box, render, sync }),
       picked: () => mapEditor.picked(),
       pick: (info) => mapEditor.pick(info),
       changed: () => mapEditor.drawPaths(),
     };
     actorsInput.addEventListener("input", () => mapEditor.redraw());
+    // Clicking (or tabbing into) the viewport or actors field shows the map in the preview pane
+    for (const [input, mode] of [[viewportInput, "viewport"], [actorsInput, "actors"]]) {
+      input.addEventListener("click", () => mapEditor.open(mode));
+      input.addEventListener("focus", () => mapEditor.open(mode));
+    }
+
+    // Conditions: the text input stays here, the toggles open in the preview pane when it is clicked
+    const conditions = createConditions(event);
+    let conditionsOpen = false;
+    const showConditions = () => {
+      if (conditionsOpen) return;
+      showInPane("Conditions", conditions.panel, () => (conditionsOpen = false));
+      conditionsOpen = true;
+    };
+    conditions.input.addEventListener("click", showConditions);
+    conditions.input.addEventListener("focus", showConditions);
 
     // Music: a dropdown of the known tracks, or "Other" to type one
     const musicBox = el("div", { className: "music-row" });
@@ -2698,25 +2894,35 @@ function createEventsEditor(section) {
     const skippable = el("input", { type: "checkbox", checked: event.skippable });
     skippable.addEventListener("change", () => (event.skippable = skippable.checked));
 
-    // The fork is optional: the name the player's answer jumps to, and its own commands
-    const forkName = el("input", { value: event.forkName || "", placeholder: "e.g. carry_it_forward" });
+    // The fork is added with a Fork command in the steps: that creates the fork's own steps here, to run when its answer is chosen
     const forkBox = el("div");
-    const hasFork = el("input", { type: "checkbox", checked: event.forkName !== undefined });
+    const forkTitle = el("p", { className: "hint" });
+    const setForkTitle = () => (forkTitle.textContent = `Runs when the answer takes the fork "${event.forkName}".`);
     const renderFork = () => {
-      forkName.hidden = !hasFork.checked;
-      forkBox.replaceChildren(...(hasFork.checked ? [createCommandList(event.forkCommands, () => event.forkName || "", mapHooks)] : []));
+      setForkTitle();
+      forkBox.replaceChildren(...(event.forkName !== undefined
+        ? [forkTitle, createCommandList(event.forkCommands, null, mapHooks)]
+        : [el("p", { className: "empty", textContent: "No fork. Add a Fork command to the steps above and its own steps appear here." })]));
     };
-    hasFork.addEventListener("change", () => {
-      if (hasFork.checked) {
-        event.forkName = forkName.value;
+    const forks = {
+      eventId: () => event.id,
+      has: () => event.forkName !== undefined,
+      stepCount: () => (event.forkCommands || []).length,
+      create(name) {
+        event.forkName = name;
         event.forkCommands = event.forkCommands || [{ type: "end", args: "" }];
-      } else {
+        renderFork();
+      },
+      setName(name) {
+        event.forkName = name;
+        setForkTitle();
+      },
+      remove() {
         delete event.forkName;
         delete event.forkCommands;
-      }
-      renderFork();
-    });
-    forkName.addEventListener("input", () => (event.forkName = forkName.value));
+        renderFork();
+      },
+    };
     renderFork();
 
     const details = el(
@@ -2725,19 +2931,16 @@ function createEventsEditor(section) {
       summary,
       labelled("Event ID", text("id", { title: "Event ID" }), "A unique number. Part of the event's key in the game."),
       labelled("Place", locationInput, "The map the event happens in (Data/Events/<place>)."),
-      el("div", { className: "label" }, el("span", { textContent: "Conditions" }), createConditions(event),
-        el("small", { textContent: "All optional. Switch one on to limit when the event can trigger." })),
+      el("div", { className: "field" }, el("span", { textContent: "Conditions" }), el("div", {}, conditions.input,
+        el("small", { textContent: "All optional. Click to switch on hearts, time of day or weather in the preview panel, or type them separated by /." }))),
       el("h4", { textContent: "Setup" }),
       labelled("Starting music", musicBox, "The track playing as the event opens. Pick None for silence. Play previews your uploaded track (Assets tab); Stardew's own tracks can't be previewed here."),
       labelled("Viewport", viewportInput, "The map tile the camera starts on, as x y."),
-      labelled("Actors", actorsInput, "Who is in the scene and where: name x y facing, repeated (e.g. farmer 15 16 0 {name} 11 10 0)."),
-      mapEditor.node,
-      el("label", { className: "check" }, skippable, el("span", { textContent: "Skippable" })),
+      labelled("Actors", actorsInput, "Who is in the scene and where: name x y facing, repeated (e.g. farmer 15 16 0 {name} 11 10 0). Click the viewport or actors to show the map."),
+      el("label", { className: "check indent" }, skippable, el("span", { textContent: "Skippable" })),
       el("h4", { textContent: "Commands" }),
-      createCommandList(event.commands, () => event.forkName || "", mapHooks),
-      el("h4", { textContent: "Fork" }),
-      el("label", { className: "check" }, hasFork, el("span", { textContent: "This event has a fork (a question's answer jumps to it)" })),
-      forkName,
+      createCommandList(event.commands, forks, mapHooks),
+      el("h4", { textContent: "Fork steps" }),
       forkBox,
       el("button", {
         type: "button",
@@ -2794,8 +2997,10 @@ function createEventsEditor(section) {
       try {
         const music = (await api(`/api/assets?folder=${encodeURIComponent(folder)}`)).music;
         customTrack = music.exists ? music.name.replace(/\.[^.]+$/, "") : "";
+        eventCustomTrack = customTrack;
       } catch {
         customTrack = "";
+        eventCustomTrack = "";
       }
       addRow.hidden = !loaded;
       render();

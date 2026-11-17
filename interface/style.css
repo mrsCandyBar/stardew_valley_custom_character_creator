@@ -261,11 +261,17 @@ pre {
 /* Events */
 .event > summary { cursor: pointer; font-family: monospace; font-weight: 600; margin-bottom: 8px; }
 .event h4 { margin: 14px 0 6px; font-size: 0.9rem; }
-.event .label { display: grid; gap: 6px; margin-bottom: 10px; }
-.event .label > span { font-weight: 600; font-size: 0.9rem; }
-.event .label small, .event label small { color: var(--muted); }
+/* Same label-left, field-right layout as <label>, for rows that can't be a label */
+.event .field { display: grid; grid-template-columns: 170px 1fr; column-gap: 16px; align-items: center; margin-bottom: 14px; }
+.event .field > span { font-weight: 600; }
+.event .field small, .event label small { color: var(--muted); }
 .event label.check { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
 .event label.check input { width: auto; }
+.event label.check.indent { margin-left: 186px; } /* lines up with the fields: label column (170px) + gap (16px) */
+@media (max-width: 520px) {
+  .event .field { grid-template-columns: 1fr; }
+  .event label.check.indent { margin-left: 0; }
+}
 .event .add-row { margin-bottom: 6px; }
 .commands .command { margin-bottom: 8px; background: #fbf8f0; }
 .command-fields { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -319,13 +325,10 @@ pre {
 .weather-icon { font-size: 1.8rem; line-height: 1.1; }
 .music-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .music-row select, .music-row input { width: auto; flex: 1 1 200px; }
-.condition-options { margin-top: 8px; }
-.condition-options > summary { cursor: pointer; color: var(--accent-dark); font-size: 0.9rem; margin-bottom: 8px; }
 .music-row select, .music-row input { flex: 1 1 200px; }
 .music-row button { flex: none; }
 
 /* Map view */
-.map-editor { margin: 8px 0 12px; }
 .map-toolbar { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; }
 .map-toolbar .grow { flex: 1; }
 .map-toolbar select { width: auto; }
@@ -349,9 +352,15 @@ pre {
 /* The map lives in the preview pane */
 .map-panel .map-scroll { max-height: 70vh; }
 
-/* Speech in an event command: portrait and words, like the dialogue pages */
-.command-fields .reaction-row.wide { flex: 1 1 100%; }
-.command-fields .reaction-row textarea { flex: 1; width: auto; min-height: 123px; }
+/* Command cards: the first field sits beside the type dropdown, arrows and an x replace the Up/Down/Remove words */
+.entry-head input.narrow { flex: 0 0 7em; width: 7em; } /* the "Who" box */
+.entry-head input[type=number] { flex: 0 0 7em; }
+.entry-head .line-text { flex: 1 1 200px; }
+.entry-head .arrow { padding: 6px 10px; line-height: 1; font-size: 1rem; }
+
+/* Speech in an event command: one line of text, click to edit it in the preview pane (like the dialogue pages) */
+.command-fields .line-text { flex: 1 1 100%; }
+.line-text.viewing { background: rgba(0, 0, 0, 0.05); }
 
 /* Emote picker */
 .emote-button { display: inline-flex; align-items: center; gap: 8px; padding: 2px 10px 2px 4px; background: #fff; color: inherit; border: 2px solid var(--border); border-radius: 4px; cursor: pointer; font-family: monospace; font-weight: 600; }
@@ -432,3 +441,16 @@ pre {
 .chip.selected { color: #fff; background: var(--accent); border-color: var(--accent-dark); }
 .stop-editor { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
 .stop-editor select { width: auto; }
+
+/* Command cards are indented by type so the script reads as a sequence of scenes */
+.commands .command.cmd-speak { margin-left: 30px; }
+.commands .command.cmd-pause, .commands .command.cmd-emote, .commands .command.cmd-textAboveHead { margin-left: 60px; }
+
+/* Fork card: question as text, answers underneath */
+.fork-label { min-width: 2.5em; }
+.entry-head input.fork-name { flex: 0 1 12em; font-family: monospace; }
+.fork-fields { flex-direction: column; align-items: stretch; }
+.fork-fields .line-text { flex: none; }
+.answer-row { display: flex; align-items: center; gap: 8px; }
+.answer-row input { width: auto; flex: 1; }
+.entry-head input.small { flex: 0 0 5em; width: 5em; }
