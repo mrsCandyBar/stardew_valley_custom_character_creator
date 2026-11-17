@@ -1,7 +1,7 @@
 {
   "events": [
     {
-      "id": "9999004",
+      "id": "40",
       "location": "ArchaeologyHouse",
       "conditions": [
         "f {name} 1000"
@@ -169,10 +169,11 @@
       ]
     },
     {
-      "id": "9999002",
+      "id": "39",
       "location": "ElliottHouse",
       "conditions": [
-        "f {name} 500"
+        "f {name} 500",
+        "p {name}"
       ],
       "music": "none",
       "viewport": "4 5",
@@ -305,10 +306,10 @@
       ]
     },
     {
-      "id": "9999006",
+      "id": "42",
       "location": "ElliottHouse",
       "conditions": [
-        "f {name} 1500"
+        "f {name} 2000"
       ],
       "music": "none",
       "viewport": "4 7",
@@ -421,11 +422,12 @@
       ]
     },
     {
-      "id": "9999008",
+      "id": "1848481",
       "location": "Beach",
       "conditions": [
         "f {name} 2000",
-        "w sunny"
+        "k 43",
+        "t 1300 1900"
       ],
       "music": "none",
       "viewport": "12 38",
@@ -495,11 +497,12 @@
       ]
     },
     {
-      "id": "9999010",
+      "id": "43",
       "location": "Beach",
       "conditions": [
         "f {name} 2500",
-        "t 2000 2400"
+        "w sunny",
+        "t 700 1300"
       ],
       "music": "none",
       "viewport": "12 38",
@@ -680,11 +683,13 @@
       ]
     },
     {
-      "id": "9999014",
+      "id": "3912125",
       "location": "Farm",
       "conditions": [
+        "3912125",
         "f {name} 3500",
-        "d-1"
+        "O {name}",
+        "A {name}Gone"
       ],
       "music": "none",
       "viewport": "15 11",
