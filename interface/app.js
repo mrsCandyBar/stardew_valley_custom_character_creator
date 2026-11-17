@@ -2809,6 +2809,7 @@ function createEventsEditor(section) {
       event.location = locationInput.value;
       refresh();
       mapEditor.setLocation();
+      render();
     });
 
     // Viewport and actors: text fields, plus the map view that edits the same two values
@@ -2956,9 +2957,28 @@ function createEventsEditor(section) {
     return details;
   }
 
+  // Events in the same place sit together (places in the order they first appear), as they are written to the game
+  function groupByLocation() {
+    const order = [...new Set(events.map((e) => e.location))];
+    events = events
+      .map((e, i) => [e, i])
+      .sort((a, b) => order.indexOf(a[0].location) - order.indexOf(b[0].location) || a[1] - b[1])
+      .map(([e]) => e);
+  }
+
   function render() {
     closePane();
-    list.replaceChildren(...(events.length ? events.map(card) : [el("p", { className: "empty", textContent: "None yet." })]));
+    groupByLocation();
+    const nodes = [];
+    let last;
+    for (const event of events) {
+      if (event.location !== last) {
+        last = event.location;
+        nodes.push(el("h3", { textContent: event.location || "(no place)" }));
+      }
+      nodes.push(card(event));
+    }
+    list.replaceChildren(...(nodes.length ? nodes : [el("p", { className: "empty", textContent: "None yet." })]));
   }
 
   addButton.addEventListener("click", () => {
@@ -3008,6 +3028,7 @@ function createEventsEditor(section) {
     async save(folder) {
       if (!loaded) return;
       try {
+        groupByLocation();
         // "open" is only for the page, so it isn't saved
         await postJson("/api/events", { folder, events: events.map(({ open, ...event }) => event) });
         showMessage("");

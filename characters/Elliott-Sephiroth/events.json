@@ -169,11 +169,10 @@
       ]
     },
     {
-      "id": "39",
+      "id": "140",
       "location": "ElliottHouse",
       "conditions": [
-        "f {name} 500",
-        "p {name}"
+        "f {name} 500"
       ],
       "music": "none",
       "viewport": "4 5",
@@ -186,15 +185,19 @@
         },
         {
           "type": "playMusic",
-          "args": "eerie"
-        },
-        {
-          "type": "textAboveHead",
-          "args": "{name} \"... {{ PlayerName }}?\""
+          "args": "sadpiano"
         },
         {
           "type": "pause",
-          "args": "5000"
+          "args": "500"
+        },
+        {
+          "type": "textAboveHead",
+          "args": "{name} \"... {{ PlayerName }} ...\""
+        },
+        {
+          "type": "pause",
+          "args": "3000"
         },
         {
           "type": "move",
@@ -214,7 +217,7 @@
         },
         {
           "type": "pause",
-          "args": "600"
+          "args": "1000"
         },
         {
           "type": "move",
@@ -262,7 +265,7 @@
         },
         {
           "type": "fork",
-          "args": "thePastMatters"
+          "args": "the_past_matters"
         },
         {
           "type": "speak",
@@ -281,7 +284,7 @@
           "args": ""
         }
       ],
-      "forkName": "thePastMatters",
+      "forkName": "the_past_matters",
       "forkCommands": [
         {
           "type": "raw",
@@ -306,19 +309,23 @@
       ]
     },
     {
-      "id": "42",
+      "id": "141",
       "location": "ElliottHouse",
       "conditions": [
         "f {name} 2000"
       ],
       "music": "none",
-      "viewport": "4 7",
+      "viewport": "7 4",
       "actors": "farmer 3 8 0 {name} 8 4 0",
       "skippable": true,
       "commands": [
         {
+          "type": "showFrame",
+          "args": "{name} 24"
+        },
+        {
           "type": "move",
-          "args": "farmer 0 -4 0"
+          "args": "farmer 0 -3 0"
         },
         {
           "type": "pause",
@@ -338,7 +345,7 @@
         },
         {
           "type": "pause",
-          "args": "120000"
+          "args": "20000"
         },
         {
           "type": "move",
@@ -422,12 +429,10 @@
       ]
     },
     {
-      "id": "1848481",
+      "id": "142",
       "location": "Beach",
       "conditions": [
-        "f {name} 2000",
-        "k 43",
-        "t 1300 1900"
+        "f {name} 2000"
       ],
       "music": "none",
       "viewport": "12 38",
@@ -497,12 +502,10 @@
       ]
     },
     {
-      "id": "43",
+      "id": "143",
       "location": "Beach",
       "conditions": [
-        "f {name} 2500",
-        "w sunny",
-        "t 700 1300"
+        "f {name} 2500"
       ],
       "music": "none",
       "viewport": "12 38",
@@ -683,13 +686,10 @@
       ]
     },
     {
-      "id": "3912125",
+      "id": "144",
       "location": "Farm",
       "conditions": [
-        "3912125",
-        "f {name} 3500",
-        "O {name}",
-        "A {name}Gone"
+        "f {name} 3500"
       ],
       "music": "none",
       "viewport": "15 11",
