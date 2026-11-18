@@ -2355,17 +2355,37 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
       args.addEventListener("input", () => (command.args = args.value));
       [first, rest] = [[name], [args]];
     } else {
+      // A Move shows the exact string that is written to the event ("who x y facing"), editable as an override
+      // for when "Show on map" didn't set the tiles or facing as expected.
+      let exact = null;
+      if (command.type === "move") {
+        exact = el("input", { value: command.args, title: "The exact move: who, tiles right, tiles down, facing (0 up, 1 right, 2 down, 3 left). Edit it to override.", className: "exact-move", spellcheck: false });
+        const check = () => exact.classList.toggle("invalid", !def.parse(exact.value));
+        check();
+        exact.addEventListener("input", () => {
+          command.args = exact.value;
+          const parsed = def.parse(exact.value);
+          if (parsed) values.splice(0, values.length, ...parsed); // keep the other fields in step
+          check();
+          map.changed();
+        });
+      }
       const shown = def.fields
         .map((field, i) =>
           commandField(field, values[i], (value) => {
             values[i] = value;
             command.args = def.compose(values);
+            if (exact) {
+              exact.value = command.args;
+              exact.classList.remove("invalid");
+            }
             map.changed();
           }, panes)
         )
         .filter((_, i) => !(def.hide || []).includes(i));
       first = shown.slice(0, def.inHead || 1);
       rest = shown.slice(def.inHead || 1);
+      if (exact) rest.push(el("label", { className: "exact-label" }, el("span", { textContent: "Exact move" }), exact));
     }
 
     const head = el("div", { className: "entry-head" }, type, ...first, el("span", { className: "key" }), ...mapButton, ...controls(unit, index));

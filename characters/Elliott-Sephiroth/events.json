@@ -978,7 +978,7 @@
         },
         {
           "type": "move",
-          "args": "{name} 0 2 2"
+          "args": "{name} 0 3 2"
         },
         {
           "type": "speak",
@@ -1074,11 +1074,11 @@
         },
         {
           "type": "speak",
-          "args": "{name} \"But I don't want spend the day worrying about things I cannot change at all.\""
+          "args": "{name} \"But I don't want spend the days we have together worrying about things I cannot change at all.\""
         },
         {
           "type": "move",
-          "args": "{name} 0 -1 2"
+          "args": "{name} 0 -1 0"
         },
         {
           "type": "showFrame",
@@ -1099,6 +1099,10 @@
         {
           "type": "speak",
           "args": "{name} \"$6You are like the sun to me. And I will be... whatever you wish me to be, just promise me...\""
+        },
+        {
+          "type": "move",
+          "args": "{name} 0 -1 0"
         },
         {
           "type": "pause",
@@ -1138,7 +1142,7 @@
         },
         {
           "type": "move",
-          "args": "{name} 0 -1 2"
+          "args": "{name} 0 -1 0"
         },
         {
           "type": "showFrame",
@@ -1179,10 +1183,6 @@
         {
           "type": "pause",
           "args": "1000"
-        },
-        {
-          "type": "showFrame",
-          "args": "farmer 2"
         },
         {
           "type": "emote",
