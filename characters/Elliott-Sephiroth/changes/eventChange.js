@@ -12,13 +12,15 @@ const { events } = require("../events.json");
 
 const folder = "Data/Events";
 const fill = (text) => text.replaceAll("{name}", SDV_Name);
+// A { type: "repeat", times, commands } group is written out `times` times (the game has no loops)
+const expand = (list) => list.flatMap((c) => (c.type === "repeat" ? Array.from({ length: c.times }, () => expand(c.commands)).flat() : [c]));
 const toText = ({ type, args }) => fill(type === "raw" ? args : args ? `${type} ${args}` : type);
 
 // Turns an event into its main entry and, if it has one, its fork entry. Forks are kept apart so they can go last.
 function toEntries({ id, conditions, music, viewport, actors, skippable, commands, forkName, forkCommands }) {
   const key = fill([id, ...conditions].join("/"));
-  const sequence = [fill(music), fill(viewport), fill(actors), ...(skippable ? ["skippable"] : []), ...commands.map(toText)];
-  const fork = forkName ? [fill(forkName), (forkCommands || []).map(toText).join("/")] : null;
+  const sequence = [fill(music), fill(viewport), fill(actors), ...(skippable ? ["skippable"] : []), ...expand(commands).map(toText)];
+  const fork = forkName ? [fill(forkName), expand(forkCommands || []).map(toText).join("/")] : null;
   return { event: [key, sequence.join("/")], fork };
 }
 

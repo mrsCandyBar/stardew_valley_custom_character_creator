@@ -166,6 +166,11 @@ function cleanCommands(list, label) {
   return (Array.isArray(list) ? list : []).map((command, i) => {
     const where = `${label}, command ${i + 1}`;
     const type = String(command?.type ?? "");
+    // A Repeat group is expanded when the mod is built: { type: "repeat", times, commands }
+    if (type === "repeat") {
+      const times = Math.min(99, Math.max(1, Math.floor(Number(command.times)) || 1));
+      return { type, times, commands: cleanCommands(command.commands, `${where} (repeat)`) };
+    }
     if (type !== "raw" && !/^\w+$/.test(type)) throw new Error(`${where}: the command type must be one word.`);
     return { type, args: oneLine(command?.args, where, { required: false }) };
   });

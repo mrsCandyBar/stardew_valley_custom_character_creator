@@ -463,3 +463,11 @@ pre {
 .answer-row { display: flex; align-items: center; gap: 8px; }
 .answer-row input { width: auto; flex: 1; }
 .entry-head input.small { flex: 0 0 5em; width: 5em; }
+
+/* Repeat: a group of commands played several times */
+.cmd-repeat { border-left: 4px solid var(--accent); }
+.cmd-repeat > .commands { margin: 0.5em 0 0 1em; }
+.repeat-summary { color: #666; font-size: 0.85em; }
+.cmd-repeat input[type="number"] { width: 4.5em; }
+.frame-generator { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em; margin: 0.5em 0 0 1em; }
+.frame-generator[hidden] { display: none; }
