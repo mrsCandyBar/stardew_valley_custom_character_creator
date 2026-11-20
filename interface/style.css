@@ -477,3 +477,10 @@ pre {
 .exact-label span { color: #666; font-size: 0.85em; white-space: nowrap; }
 .exact-move { flex: 1; font-family: monospace; }
 .exact-move.invalid { outline: 2px solid #d6405a; }
+
+/* Mail */
+.letter { padding: 18px 20px; background: #f3e3b8; border: 2px solid #b5833f; border-radius: 4px; color: #4a2f12; }
+.letter-subject { margin: 0 0 12px; font-weight: 700; }
+.letter-text { margin: 0; white-space: pre-wrap; }
+.letter-gifts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; padding-top: 10px; border-top: 1px solid #b5833f; }
+.letter-gift { display: flex; align-items: center; gap: 6px; }

@@ -1,0 +1,16 @@
+{
+  "mail": [
+    {
+      "id": "WelcomeLetter",
+      "subject": "A Gift From Afar",
+      "text": "Dear @,\nPlaceholder letter text.\n   -{newName}",
+      "items": [{ "item": "395", "count": 1 }],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 500,
+      "condition": "",
+      "delivery": "Today",
+      "once": true
+    }
+  ]
+}

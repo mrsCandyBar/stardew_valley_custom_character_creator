@@ -213,6 +213,53 @@ function cleanEvents(body) {
   });
 }
 
+// Mail: { mail: [{ id, subject, text, items: [{ item, count }], money, trigger, friendshipPoints, condition, delivery, once }] }
+// The letter is built as "<text> %item ... %%[#]<subject>", so none of those markers may appear in the text itself.
+const MAIL_TRIGGERS = ["DayStarted", "DayEnding"];
+const MAIL_DELIVERY = ["Today", "Tomorrow"];
+
+function cleanMail(body) {
+  if (!Array.isArray(body)) throw new Error("Expected a list of letters.");
+  const ids = new Set();
+  return body.map((letter) => {
+    const id = String(letter?.id ?? "").trim();
+    if (!/^\w{1,60}$/.test(id)) throw new Error(`"${id}" isn't a valid letter ID (letters, numbers and _ only).`);
+    if (ids.has(id)) throw new Error(`The letter ID ${id} is used twice.`);
+    ids.add(id);
+    const label = `Letter ${id}`;
+
+    const subject = String(letter.subject ?? "").replace(/\s*\r?\n\s*/g, " ").trim();
+    if (!subject) throw new Error(`${label} needs a subject (the title shown in the mailbox).`);
+    const text = String(letter.text ?? "").replace(/\r\n/g, "\n").trim();
+    if (!text) throw new Error(`${label} needs some text.`);
+    for (const [name, value] of [["subject", subject], ["text", text]]) {
+      if (/\[#\]|%item|%%|\^/.test(value)) throw new Error(`${label}: the ${name} can't contain [#], %item, %% or ^ (use a new line for a line break).`);
+    }
+
+    const seen = new Set();
+    const items = (Array.isArray(letter.items) ? letter.items : []).map((entry) => {
+      const item = String(entry?.item ?? "");
+      if (!/^\w{1,60}$/.test(item)) throw new Error(`${label}: "${item}" isn't a valid item id.`);
+      if (seen.has(item)) throw new Error(`${label}: the item (O)${item} is attached twice.`);
+      seen.add(item);
+      const count = Math.floor(Number(entry.count));
+      if (!(count >= 1 && count <= 999)) throw new Error(`${label}: the number of (O)${item} must be 1 to 999.`);
+      return { item, count };
+    });
+    const money = Math.floor(Number(letter.money) || 0);
+    if (money < 0 || money > 1e7) throw new Error(`${label}: the money must be 0 to 10,000,000.`);
+
+    const trigger = String(letter.trigger ?? "DayStarted");
+    if (!MAIL_TRIGGERS.includes(trigger)) throw new Error(`${label}: the trigger must be ${MAIL_TRIGGERS.join(" or ")}.`);
+    const delivery = String(letter.delivery ?? "Today");
+    if (!MAIL_DELIVERY.includes(delivery)) throw new Error(`${label}: the delivery must be ${MAIL_DELIVERY.join(" or ")}.`);
+    const friendshipPoints = Math.floor(Number(letter.friendshipPoints) || 0);
+    if (friendshipPoints < 0 || friendshipPoints > 3500) throw new Error(`${label}: the friendship points must be 0 to 3500.`);
+    const condition = String(letter.condition ?? "").replace(/\s*\r?\n\s*/g, " ").trim();
+    return { id, subject, text, items, money, trigger, friendshipPoints, condition, delivery, once: letter.once !== false };
+  });
+}
+
 function readRaw(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -322,6 +369,28 @@ async function handleApi(req, res, url) {
       const disableDefaultEvents = body.disableDefaultEvents !== false;
       fs.writeFileSync(file, JSON.stringify({ disableDefaultEvents, events }, null, 2) + "\n");
       return send(res, 200, { saved: "events.json", count: events.length });
+    }
+  }
+
+  // Mail (mail.json). A character with no mail.json yet just has no letters.
+  if (url.pathname === "/api/mail") {
+    const body = req.method === "POST" ? await readBody(req) : {};
+    const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
+    if (!dir) return send(res, 404, { error: "Unknown character folder" });
+    const file = path.join(dir, "mail.json");
+
+    if (req.method === "GET") {
+      return send(res, 200, { mail: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")).mail || [] : [] });
+    }
+    if (req.method === "POST") {
+      let mail;
+      try {
+        mail = cleanMail(body.mail);
+      } catch (err) {
+        return send(res, 400, { error: err.message });
+      }
+      fs.writeFileSync(file, JSON.stringify({ mail }, null, 2) + "\n");
+      return send(res, 200, { saved: "mail.json", count: mail.length });
     }
   }
 

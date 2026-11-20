@@ -34,6 +34,7 @@
           <button type="button" class="tab" role="tab" id="tab-schedule" data-tab="schedule" aria-controls="panel-schedule">Schedule</button>
           <button type="button" class="tab" role="tab" id="tab-gifts" data-tab="gifts" aria-controls="panel-gifts">Gift tastes</button>
           <button type="button" class="tab" role="tab" id="tab-events" data-tab="events" aria-controls="panel-events">Events</button>
+          <button type="button" class="tab" role="tab" id="tab-mail" data-tab="mail" aria-controls="panel-mail">Mail</button>
         </div>
 
       <section class="panel" role="tabpanel" id="panel-details" data-panel="details" aria-labelledby="tab-details">
@@ -124,6 +125,9 @@
 
       <section class="panel events-editor" role="tabpanel" id="panel-events" data-panel="events" aria-labelledby="tab-events" hidden data-title="Events"
         data-hint="Saved to events.json. An event is its ID, the place it happens, when it can trigger and a script of commands. Use {name} where the Stardew character's name goes. The first few settings are required; everything after that is a list of commands you build up."></section>
+
+      <section class="panel mail-editor" role="tabpanel" id="panel-mail" data-panel="mail" aria-labelledby="tab-mail" hidden data-title="Mail"
+        data-hint="Saved to mail.json. Each letter is sent to the player by a trigger: when a day starts or ends, once the friendship points (250 per heart) and any extra condition are met. It can have items or money attached. Use @ for the player's name and {newName} for the new character's name."></section>
       </div>
 
       <div class="actions">

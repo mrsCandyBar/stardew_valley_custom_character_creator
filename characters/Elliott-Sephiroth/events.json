@@ -1,4 +1,5 @@
 {
+  "disableDefaultEvents": true,
   "events": [
     {
       "id": "142",

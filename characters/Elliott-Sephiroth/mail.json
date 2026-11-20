@@ -1,0 +1,123 @@
+{
+  "mail": [
+    {
+      "id": "FirstLetter",
+      "subject": "Lost and found",
+      "text": "@,\n\nWalking past your orchards today reminded me of a quiet village I once visited. It was called Banora—a small, unremarkable place known mostly for a peculiar variety of white apples that bloomed without regard for the seasons. The locals called them \"dumbapples.\"\n\nI never spent much time there myself, though two of my closest comrades called it home. They used to speak of those trees often, and of the juice the village exported. Watching you tend to your land here in the valley, I suppose I finally understand why they held onto those memories so tightly, even when our paths took us far away from anything so peaceful.\n\nI picked this up at the local market. It is no Banora White, of course, but it seemed fitting to share it with you.\n\nTake care of your farm.\n\n   -{newName}",
+      "items": [
+        {
+          "item": "613",
+          "count": 1
+        }
+      ],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 750,
+      "condition": "",
+      "delivery": "Today",
+      "once": true
+    },
+    {
+      "id": "SecondLetter",
+      "subject": "Reflections of the past, carried in the waves",
+      "text": "@,\n\nThe sea breeze along the docks today reminded me of a distant land across the ocean—Wutai. Before the conflict, it was a place of quiet grace. I spent time there once, walking beneath the eaves of ancient pagodas and watching the locals tend to their traditions with a fierce, unyielding pride.\n\nThere was a rhythm to their culture that I found myself admiring, perhaps more than I should have. Yet, I was never meant to be a traveler there. My orders were clear, and the duties demanded of me stood in direct opposition to the peace I had found within their borders. When you are forged as a weapon, your own desires are the first thing you must learn to set aside.\n\nLiving here in Pelican Town, watching you build something rather than tear it down, has given me much to reflect on.\n\nI found this washed up near the tide pools this morning and thought of you.\n\n   -{newName}",
+      "items": [
+        {
+          "item": "815",
+          "count": 1
+        }
+      ],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 250,
+      "condition": "",
+      "delivery": "Today",
+      "once": true
+    },
+    {
+      "id": "ThirdLetter",
+      "subject": "Alone in a big city",
+      "text": "@,\n\nWatching the quiet rhythm of life here in Pelican Town has had me thinking back to Midgar—a sprawling metropolis of steel, neon, and endless noise. At its center stood the Shinra Electric Power Company, an empire that claimed to bring progress to the world, though in truth, every gear it turned was purely to serve itself.\n\nPeople there moved constantly, mistaking busyness for purpose. For a time, I stood at the very pinnacle of that city. They knew my name, hailed me as a hero, and showered me with praise. Yet, the louder the cheers grew, the more hollow it all felt. It is a strange, isolating thing to stand in the middle of a crowded street, surrounded by millions, and realize you are entirely alone.\n\nI know you left a life in the city behind to come to this valley. \nDid you ever feel that same quiet emptiness amidst all the noise?\n\nI brewed a pot of this earlier, hoping to stave off the chill from the sea. \nPerhaps it will bring you some warmth during your work today.\n\n   -{newName}",
+      "items": [
+        {
+          "item": "395",
+          "count": 1
+        }
+      ],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 1750,
+      "condition": "",
+      "delivery": "Today",
+      "once": true
+    },
+    {
+      "id": "FourthLetter",
+      "subject": "Flowers growing out of broken floorboards",
+      "text": "Dear @,\n\nI was walking near the forest edge earlier and noticed a patch of wildflowers pushing their way up through the cracks in the stone. It brought back a rare, quiet memory from my past.\n\nIn the middle of all the steel and grime of Midgar, there was an old, dilapidated church in the Sector 5 slums. The roof had long since caved in, yet somehow, vibrant yellow flowers grew right out of the broken floorboards. It made no sense—nothing should have been able to survive in a place so starved of sunlight and care. Yet, there they were, thriving anyway.\n\nI suppose I never had much reason to linger in places like that back then. Looking at your farm now, though, I find myself thinking about those flowers more often. You have a way of bringing warmth and life into places that seemed entirely barren.\n\nI picked these for you on my way back to the cabin. I... hope they brighten your farmhouse, even just a little.\n\n   -{newName}",
+      "items": [
+        {
+          "item": "458",
+          "count": 1
+        }
+      ],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 2250,
+      "condition": "",
+      "delivery": "Today",
+      "once": true
+    },
+    {
+      "id": "FifthLetter",
+      "subject": "Days gone by",
+      "text": "@,\n\nI stepped out onto the porch at dawn while you were still asleep, watching the mist rise over the fields. For most of my life, silence was simply a mirror—a quiet space where I was forced to confront my past, my purpose, and everything I had lost.\n\nLiving here with you has changed that. The quiet of this valley no longer feels like solitude, nor does it feel like a penance. Slowly, almost without me realizing it, self-reflection has given way to understanding. I no longer look at the world solely through the lens of what I was made to do, but through the life we are building together—season by season, day by day.\n\nYou have given me a peace I never thought was meant for someone like me, and I find myself grateful for every ordinary morning we share.\n\nI left a warm breakfast on the table for when you come back inside from your chores. Don't push yourself too hard today.\n\nYours,\n   -{newName}",
+      "items": [
+        {
+          "item": "201",
+          "count": 1
+        }
+      ],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 500,
+      "condition": "2750",
+      "delivery": "Today",
+      "once": true
+    },
+    {
+      "id": "SixthLetter",
+      "subject": "Time is fleeting...",
+      "text": "Dear @,\n\nI was standing by the shipping bin earlier, watching the wind carry fallen leaves across the yard, and a sudden, heavy thought crossed my mind.\n\nFor so long, I believed I was forged outside of time—untouched by the ordinary passage of seasons, bound only to an endless, predetermined fate. Yet here I am, watching the years turn alongside you. It is a profound gift, though one I admit carries a quiet ache. To finally understand the warmth of a mortal life is to also understand how fleeting it truly is.\n\nI cannot erase the shadow of what I was, nor the history I carry with me. Sometimes I still catch myself wondering if someone with my past deserves a future as gentle as the one we share. Yet every time you look at me without fear, without expectation, that doubt grows a little quieter.\n\nIf our time in this valley is merely a brief moment against the weight of eternity, then I intend to cherish every single day of it with you.\n\nI left a small token by the door before you wake. \nCome find me when you have a moment—\nI would simply like to be near you today.\n\nForever yours,\n   -{newName}",
+      "items": [
+        {
+          "item": "591",
+          "count": 1
+        }
+      ],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 3000,
+      "condition": "",
+      "delivery": "Today",
+      "once": true
+    },
+    {
+      "id": "SeventhLetter",
+      "subject": "Unrealised future",
+      "text": "Dear @,\n\nI was organizing the bookshelves this morning when I came across an old, leather-bound journal—one I used to carry with me during my days in SOLDIER. For years, its pages were filled with nothing more than mission logs, tactical notes, and the cold, rigid expectations of the life I was bred to lead.\n\nWhen I opened it today, I realized the ink had long since faded, and there were dozens of blank pages left untouched at the back.\n\nFor the longest time, I believed my story had already been written for me before I ever drew breath. I thought I was destined to remain a weapon until the very end. Yet standing here in our farmhouse, listening to the quiet hum of the life we have built, I realize how wrong I was. You gave me the space to put down the sword and pick up a pen of my own.\n\nEvery season we spend together feels like a new chapter I never dared to hope for. Thank you for giving me a future worth writing down.\n\nI found this tucked away in my belongings—\na rare relic from a world that feels a lifetime away now. \nIt belongs with you.\n\nWith all that I am,\n   -{newName}",
+      "items": [
+        {
+          "item": "454",
+          "count": 1
+        }
+      ],
+      "money": 0,
+      "trigger": "DayStarted",
+      "friendshipPoints": 3250,
+      "condition": "",
+      "delivery": "Today",
+      "once": true
+    }
+  ]
+}

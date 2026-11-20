@@ -8,6 +8,7 @@ const { giftTastesChange } = require("./changes/giftTastesChange");
 const { eventChanges } = require("./changes/eventChange");
 const { dialogueChange } = require("./changes/dialogueChange");
 const { marriageDialogueChange } = require("./changes/marriageDialogueChange");
+const { mailChanges } = require("./changes/mailChange");
 // const { scheduleChange } = require("./changes/scheduleChange");
 
 const changes = [
@@ -19,6 +20,7 @@ const changes = [
     marriageDialogueChange,
     // scheduleChange, // off for now: it was reported as an infinite loop, to be investigated
     ...eventChanges,
+    ...mailChanges,
     musicChange
 ].filter(Boolean); // musicChange is null until a track is uploaded
 
