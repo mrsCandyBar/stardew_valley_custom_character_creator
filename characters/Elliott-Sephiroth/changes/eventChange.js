@@ -16,11 +16,14 @@ const fill = (text) => text.replaceAll("{name}", SDV_Name);
 const expand = (list) => list.flatMap((c) => (c.type === "repeat" ? Array.from({ length: c.times }, () => expand(c.commands)).flat() : [c]));
 const toText = ({ type, args }) => fill(type === "raw" ? args : args ? `${type} ${args}` : type);
 
+// A fork's script always starts with a "/" (so a fork whose first step is an empty Raw step, which is what made one, is not doubled up)
+const forkScript = (commands = []) => "/" + expand(commands).map(toText).join("/").replace(/^\/+/, "");
+
 // Turns an event into its main entry and, if it has one, its fork entry. Forks are kept apart so they can go last.
 function toEntries({ id, conditions, music, viewport, actors, skippable, commands, forkName, forkCommands }) {
   const key = fill([id, ...conditions].join("/"));
   const sequence = [fill(music), fill(viewport), fill(actors), ...(skippable ? ["skippable"] : []), ...expand(commands).map(toText)];
-  const fork = forkName ? [fill(forkName), expand(forkCommands || []).map(toText).join("/")] : null;
+  const fork = forkName ? [fill(forkName), forkScript(forkCommands)] : null;
   return { event: [key, sequence.join("/")], fork };
 }
 

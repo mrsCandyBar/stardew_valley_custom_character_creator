@@ -23,6 +23,7 @@ const MOD_FIELDS = [
   "Description",
   "UniqueID",
   "MinimumApiVersion",
+  "UpdateKey",
 ];
 
 const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".ttf": "font/ttf", ".woff2": "font/woff2" };
@@ -308,7 +309,8 @@ async function handleApi(req, res, url) {
 
     if (req.method === "GET") {
       if (!fs.existsSync(file)) return send(res, 404, { error: "No events.json in this character folder." });
-      return send(res, 200, { events: JSON.parse(fs.readFileSync(file, "utf8")).events || [] });
+      const saved = JSON.parse(fs.readFileSync(file, "utf8"));
+      return send(res, 200, { events: saved.events || [], disableDefaultEvents: saved.disableDefaultEvents !== false });
     }
     if (req.method === "POST") {
       let events;
@@ -317,7 +319,8 @@ async function handleApi(req, res, url) {
       } catch (err) {
         return send(res, 400, { error: err.message });
       }
-      fs.writeFileSync(file, JSON.stringify({ events }, null, 2) + "\n");
+      const disableDefaultEvents = body.disableDefaultEvents !== false;
+      fs.writeFileSync(file, JSON.stringify({ disableDefaultEvents, events }, null, 2) + "\n");
       return send(res, 200, { saved: "events.json", count: events.length });
     }
   }

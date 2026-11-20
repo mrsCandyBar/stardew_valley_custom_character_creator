@@ -1,10 +1,10 @@
 {
   "events": [
     {
-      "id": "14239",
+      "id": "142",
       "location": "ArchaeologyHouse",
       "conditions": [
-        "f {name} 6000"
+        "f {name} 1500"
       ],
       "music": "none",
       "viewport": "15 11",
@@ -172,7 +172,7 @@
       "id": "141",
       "location": "ElliottHouse",
       "conditions": [
-        "f {name} 4000"
+        "f {name} 1000"
       ],
       "music": "none",
       "viewport": "4 5",
@@ -189,7 +189,7 @@
         },
         {
           "type": "pause",
-          "args": "500"
+          "args": "1000"
         },
         {
           "type": "textAboveHead",
@@ -209,7 +209,7 @@
         },
         {
           "type": "speak",
-          "args": "{name} \"$7...How long were you standing there?\""
+          "args": "{name} \"$8...How long were you standing there?\""
         },
         {
           "type": "move",
@@ -225,7 +225,7 @@
         },
         {
           "type": "speak",
-          "args": "{name} \"$0Excuse me... I wasn't expecting company.\""
+          "args": "{name} \"$6Excuse me... I wasn't expecting company.\""
         },
         {
           "type": "pause",
@@ -233,7 +233,7 @@
         },
         {
           "type": "speak",
-          "args": "{name} \"$0I was just... keeping a journal. Jotting down fragments.\""
+          "args": "{name} \"$4I was just... keeping a journal. Jotting down fragments.\""
         },
         {
           "type": "pause",
@@ -241,7 +241,11 @@
         },
         {
           "type": "speak",
-          "args": "{name} \"Trying to make sense of how a life can derail so entirely... how everything went so terribly wrong before I even realized the path I was standing on was... fracturing...\""
+          "args": "{name} \"$0Trying to make sense of how life can... derail so entirely...\""
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$2How everything went so terribly wrong before I even realized the path I was standing on was... fracturing...\""
         },
         {
           "type": "pause",
@@ -309,10 +313,10 @@
       ]
     },
     {
-      "id": "141",
+      "id": "143",
       "location": "ElliottHouse",
       "conditions": [
-        "f {name} 8000"
+        "f {name} 2000"
       ],
       "music": "none",
       "viewport": "7 4",
@@ -589,7 +593,7 @@
         },
         {
           "type": "showFrame",
-          "args": "{name} 0"
+          "args": "{name} 27"
         },
         {
           "type": "speak",
@@ -644,7 +648,7 @@
       "id": "140",
       "location": "Beach",
       "conditions": [
-        "f {name} 2000"
+        "f {name} 500"
       ],
       "music": "none",
       "viewport": "12 38",
@@ -689,7 +693,15 @@
         },
         {
           "type": "speak",
-          "args": "{name} \"$4For a long time, I thought silence was the only thing I deserved. But... when you're around, the quiet doesn't feel heavy anymore.\""
+          "args": "{name} \"$0For a long time, I thought 'silence' was the only thing I deserved. But...\""
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Since you've come to town... I think I'm beginning to see this silence differently...\""
+        },
+        {
+          "type": "speak",
+          "args": "{name} \"$4Is it weird to say that same 'silence' doesn't feel... so 'suffocating' anymore?\""
         },
         {
           "type": "emote",
@@ -701,7 +713,7 @@
         },
         {
           "type": "textAboveHead",
-          "args": "{name} \"...thank you. {{ PlayerName }}\""
+          "args": "{name} \"...thank you... {{ PlayerName }}\""
         },
         {
           "type": "pause",
@@ -714,10 +726,10 @@
       ]
     },
     {
-      "id": "143",
+      "id": "144",
       "location": "Beach",
       "conditions": [
-        "f {name} 10000"
+        "f {name} 2500"
       ],
       "music": "none",
       "viewport": "12 38",
@@ -954,10 +966,10 @@
       ]
     },
     {
-      "id": "144",
+      "id": "145",
       "location": "Farm",
       "conditions": [
-        "f {name} 14000"
+        "f {name} 3500"
       ],
       "music": "none",
       "viewport": "64 18",
@@ -1182,7 +1194,7 @@
         },
         {
           "type": "pause",
-          "args": "1000"
+          "args": "3000"
         },
         {
           "type": "emote",

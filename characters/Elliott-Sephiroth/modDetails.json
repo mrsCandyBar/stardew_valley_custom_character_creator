@@ -7,5 +7,6 @@
   "Version": "1.0.0",
   "Description": "Replaces Elliot with Sephiroth.",
   "UniqueID": "PastelBeans_.ElliotToSephiroth",
-  "MinimumApiVersion": "4.0.0"
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKey": ""
 }

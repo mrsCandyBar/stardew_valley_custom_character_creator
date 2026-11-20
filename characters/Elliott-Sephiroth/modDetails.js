@@ -14,6 +14,8 @@ const {
   Description,
   UniqueID,
   MinimumApiVersion,
+  // Optional, e.g. "Nexus:12345". Empty means no update checking (UpdateKeys: [] in manifest.json).
+  UpdateKey = "",
 } = require("./modDetails.json");
 
 // Name of the Stardew Valley character being replaced (StarDewValley_Name).
@@ -34,4 +36,5 @@ module.exports = {
   Description,
   UniqueID,
   MinimumApiVersion,
+  UpdateKey,
 };

@@ -66,6 +66,19 @@
         <label><span>Description</span> <textarea name="Description" rows="2"></textarea></label>
         <label><span>Unique ID</span> <input name="UniqueID" required></label>
         <label><span>Minimum API version</span> <input name="MinimumApiVersion" required></label>
+        <label>
+          <span>Update checking</span>
+          <select id="updateMode">
+            <option value="ignore">Ignore (no update key)</option>
+            <option value="add">Add an update key</option>
+          </select>
+          <small>SMAPI warns about mods with no update keys. Ignoring writes an empty <code>UpdateKeys</code> list, which silences that warning.</small>
+        </label>
+        <label id="updateKeyRow" hidden>
+          <span>Update key</span>
+          <input name="UpdateKey" placeholder="Nexus:12345 or GitHub:yourname/yourrepo">
+          <small>Also accepts <code>ModDrop:12345</code>. Written to <code>UpdateKeys</code> in manifest.json.</small>
+        </label>
       </section>
 
       <section class="panel" role="tabpanel" id="panel-assets" data-panel="assets" aria-labelledby="tab-assets" hidden>

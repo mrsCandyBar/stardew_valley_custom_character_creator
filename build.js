@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline/promises");
+const { disableChanges } = require("./defaultEvents");
 
 const USAGE = `Usage: node build.js --name <SDV character> --folder <character folder>
 
@@ -73,6 +74,7 @@ async function main() {
     Description,
     UniqueID,
     MinimumApiVersion,
+    UpdateKey,
   } = require(path.join(characterDir, "modDetails.js"));
   const { changes } = require(path.join(characterDir, "changes.js"));
 
@@ -87,10 +89,27 @@ async function main() {
     console.log(`Wrote ${outPath}`);
   }
 
+  // Switch off the game's own events for this character so they can't clash with the custom ones.
+  // They go first so the character's own events are applied after. The Events tab's toggle
+  // ("disableDefaultEvents" in events.json) turns this off to blend with the game's events.
+  let allChanges = changes;
+  const eventsPath = path.join(characterDir, "events.json");
+  const keepDefaults = fs.existsSync(eventsPath) && JSON.parse(fs.readFileSync(eventsPath, "utf8")).disableDefaultEvents === false;
+  if (!keepDefaults) {
+    const disabled = disableChanges(name);
+    if (disabled) {
+      const count = disabled.reduce((sum, c) => sum + Object.keys(c.Entries).length, 0);
+      console.log(`Disabled ${count} default ${name} event(s)`);
+      allChanges = [...disabled, ...changes];
+    } else {
+      console.warn("Couldn't find the game's unpacked events, so the default events are still on. Set STARDEW_CONTENT to the 'Content (unpacked)' folder (see README).");
+    }
+  }
+
   // content.json
   writeJson("content.json", {
     Format: "2.0.0",
-    Changes: changes,
+    Changes: allChanges,
   });
 
   // manifest.json
@@ -102,7 +121,8 @@ async function main() {
     UniqueID,
     EntryDll: null,
     MinimumApiVersion,
-    UpdateKeys: [],
+    // An empty list tells SMAPI there are intentionally no update keys
+    UpdateKeys: UpdateKey ? [UpdateKey] : [],
     ContentPackFor: {
       UniqueID: "Pathoschild.ContentPatcher",
     },

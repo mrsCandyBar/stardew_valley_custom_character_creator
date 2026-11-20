@@ -16,7 +16,19 @@ const DETAIL_FIELDS = [
   "Description",
   "UniqueID",
   "MinimumApiVersion",
+  "UpdateKey",
 ];
+
+const updateMode = document.getElementById("updateMode");
+const updateKeyRow = document.getElementById("updateKeyRow");
+
+// The key field only shows (and is only required) when the user chooses to add one
+function syncUpdateMode() {
+  const add = updateMode.value === "add";
+  updateKeyRow.hidden = !add;
+  form.UpdateKey.required = add;
+}
+updateMode.addEventListener("change", syncUpdateMode);
 
 // --- Preview pane: the dedicated space on the right for sprites, the map, expanded dialogue and so on ---
 // One thing is shown at a time. Whoever shows something passes an onClose, so it can tidy up when replaced or closed.
@@ -76,6 +88,7 @@ function postJson(url, body) {
 function readDetails() {
   const details = {};
   for (const key of DETAIL_FIELDS) details[key] = form[key].value.trim();
+  if (updateMode.value === "ignore") details.UpdateKey = "";
   return details;
 }
 
@@ -87,6 +100,8 @@ async function loadDetails() {
   try {
     const details = await api(`/api/mod-details?folder=${encodeURIComponent(folderSelect.value)}`);
     for (const key of DETAIL_FIELDS) form[key].value = details[key];
+    updateMode.value = details.UpdateKey ? "add" : "ignore";
+    syncUpdateMode();
     updateModFolderName();
     loadAssets();
     loadEditors();
@@ -1747,6 +1762,7 @@ const clockLabel = (t) => {
 };
 const WEATHER = [["sunny", "☀️", "Sunny"], ["rainy", "🌧️", "Rainy"]];
 const MAX_EVENT_HEARTS = 14;
+const POINTS_PER_HEART = 250;
 const SVG_NS = "http://www.w3.org/2000/svg";
 const svg = (tag, attrs = {}, ...children) => {
   const node = document.createElementNS(SVG_NS, tag);
@@ -1830,15 +1846,15 @@ function createConditions(event) {
   };
 
   function render() {
-    // Friendship: click heart n to need n hearts (1000 points each); click the last full heart again to lower it
+    // Friendship: click heart n to need n hearts (250 points each); click the last full heart again to lower it
     const friendshipBody = () => {
-      const hearts = Math.floor(parsed.friendship / 1000);
+      const hearts = Math.floor(parsed.friendship / POINTS_PER_HEART);
       const row = el("div", { className: "hearts" });
       for (let n = 1; n <= MAX_EVENT_HEARTS; n++) {
         row.append(el("button", {
-          type: "button", className: `heart${n <= hearts ? " full" : ""}`, textContent: n <= hearts ? "♥" : "♡", title: `${n} heart${n === 1 ? "" : "s"} (${n * 1000} points)`,
+          type: "button", className: `heart${n <= hearts ? " full" : ""}`, textContent: n <= hearts ? "♥" : "♡", title: `${n} heart${n === 1 ? "" : "s"} (${n * POINTS_PER_HEART} points)`,
           onclick: () => {
-            parsed.friendship = (n === hearts ? n - 1 : n) * 1000;
+            parsed.friendship = (n === hearts ? n - 1 : n) * POINTS_PER_HEART;
             commit();
             render();
           },
@@ -1902,7 +1918,7 @@ function createConditions(event) {
     });
 
     box.replaceChildren(
-      section("Friendship", parsed.friendship !== null, (on) => toggle("friendship", on, 2000), friendshipBody, "Each heart is 1000 friendship points."),
+      section("Friendship", parsed.friendship !== null, (on) => toggle("friendship", on, 2000), friendshipBody, "Each heart is 250 friendship points."),
       section("Time of day", parsed.time !== null, (on) => toggle("time", on, [600, 1200]), timeBody, "Day (6am to 6pm) is the bright half of the clock, night the dark half. The green wedge is when the event can start."),
       section("Weather", parsed.weather !== null, (on) => toggle("weather", on, "sunny"), weatherBody, "Rainy covers rain and storms; sunny is every other kind of weather."),
       el("div", { className: "condition" }, el("span", { className: "other-title", textContent: "Other conditions" }), ...others, el("button", {
@@ -2886,6 +2902,7 @@ function createEventsEditor(section) {
   let events = [];
   let customTrack = ""; // the id of the character's uploaded track, if there is one
   let loaded = false;
+  let disableDefaults = true; // true: only this character's events; false: blended with the game's own events
 
   const message = el("p", { className: "editor-message", hidden: true });
   const showMessage = (text) => {
@@ -2893,12 +2910,17 @@ function createEventsEditor(section) {
     message.hidden = !text;
   };
 
+  const defaultsToggle = el("input", { type: "checkbox", checked: true });
+  defaultsToggle.addEventListener("change", () => (disableDefaults = defaultsToggle.checked));
+  const defaultsRow = el("label", { className: "hint", title: "Needs the game's unpacked events (see the README). If they can't be found, the build warns and the game's events stay on." },
+    defaultsToggle, " Replace the game's events: turn off this character's own Stardew Valley events so only the ones below play. Untick to blend them.");
+
   const list = el("div");
   const addId = el("input", { placeholder: "Event ID, e.g. 9999016", title: "Event ID" });
   const addLocation = choiceSelect(LOCATIONS, "Beach", "Place");
   const addButton = el("button", { type: "button", className: "secondary", textContent: "Add event" });
   const addRow = el("div", { className: "add-row" }, addId, addLocation, addButton);
-  section.append(el("h2", { textContent: title }), el("p", { className: "hint", textContent: hint }), message, list, addRow);
+  section.append(el("h2", { textContent: title }), el("p", { className: "hint", textContent: hint }), defaultsRow, message, list, addRow);
 
   const labelOf = (event) => `${event.id || "(no ID)"} in ${event.location || "(no place)"}`;
 
@@ -3118,7 +3140,10 @@ function createEventsEditor(section) {
     async load(folder) {
       showMessage("");
       try {
-        events = (await api(`/api/events?folder=${encodeURIComponent(folder)}`)).events;
+        const result = await api(`/api/events?folder=${encodeURIComponent(folder)}`);
+        events = result.events;
+        disableDefaults = result.disableDefaultEvents;
+        defaultsToggle.checked = disableDefaults;
         loaded = true;
       } catch (err) {
         events = [];
@@ -3134,6 +3159,7 @@ function createEventsEditor(section) {
         eventCustomTrack = "";
       }
       addRow.hidden = !loaded;
+      defaultsRow.hidden = !loaded;
       render();
     },
     async save(folder) {
@@ -3141,7 +3167,7 @@ function createEventsEditor(section) {
       try {
         groupByLocation();
         // "open" is only for the page, so it isn't saved
-        await postJson("/api/events", { folder, events: events.map(({ open, ...event }) => event) });
+        await postJson("/api/events", { folder, disableDefaultEvents: disableDefaults, events: events.map(({ open, ...event }) => event) });
         showMessage("");
       } catch (err) {
         showMessage(err.message);
