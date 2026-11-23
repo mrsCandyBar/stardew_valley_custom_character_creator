@@ -133,7 +133,7 @@ saveButton.addEventListener("click", async () => {
   try {
     await postJson("/api/mod-details", { folder: folderSelect.value, details: readDetails() });
     await saveEditors();
-    setStatus(`Saved the details, dialogue, marriage dialogue, schedule, gift tastes and events to ${folderSelect.value}`);
+    setStatus(`Saved the details, dialogue, marriage dialogue, festivals, schedule, gift tastes and events to ${folderSelect.value}`);
   } catch (err) {
     setStatus(err.message, true);
   } finally {
@@ -469,13 +469,48 @@ const dayHeartsGroup = {
   compose: ([day, hearts]) => day + hearts,
 };
 
+// The game's festivals (Data/Festivals/<id>), with the year and married variants of what an NPC says there.
+// A key is "<id>" or "<id>:<variant>", which festivalChange.js turns into <Name>, <Name>_y2, <Name>_spouse or <Name>_spouse_y2.
+const FESTIVALS = [
+  ["spring13", "Egg Festival (spring 13)"],
+  ["spring24", "Flower Dance (spring 24)"],
+  ["summer11", "Luau (summer 11)"],
+  ["summer28", "Dance of the Moonlight Jellies (summer 28)"],
+  ["fall16", "Stardew Valley Fair (fall 16)"],
+  ["fall27", "Spirit's Eve (fall 27)"],
+  ["winter8", "Festival of Ice (winter 8)"],
+  ["winter25", "Feast of the Winter Star (winter 25)"],
+];
+const FESTIVAL_VARIANTS = [
+  ["", "Year 1"],
+  ["y2", "Year 2 onwards"],
+  ["spouse", "Married, year 1"],
+  ["spouse_y2", "Married, year 2 onwards"],
+];
+const composeFestival = (festival, variant) => (variant ? `${festival}:${variant}` : festival);
+const festivalGroup = {
+  title: "Festival dialogue",
+  empty: "None yet. Pick a festival and when it is, then add it.",
+  addLabel: "Add festival dialogue",
+  fields: [
+    { title: "Festival", options: FESTIVALS.map(([value, label]) => ({ value, label })) },
+    { title: "When", options: FESTIVAL_VARIANTS.map(([value, label]) => ({ value, label })) },
+  ],
+  parse(key) {
+    const [festival, variant = ""] = key.split(":");
+    const known = FESTIVALS.some(([id]) => id === festival) && FESTIVAL_VARIANTS.some(([v]) => v === variant);
+    return known && key === composeFestival(festival, variant) ? [festival, variant] : null;
+  },
+  compose: ([festival, variant]) => composeFestival(festival, variant),
+};
+
 // Keys the game looks for beyond day + hearts, offered in the "Other" dropdown (anything else can be typed as a custom key).
 // Compiled from the keys used in this project's templates and Stardew's dialogue modding docs; {name} becomes the replaced character's name.
 const numbered = (prefix, from, to) => range(from, to).map((n) => `${prefix}${n}`);
 const SEASON_DAY_KEYS = SEASONS.flatMap((season) => DAYS.map((day) => `${season}_${day}`));
 const DIALOGUE_KEYS = [
   { label: "First meeting & gifts", keys: ["Introduction", "AcceptGift", "AcceptGift_Positive", "AcceptGift_Neutral", "AcceptGift_Negative", "AcceptBirthdayGift_Positive", "AcceptBirthdayGift_Neutral", "AcceptBirthdayGift_Negative"] },
-  { label: "Festivals", keys: ["Festival_Egg", "Festival_Dance", "Festival_Luau", "Festival_DanceOfJellies", "Festival_Fair", "Festival_Spirit", "Festival_Ice"] },
+  { label: "Festivals (what they say at the festival itself is in the Festivals tab)", keys: ["FlowerDance_Accept", "FlowerDance_Accept_Spouse", "FlowerDance_Decline", "wonEggHunt", "wonIceFishing", "SquidFest"] },
   { label: "Beach resort", keys: ["Resort", "Resort_Entering", "Resort_Leaving", "Resort_Bar", "Resort_Chair", "Resort_Shore", "Resort_Towel", "Resort_Umbrella", "Resort_Wander"] },
   { label: "Special", keys: ["GreenRain", "danceRejection", "divorced", "dumped"] },
   { label: "Season + weekday", keys: SEASON_DAY_KEYS },
@@ -497,7 +532,7 @@ const EDITORS = {
   dialogue: {
     groups: [dayHeartsGroup],
     otherTitle: "Other dialogue",
-    otherPlaceholder: "e.g. Introduction, one, Festival_Egg",
+    otherPlaceholder: "e.g. Introduction, one, FlowerDance_Decline",
     suggestions: DIALOGUE_KEYS,
   },
   marriage: {
@@ -505,6 +540,11 @@ const EDITORS = {
     otherTitle: "Other dialogue",
     otherPlaceholder: "e.g. Indoor_Morning_{name}, fun_12",
     suggestions: MARRIAGE_KEYS,
+  },
+  festival: {
+    groups: [festivalGroup],
+    noOther: true, // only the festivals the game has, so there is no free-typed key
+    suggestions: [],
   },
   schedule: {
     groups: [
@@ -559,7 +599,7 @@ function fieldSelect(field, value) {
 
 function createEditor(section) {
   const { type, title, hint } = section.dataset;
-  const { groups, otherTitle, otherPlaceholder, suggestions } = EDITORS[type];
+  const { groups, otherTitle, otherPlaceholder, suggestions, noOther } = EDITORS[type];
   const OTHER = -1;
   let entries = []; // { key, text (one line per section), group: index into groups, or OTHER }
   let loaded = false;
@@ -612,7 +652,7 @@ function createEditor(section) {
   const addOtherButton = el("button", { type: "button", className: "secondary", textContent: "Add" });
   const otherRow = el("div", { className: "add-row" }, addSelect, addKey, addOtherButton);
   addRows.push(otherRow);
-  section.append(el("div", { className: "entry-group" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
+  if (!noOther) section.append(el("div", { className: "entry-group" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
 
   function refreshSuggestions() {
     const current = addSelect.value;

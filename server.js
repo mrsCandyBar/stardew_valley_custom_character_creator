@@ -98,16 +98,19 @@ function assetFile(dir, kind) {
 }
 
 // Keyed lists: { entries: [{ key, lines: [...] }] }. Marriage keys may contain "{name}", schedule keys a ":" (spring:1).
-const ENTRY_FILES = { dialogue: "dialogue.json", marriage: "marriageDialogue.json", schedule: "schedule.json" };
+const ENTRY_FILES = { dialogue: "dialogue.json", marriage: "marriageDialogue.json", schedule: "schedule.json", festival: "festivalDialogue.json" };
 const ENTRY_KEY = /^[\w.{}:-]{1,80}$/;
+// Festival keys are a festival id plus an optional ":variant", e.g. spring24 or spring24:spouse_y2 (see festivalChange.js).
+const FESTIVAL_KEY = /^(spring13|spring24|summer11|summer28|fall16|fall27|winter8|winter25)(:(y2|spouse|spouse_y2))?$/;
 
-function cleanEntries(body) {
+function cleanEntries(body, type) {
   if (!Array.isArray(body)) throw new Error("Expected a list of entries.");
   const seen = new Set();
   return body.map((item) => {
     const key = String(item?.key ?? "").trim();
     if (!ENTRY_KEY.test(key)) throw new Error(`"${key}" isn't a valid key (letters, numbers, _ - . : { } only).`);
     if (seen.has(key)) throw new Error(`The key ${key} is used twice.`);
+    if (type === "festival" && !FESTIVAL_KEY.test(key)) throw new Error(`"${key}" isn't a festival the game has (pick one from the lists).`);
     seen.add(key);
     const lines = (Array.isArray(item.lines) ? item.lines : []).map(String).filter((line) => line.trim() !== "");
     if (!lines.length) throw new Error(`${key} needs at least one line.`);
@@ -300,7 +303,7 @@ async function handleApi(req, res, url) {
     return send(res, 415, { error: isUpload ? "Expected a file upload" : "Expected JSON" });
   }
 
-  // Dialogue, marriage dialogue and schedule lists (type is "dialogue", "marriage" or "schedule").
+  // Dialogue, marriage dialogue, schedule and festival dialogue lists (type is "dialogue", "marriage", "schedule" or "festival").
   if (url.pathname === "/api/entries") {
     const body = req.method === "POST" ? await readBody(req) : {};
     const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
@@ -309,13 +312,17 @@ async function handleApi(req, res, url) {
     const file = path.join(dir, fileName);
 
     if (req.method === "GET") {
-      if (!fs.existsSync(file)) return send(res, 404, { error: `No ${fileName} in this character folder.` });
+      // Characters made before festival dialogue existed have no file yet: that just means no lines
+      if (!fs.existsSync(file)) {
+        if (fileName === ENTRY_FILES.festival) return send(res, 200, { entries: [] });
+        return send(res, 404, { error: `No ${fileName} in this character folder.` });
+      }
       return send(res, 200, { entries: JSON.parse(fs.readFileSync(file, "utf8")).entries || [] });
     }
     if (req.method === "POST") {
       let entries;
       try {
-        entries = cleanEntries(body.entries);
+        entries = cleanEntries(body.entries, body.type);
       } catch (err) {
         return send(res, 400, { error: err.message });
       }

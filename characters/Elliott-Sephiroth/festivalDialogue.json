@@ -1,0 +1,250 @@
+{
+  "entries": [
+    {
+      "key": "spring24",
+      "lines": [
+        "$8Emily offered to weave flowers into my hair earlier... and Mayor Lewis insisted I sample the punch before I could even refuse...",
+        "Back where I came from, people either feared my presence or tried to use it. Here, they simply ask if I am enjoying the spring air...",
+        "$2I am... still learning how to exist in a place without an enemy to fight, {{playerName}}."
+      ]
+    },
+    {
+      "key": "spring24:y2",
+      "lines": [
+        "The seasons turn so gently here. No crises, no warnings—just music, blossoms, and neighbors gathering in good faith...",
+        "$1I used to think peace was an illusion meant for other people. Standing here today... I am grateful to have been proven wrong."
+      ]
+    },
+    {
+      "key": "spring24:spouse",
+      "lines": [
+        "I still stand out like a shadow among all these bright spring colors, yet nobody seems to mind...",
+        "Knowing you are by my side makes it far easier to step out onto that field, {{playerName}}. Whenever you are ready, I am yours."
+      ]
+    },
+    {
+      "key": "spring24:spouse_y2",
+      "lines": [
+        "Once, I measured every room by exits, threats, and the eyes watching me. Today, I barely noticed the crowd gathered on the ridge.",
+        "$1All I see is the spring light in your hair, {{playerName}}.Let the valley celebrate as it pleases. My world begins and ends right beside you—shall we dance?"
+      ]
+    },
+    {
+      "key": "summer28",
+      "lines": [
+        "Glowing lights drifting across the dark water... For a moment, I braced for the cold pull of the Lifestream...",
+        "$4Yet there are no whispers here. No sorrow. Just quiet creatures following the tide.",
+        "It is a strange comfort to watch something luminescent that asks nothing of me."
+      ]
+    },
+    {
+      "key": "summer28:y2",
+      "lines": [
+        "Summer always seems to pass in the blink of an eye here. Back in my old life, I scarcely noticed the turning of the seasons—only the next mission.",
+        "$1Watching the jellies drift past reminds me that not every journey needs a destination. ",
+        "$4Sometimes it is enough simply to exist."
+      ]
+    },
+    {
+      "key": "summer28:spouse",
+      "lines": [
+        "$1The ocean air carries a chill tonight. Come, stand a little closer to me, {{playerName}}.",
+        "$1Everyone comes to the docks hoping to catch a glimpse of rare light... yet the only warmth I need is already standing beside me."
+      ]
+    },
+    {
+      "key": "summer28:spouse_y2",
+      "lines": [
+        "Once, I chased distant stars and impossible skies, believing greatness waited somewhere out in the dark.",
+        "$1Now I look at the reflection of the lights in your eyes, {{playerName}}, and wonder how I ever searched for anything else.",
+        "$3The jellies can take their time tonight. I am perfectly content right here with you."
+      ]
+    },
+    {
+      "key": "winter25",
+      "lines": [
+        "Snow used to mean silence, isolation, and things best left buried... yet here, the cold only seems to draw everyone closer together.",
+        "Mayor Lewis explained the tradition of the secret gift exchange to me. Giving something thoughtfully, without expectation of reward or rank...",
+        "It is a simple custom, {{playerName}}, yet I spent far too long agonizing over what could possibly be worthy of a neighbor's kindness."
+      ]
+    },
+    {
+      "key": "winter25:y2",
+      "lines": [
+        "$6Another year has come full circle. A season ago, I stood at the edge of the square wondering if I even belonged at the table.",
+        "$3Today, Linus offered me spiced cider, and the children asked if I would help them build a snow-goon later.",
+        "$1I do not know if a man ever truly outruns his past, {{playerName}}... but days like this make me believe he can still build something good."
+      ]
+    },
+    {
+      "key": "winter25:spouse",
+      "lines": [
+        "$1Your hands are cold, {{playerName}}. Here—let me warm them for a moment before the feast begins.",
+        "$3Everyone around the square is celebrating the blessings of the past year... yet no gift under that star could ever compare to coming home to you every evening."
+      ]
+    },
+    {
+      "key": "winter25:spouse_y2",
+      "lines": [
+        "$6Let the town exchange their ribbons and parcels. I stopped wishing for anything the day you agreed to share your life with me.",
+        "$3You are my hearth in the dead of winter, {{playerName}}—the only warmth I ever truly needed.",
+        "$1Stay close to me until the feast begins. I have no intention of letting you out of my sight today."
+      ]
+    },
+    {
+      "key": "summer11",
+      "lines": [
+        "Everyone brings a single ingredient from their own harvest and drops it into one communal cauldron...",
+        "$2It requires an immense amount of trust that no one will add something ruinous.",
+        "$8I stood over my pantry for nearly an hour this morning, {{playerName}}. In all my years of combat, I have never felt quite so cautious over a simple vegetable."
+      ]
+    },
+    {
+      "key": "summer11:y2",
+      "lines": [
+        "There is something refreshing about a tradition where the highest stakes involve a Governor's palate rather than the fate of a city.",
+        "The ocean breeze is pleasant today, {{playerName}}. Have you added your contribution to the pot yet? Knowing your farm, I imagine it will outshine the rest of ours."
+      ]
+    },
+    {
+      "key": "summer11:spouse",
+      "lines": [
+        "$1This coat was certainly not tailored for a summer beach gathering... yet I find I scarcely mind the heat when you are smiling like that.",
+        "$1Everyone keeps asking me what you brought for the soup, {{playerName}}. You have quite the reputation in this valley—and I cannot say I blame them for admiring you."
+      ]
+    },
+    {
+      "key": "summer11:spouse_y2",
+      "lines": [
+        "$1The Governor could declare the soup a masterpiece or a catastrophe, and I doubt I would even hear him.",
+        "$4All I can think about is how the sunlight catches your eyes against the water, {{playerName}}.",
+        "$1Once the ceremony ends, let us slip away from the crowd and walk along the shore together."
+      ]
+    },
+    {
+      "key": "fall27",
+      "lines": [
+        "Carved gourds, paper ghosts, and skeletons behind iron bars...",
+        "$2In my past, illusions and monsters were things to be feared—or things I myself was accused of becoming.",
+        "Yet here, the villagers laugh, share spiced treats, and treat the dark as nothing more than a passing game. It is... oddly comforting."
+      ]
+    },
+    {
+      "key": "fall27:y2",
+      "lines": [
+        "$1I walked through the labyrinth earlier to ensure none of the younger villagers had lost their way.",
+        "$1The Wizard certainly has a flair for theatrical illusions, though I suspect he did not anticipate someone calmly inspecting his false walls.",
+        "$3Still, it is good to see everyone enjoying the autumn night without a single genuine threat in sight."
+      ]
+    },
+    {
+      "key": "fall27:spouse",
+      "lines": [
+        "The shadows grow quite deep near the edge of the square tonight. I know well enough that these decorations pose no real danger...",
+        "$1Yet if you wish to use them as an excuse to stay close to my side, I certainly will not object."
+      ]
+    },
+    {
+      "key": "fall27:spouse_y2",
+      "lines": [
+        "$2Once, the dark held nothing for me save old ghosts and regrets I could not outrun.",
+        "$1Now, the only spell I am under is the warmth of your hand in mine, {{playerName}}.",
+        "$3Let the rest of the valley chase after golden pumpkins tonight. I have already taken the hand of the greatest treasure in all the valley."
+      ]
+    },
+    {
+      "key": "spring13",
+      "lines": [
+        "$8Mayor Lewis asked if I intended to join the egg hunt this afternoon...",
+        "$8I declined—it hardly seemed honorable to bring years of field reconnaissance to a contest meant for children.",
+        "$4Even so, watching everyone gather over brightly painted shells... ",
+        "$1It is refreshing to see a competition where nobody gets hurt."
+      ]
+    },
+    {
+      "key": "spring13:y2",
+      "lines": [
+        "$3Spring has returned to the valley, and with it, the town's most earnest tactical operation of the season.",
+        "$1Abigail passed me a moment ago looking as focused as a cadet before a live drill.",
+        "$1Give her a fair challenge out there today, {{playerName}}—I will be watching from the sidelines."
+      ]
+    },
+    {
+      "key": "spring13:spouse",
+      "lines": [
+        "$1If you wish to compete in the hunt today, {{playerName}}, I will gladly hold onto your coat while you search.",
+        "$6Though between the two of us... if you happen to find a particularly well-hidden egg, I might just consider it a trophy worth keeping on our mantelpiece."
+      ]
+    },
+    {
+      "key": "spring13:spouse_y2",
+      "lines": [
+        "$1The whole square is buzzing over hidden prizes, yet I have no desire to look anywhere other than right beside me.",
+        "$4Every morning I wake up next to you feels like a small miracle I still have not quite earned...",
+        "$1Go enjoy the festivities if you wish—I will be right here, waiting to welcome you back."
+      ]
+    },
+    {
+      "key": "fall16",
+      "lines": [
+        "$1Entire tables laid out with fresh harvests, hand-spun wool, and baked goods... Every stall here is proof of patient, honest work.",
+        "$1Earlier, a merchant challenged me to test my strength at his striking booth—I politely declined before I could break his mallet.",
+        "$1There is a quiet dignity in building things rather than tearing them down. I find myself admiring it more each day."
+      ]
+    },
+    {
+      "key": "fall16:y2",
+      "lines": [
+        "I paused near the fortune teller's tent a moment ago. She offered to read my destiny in her crystal ball.",
+        "I thanked her and walked on. I spent far too many years letting prophecies and old ghosts dictate my path.",
+        "Whatever tomorrow holds, {{playerName}}, I would rather choose it with my own two hands."
+      ]
+    },
+    {
+      "key": "fall16:spouse",
+      "lines": [
+        "$1I already walked past your grange display earlier, {{playerName}}. Frankly, the judges might as well award you first place now and spare everyone the suspense.",
+        "$1Come find me once you have finished browsing the stalls—I have been eyeing one of those plush prizes at the star-token booth, and I intend to win it for you."
+      ]
+    },
+    {
+      "key": "fall16:spouse_y2",
+      "lines": [
+        "$1The music, the lanterns, the endless chatter of the fair... it all fades into a quiet hum the moment you step beside me.",
+        "$1Let the fortune teller keep her secrets—my future is standing right in front of me, holding my hand.",
+        "$1Take your time enjoying the festival, {{playerName}}. Simply watching you smile is more than enough for me."
+      ]
+    },
+    {
+      "key": "winter8",
+      "lines": [
+        "Frozen lakes and biting winds once meant long marches and desolate terrain to me.",
+        "$4Yet here, the villagers carve sculptures out of the ice and gather around warm braziers simply to enjoy one another's company.",
+        "$1It takes a quiet kind of courage to find joy in the harshest season. It is... quaint."
+      ]
+    },
+    {
+      "key": "winter8:y2",
+      "lines": [
+        "I have spent my life training for split-second reflexes, yet watching Willy and Pam stare down an ice hole requires an entirely different discipline.",
+        "There is a calm, meditative patience to fishing in the winter quiet.",
+        "$1Perhaps one day you might teach me the proper technique, {{playerName}}—without resorting to cutting a wider hole in the ice."
+      ]
+    },
+    {
+      "key": "winter8:spouse",
+      "lines": [
+        "$1Mind your footing near the edge of the ice, {{playerName}}—I would rather not have to dive into the lake after you today.",
+        "$1If you are entering the fishing contest, I will be right here keeping your coffee warm until the final whistle blows."
+      ]
+    },
+    {
+      "key": "winter8:spouse_y2",
+      "lines": [
+        "$1Everyone around the lake is bundled in wool and scarves, yet I scarcely feel the winter wind at all.",
+        "$3One look at you, {{playerName}}, and the entire frozen forest feels as warm as midsummer.",
+        "$6Let the others compete for trophies and honors. Having you by my side is the only victory I will ever need."
+      ]
+    }
+  ]
+}

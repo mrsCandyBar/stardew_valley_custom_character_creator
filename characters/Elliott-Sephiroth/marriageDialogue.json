@@ -54,6 +54,112 @@
         "$1I no longer feel the need to destroy. I only feel the urge to protect this land. ",
         "$6To protect you."
       ]
+    },
+    {
+      "key": "Indoor_Day_0",
+      "lines": [
+        "$1Good morning, {{playerName}}. I brewed fresh tea while you were still asleep—I hope it is to your liking.",
+        "$3Once, my mornings began with briefings and steel. Waking up to sunlight on the floorboards and the sound of your breathing is a peace I still struggle to put into words."
+      ]
+    },
+    {
+      "key": "Indoor_Day_1",
+      "lines": [
+        "$8You were already out the door before dawn yesterday. Even a SOLDIER needs proper rest, {{playerName}}.",
+        "$6Promise me you will pause for a proper meal at midday. If you will not slow down for your own sake, do it for mine."
+      ]
+    },
+    {
+      "key": "Indoor_Day_2",
+      "lines": [
+        "$1I found a volume on local botany in the bookshelf earlier. It is remarkable how much life thrives here without interference.",
+        "$3Whenever you come back inside, the book immediately loses my attention—though I suppose I do not mind that at all."
+      ]
+    },
+    {
+      "key": "Indoor_Day_3",
+      "lines": [
+        "$0Sometimes I catch myself simply standing in the kitchen, listening to the clock tick.",
+        "$2There are no emergencies waiting beyond the door. No voices calling me away.",
+        "$1Only a quiet home, and the person who gave me a second chance at life. Have a safe day out there, {{playerName}}."
+      ]
+    },
+    {
+      "key": "Indoor_Day_4",
+      "lines": [
+        "$1I tidied the entryway and checked the pantry stores this morning. Everything is in order.",
+        "$1Whenever your work is done, come straight back to me. I will be waiting."
+      ]
+    },
+    {
+      "key": "Rainy_Day_0",
+      "lines": [
+        "The rain against the roof used to remind me of long, bleak campaigns far from home. ",
+        "$1Now, listening to it while watching you move about the farmhouse... it is the most soothing sound in the world."
+      ]
+    },
+    {
+      "key": "Rainy_Day_1",
+      "lines": [
+        "The mud along the southern path looks treacherous today. Mind your footing out there, {{playerName}}.",
+        "$1If you come back chilled to the bone, I will have warm towels and hot broth waiting by the hearth."
+      ]
+    },
+    {
+      "key": "Rainy_Night_0",
+      "lines": [
+        "$8You are soaked through, {{playerName}}. Come step closer to the fire before you catch a chill.",
+        "$1Let the storm rage outside all it wishes—nothing can touch us within these walls."
+      ]
+    },
+    {
+      "key": "Rainy_Night_1",
+      "lines": [
+        "On nights like this, old memories occasionally knock at the door... yet they no longer hold any power over me.",
+        "$4One glance at you, {{playerName}}, and all the shadows scatter. Thank you for being my anchor."
+      ]
+    },
+    {
+      "key": "Outdoor_0",
+      "lines": [
+        "$1I walked the perimeter of the fields earlier. Everything is quiet, save for the wind in the crops.",
+        "$1To nurture life from the soil rather than take it... I think I finally understand why you love this work so much."
+      ]
+    },
+    {
+      "key": "Outdoor_1",
+      "lines": [
+        "$0Do not mind me—I was only taking in the fresh air.",
+        "$1Though I will admit, watching you tend the farm is far more captivating than the scenery."
+      ]
+    },
+    {
+      "key": "Outdoor_2",
+      "lines": [
+        "$1The mountain air clears the mind wonderfully.",
+        "$1I was just reflecting on how far we have come since the day I first arrived in this valley. Whatever lies ahead, {{playerName}}, I am grateful to walk it beside you."
+      ]
+    },
+    {
+      "key": "Indoor_Night_0",
+      "lines": [
+        "$1Welcome home, {{playerName}}. You look exhausted—let me take care of the rest of the evening.",
+        "$1Set your tools aside and rest for a while. You do not have to carry every burden on your own anymore."
+      ]
+    },
+    {
+      "key": "Indoor_Night_1",
+      "lines": [
+        "$1Another peaceful day has come to a close.",
+        "$1Go on to bed whenever you are ready, {{playerName}}. I will extinguish the lamps and join you shortly."
+      ]
+    },
+    {
+      "key": "Good_0",
+      "lines": [
+        "Before I fell into this valley, I believed warmth and trust were weaknesses meant for ordinary people.",
+        "$1You dismantled every defense I ever built without raising a single blade, {{playerName}}. I am endlessly glad you did."
+      ]
     }
   ]
 }

@@ -49,16 +49,16 @@
       "key": "Tue",
       "lines": [
         "Some months back I had been struck down, I was so sure of... my success. ",
-        "$5Yet here I am. No Jenova. No Shinra. No grand purpose. ",
+        "$2Yet here I am. No Jenova. No Shinra. No grand purpose. ",
         "$8Just... here... in a town full of people who think my sword is an overly dramatic fishing tool. ",
-        "$5I do not know what to do with this quiet."
+        "$4I do not know what to do with this quiet."
       ]
     },
     {
       "key": "Tue2",
       "lines": [
         "I saw you checking the bulletin board in town. ",
-        "$4Are you gathering intelligence on me? I would advise you to reconsider."
+        "$8Are you gathering intelligence on me? I would advise you to reconsider."
       ]
     },
     {
@@ -79,7 +79,7 @@
       "key": "Tue8",
       "lines": [
         "I've decided to keep the Masamune safely put away. There is no success to be found in ruin. ",
-        "$7Being 'here'... with you... is a purpose I never anticipated, yet I am grateful for it."
+        "$1Being 'here'... with you... is a purpose I never anticipated, yet I am grateful for it."
       ]
     },
     {
@@ -93,7 +93,7 @@
     {
       "key": "Wed2",
       "lines": [
-        "The fisherman spoke to you earlier. Did you ask him about the stranger in the cabin? ",
+        "$2The fisherman spoke to you earlier. Did you ask him about the stranger in the cabin? ",
         "$5Trust me stranger. Some things... are better left in the past where they belong."
       ]
     },
@@ -101,20 +101,20 @@
       "key": "Wed4",
       "lines": [
         "Willy convinced me to try holding the fishing rod. My stance was perfect, but my timing was... terrible. ",
-        "$4The fish escaped. It is frustrating, but... not entirely unpleasant."
+        "$6The fish escaped. It is frustrating, but... not entirely unpleasant."
       ]
     },
     {
       "key": "Wed6",
       "lines": [
-        "Willy let me keep an extra crab from his traps today. I had no use for a live crustacean, so I left it by the tide pools. ",
+        "$1Willy let me keep an extra crab from his traps today. I had no use for a live crustacean, so I left it by the tide pools. ",
         "$3This valley is changing how I view small victories."
       ]
     },
     {
       "key": "Wed8",
       "lines": [
-        "Willy says I'm actually getting the hang of casting a line. ",
+        "$1Willy says I'm actually getting the hang of casting a line. ",
         "$3I even caught a small fish yesterday. It felt... rewarding. A different kind of victory!"
       ]
     },
@@ -143,22 +143,22 @@
       "key": "Thu6",
       "lines": [
         "The sunset was remarkably clear today. ",
-        "$5I found myself wishing you were walking the shoreline at the same time. ",
+        "$6I found myself wishing you were walking the shoreline at the same time. ",
         "$3Talking to you helps quiet the noise in my mind."
       ]
     },
     {
       "key": "Thu8",
       "lines": [
-        "When I walk the shore at dusk now, I no longer look at my hands and see a weapon. ",
-        "$1I see a life that belongs to me. Thank you for walking beside me while I figured that out."
+        "$1When I walk the shore at dusk now, I no longer look at my hands and see a weapon. ",
+        "$3I see a life that belongs to me. Thank you for walking beside me while I figured that out."
       ]
     },
     {
       "key": "Fri",
       "lines": [
         "The villagers invited me to the saloon. They want to play billiards. ",
-        "$3I asked if the loser must forfeit their soul to the Lifestream. ",
+        "$1I asked if the loser must forfeit their soul to the Lifestream. ",
         "$8Robin laughed and said it just costs a starfruit wine... What even is starfruit wine?"
       ]
     },
@@ -166,29 +166,29 @@
       "key": "Fri2",
       "lines": [
         "You spent time at the saloon. A crowded room is an ideal place to exchange secrets... ",
-        "$4Not that I noticed..."
+        "$1Not that I noticed..."
       ]
     },
     {
       "key": "Fri4",
       "lines": [
-        "I walked to the saloon last night. I didn't go in, but I saw you through the window. You seemed... at peace. ",
+        "$1I walked to the saloon last night. I didn't go in, but I saw you through the window. You seemed... at peace. ",
         "$6I find myself wondering what that feels like."
       ]
     },
     {
       "key": "Fri6",
       "lines": [
-        "I almost went inside the saloon tonight because I knew you would be there. ",
-        "$1I didn't go in, but... the choice was mine this time and not... fear."
+        "$1I almost went inside the saloon tonight because I knew you would be there. ",
+        "$3I didn't go in, but... the choice was mine this time and not... fear."
       ]
     },
     {
       "key": "Fri8",
       "lines": [
-        "I went to the saloon last night. I sat in the corner... ",
+        "$1I went to the saloon last night. I sat in the corner... ",
         "$8then Gus brought me a plate of food, and Robin waved. ",
-        "$5I did not feel like an outsider. I felt... seen."
+        "$6I did not feel like an outsider. I felt... seen."
       ]
     },
     {
@@ -196,14 +196,14 @@
       "lines": [
         "I almost introduced myself to Pierre as the Ultimate Soldier today. ",
         "$7He looked perplexed and thought I was talking about a theatrical play. ",
-        "$5I think he thinks I am eccentric."
+        "$8I think he thinks I am eccentric."
       ]
     },
     {
       "key": "Sat2",
       "lines": [
         "I saw you buying supplies at the market. ",
-        "$4Planning a long excursion, or preparing a perimeter?"
+        "$0Planning a long excursion, or preparing a perimeter?"
       ]
     },
     {
@@ -224,8 +224,8 @@
     {
       "key": "Sat8",
       "lines": [
-        "Pierre gave me a discount on seeds today. ",
-        "$1He called me a good neighbor. Me! A neighbor! ",
+        "$1Pierre gave me a discount on seeds today. ",
+        "$3He called me a good neighbor. Me! A neighbor! ",
         "$3I think... I am beginning to understand how to just... live... I like this place."
       ]
     },
@@ -234,7 +234,7 @@
       "lines": [
         "Sundays are quiet. The Mayor asked if I wanted to help with the upcoming festival. ",
         "$8Me! Organizing a festival? If he knew what I had happened in Nibelheim- but thankfully he does not! ",
-        "$5They just see a traveler with long hair. It is a... strange mercy."
+        "$0They just see a traveler with long hair. It is a... strange mercy."
       ]
     },
     {
@@ -255,14 +255,14 @@
     {
       "key": "Sun6",
       "lines": [
-        "Sundays no longer feel heavy with memories of... past events. ",
+        "$1Sundays no longer feel heavy with memories of... past events. ",
         "$3Now, they just feel like a quiet prelude to whatever news you will bring from your farm."
       ]
     },
     {
       "key": "Sun8",
       "lines": [
-        "The Mayor asked if I would officially join the town committee. I declined, but thanked him. ",
+        "$1The Mayor asked if I would officially join the town committee. I declined, but thanked him. ",
         "$1I do not need a title anymore. ",
         "$6Having a home here... and a connection to you... is more than enough."
       ]
@@ -288,13 +288,15 @@
     {
       "key": "four",
       "lines": [
-        "I had a dream of the sky crashing last night. Reality cracking and splintering all around me. Normally I wake up reaching for my sword. But this morning... I did not feel the urge to draw blood. I do not understand this place."
+        "$2I had a dream of the sky crashing last night. Reality cracking and splintering all around me. Normally I wake up reaching for my sword. But this morning... I did not feel the urge to draw blood. I do not understand this place."
       ]
     },
     {
       "key": "five",
       "lines": [
-        "I found this quartz in the mines. I thought you might want it- Wait. Do not misunderstand. I did not go looking for it for *you*. It was blocking my path- and my hands were full, so I had to put it somewhere... Take it."
+        "$1I found this quartz in the mines. I thought you might want it- ",
+        "$8Wait. Do not misunderstand. I did not go looking for it for *you*. ",
+        "$4It was blocking my path- and my hands were full, so I had to put it somewhere... Take it."
       ]
     },
     {
@@ -306,13 +308,14 @@
     {
       "key": "seven",
       "lines": [
-        "You are an unusual person. You approach me without fear, despite... everything. I have been following your behavior, but I have yet to find a practical reason for your persistence."
+        "You are an unusual person. You approach me without fear, despite... everything.",
+        "$8I have been following your behavior, but I have yet to find a practical reason for your persistence."
       ]
     },
     {
       "key": "eight",
       "lines": [
-        "In my past, alliances were forged for war, and they always ended in betrayal. Yet, you continue to bring me crops and listen to my silence. I... do not mind your presence. In fact, the beach is less chaotic when you are here."
+        "$6In my past, alliances were forged for war, and they always ended in betrayal. Yet, you continue to bring me crops and listen to my silence. I... do not mind your presence. In fact, the beach is less chaotic when you are here."
       ]
     },
     {
@@ -330,13 +333,13 @@
     {
       "key": "Festival_Luau",
       "lines": [
-        "The Governor is tasting a communal soup. Everyone threw a random item into the pot. If I dropped Void Essence in there, would it grant them cosmic power or simply ruin dinner? Best not to test that today."
+        "$1The Governor is tasting a communal soup. Everyone threw a random item into the pot. If I dropped Void Essence in there, would it grant them cosmic power or simply ruin dinner? Best not to test that today."
       ]
     },
     {
       "key": "Festival_DanceOfJellies",
       "lines": [
-        "Jellyfish gather in the waters this evening in absolute silence. It is an efficient, natural rhythm. Watching them... is surprisingly quiet."
+        "$1Jellyfish gather in the waters this evening in absolute silence. It is an efficient, natural rhythm. Watching them... is surprisingly quiet."
       ]
     },
     {
@@ -348,13 +351,100 @@
     {
       "key": "Festival_Spirit",
       "lines": [
-        "The townsfolk built a maze to simulate terror... They tried... really hard. Still... you seem to be enjoying the diversion. I will watch you instead."
+        "$1The townsfolk built a maze to simulate terror... They tried... really hard. Still... you seem to be enjoying the diversion. I will watch you instead."
       ]
     },
     {
       "key": "Festival_Ice",
       "lines": [
         "Willy told me my sword was cheating for carving the ice holes. I am freezing, my hair is full of frost, and I do not understand why we are competing over frozen carp."
+      ]
+    },
+    {
+      "key": "AcceptGift",
+      "lines": [
+        "$3Are you... sure?"
+      ]
+    },
+    {
+      "key": "AcceptGift_Positive",
+      "lines": [
+        "$3Really? Are you... sure?"
+      ]
+    },
+    {
+      "key": "AcceptGift_Neutral",
+      "lines": [
+        "$1Thank you, this is nice"
+      ]
+    },
+    {
+      "key": "AcceptGift_Negative",
+      "lines": [
+        "$8... this is... interesting?"
+      ]
+    },
+    {
+      "key": "AcceptBirthdayGift_Positive",
+      "lines": [
+        "$8You remembered the date... and went out of your way to find something this... precious. Thank you, {{playerName}}. A rare gesture of goodwill—and one I will not soon forget."
+      ]
+    },
+    {
+      "key": "AcceptBirthdayGift_Neutral",
+      "lines": [
+        "$3A birthday tribute? I rarely have reason to mark the passage of time anymore. Even so, your thoughtfulness is appreciated, thank you {{playerName}}"
+      ]
+    },
+    {
+      "key": "AcceptBirthdayGift_Negative",
+      "lines": [
+        "$4An unusual choice. It seems our tastes differ considerably... yet the fact that you thought to acknowledge this day at all carries its own weight. Thank you, {{playerName}}"
+      ]
+    },
+    {
+      "key": "GreenRain",
+      "lines": [
+        "$7At first glance, that emerald glow reminded me of Mako... or worse. Stay close to shelter if you need to, {{playerName}}—I will keep watch over the perimeter until we are certain it is safe."
+      ]
+    },
+    {
+      "key": "GreenRain_2",
+      "lines": [
+        "$1The green rain returns. Last year I braced for a catastrophe; now I see it is simply the valley's way of nurturing new life.",
+        "$3It is strange... watching something bloom without an ulterior motive behind it...",
+        "$4I am glad I stayed to see it."
+      ]
+    },
+    {
+      "key": "GreenRainFinished",
+      "lines": [
+        "The air feels lighter today, and the moss has already taken root. Nobody was harmed, and yet... several villagers thanked me merely for standing guard...",
+        "$0{{playerName}}, I still do not understand why they trust me so easily. All I can do is try to be worthy of it."
+      ]
+    },
+    {
+      "key": "danceRejection",
+      "lines": [
+        "$1Dance? With me... I appreciate the offer, {{playerName}}, truly. It means more than you know to simply be asked.",
+        "$3However, my movements are trained for the battlefield, not a spring celebration—and we hardly know one another yet. ",
+        "$1Please, enjoy the festival with someone better suited for it."
+      ]
+    },
+    {
+      "key": "FlowerDance_Decline",
+      "lines": [
+        "$1Dance? With me... I appreciate the offer, {{playerName}}, truly. It means more than you know to simply be asked.",
+        "$3However, my movements are trained for the battlefield, not a spring celebration—and we hardly know one another yet. ",
+        "$1Please, enjoy the festival with someone better suited for it."
+      ]
+    },
+    {
+      "key": "FlowerDance_Accept",
+      "lines": [
+        "$8You're certain you want me as your partner?",
+        "$2I have spent my life mastering war and battle tactics, {{playerName}}. Dancing is... not quite my specialty but...",
+        "Perhaps... for you I will try. Lead the way."
       ]
     }
   ]
