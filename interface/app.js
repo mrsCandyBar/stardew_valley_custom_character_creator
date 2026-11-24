@@ -1754,11 +1754,12 @@ function createGiftTastesEditor(section) {
 const FACING = options([0, 1, 2, 3], (n) => ["up", "right", "down", "left"][n]);
 const CUSTOM = "custom";
 const actorText = { kind: "text", title: "Who", placeholder: "{name}", narrow: true };
-const actorAndWords = (label, wordsKind = "textarea") => ({
+const actorAndWords = (label, wordsKind = "textarea", hideWho = false) => ({
   label,
   fields: [actorText, { kind: wordsKind, title: "Words", placeholder: wordsKind === "dialogue" ? "What they say" : "A $1 at the start changes the portrait" }],
   defaults: ["{name}", ""],
-  inHead: 2,
+  inHead: hideWho ? 1 : 2,
+  hide: hideWho ? [0] : [], // the Who box is hidden for now; its value is kept ("{name}" unless the file said otherwise)
   parse: (args) => {
     const match = /^(\S+) "(.*)"$/s.exec(args);
     return match && [match[1], match[2]];
@@ -1772,7 +1773,7 @@ const spaced = (pattern) => (args) => {
 const noFields = (label) => ({ label, fields: [], defaults: [], parse: (args) => (args === "" ? [] : null), compose: () => "" });
 
 const COMMAND_TYPES = {
-  speak: actorAndWords("Speak", "dialogue"),
+  speak: actorAndWords("Speak", "dialogue", true),
   textAboveHead: actorAndWords("Text above head", "text"),
   pause: {
     label: "Pause",
@@ -2294,6 +2295,8 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
     return out;
   };
 
+  const toolsOpen = new WeakSet(); // the commands whose tools are showing
+
   // The arrows and x at the right of a card's head
   const controls = (unit, index) => {
     const move = (by) => {
@@ -2312,7 +2315,7 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
       }
       rowOf.get(unit.commands[0]).animate([{ boxShadow: "0 0 0 3px var(--accent)", backgroundColor: "#e6f2dc" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 900, easing: "ease-out" });
     };
-    return [
+    const group = el("div", { className: "btn-group", hidden: !toolsOpen.has(unit.commands[0]) }, ...[
       el("button", { type: "button", className: "secondary arrow", textContent: "↑", title: "Move up", disabled: index === 0, onclick: () => move(-1) }),
       el("button", { type: "button", className: "secondary arrow", textContent: "↓", title: "Move down", disabled: index === units.length - 1, onclick: () => move(1) }),
       el("button", {
@@ -2344,7 +2347,21 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
           render();
         },
       }),
-    ];
+    ]);
+    // The tools stay tucked away until asked for; the choice is kept when the list redraws
+    const toggle = el("button", { type: "button", className: "tools-toggle", title: "Show or hide this command's tools (move, add, duplicate, remove)", "aria-expanded": String(!group.hidden) });
+    const refreshToggle = () => {
+      toggle.textContent = group.hidden ? "⋯" : "›";
+      toggle.setAttribute("aria-expanded", String(!group.hidden));
+    };
+    toggle.addEventListener("click", () => {
+      group.hidden = !group.hidden;
+      if (group.hidden) toolsOpen.delete(unit.commands[0]);
+      else toolsOpen.add(unit.commands[0]);
+      refreshToggle();
+    });
+    refreshToggle();
+    return [group, toggle];
   };
 
   // The Fork card: question, fork0/fork1, the fork's name and the answers

@@ -504,7 +504,8 @@ pre {
 
 /* Command cards are indented by type so the script reads as a sequence of scenes */
 .commands .command.cmd-speak { margin-left: 30px; }
-.commands .command.cmd-pause, .commands .command.cmd-emote, .commands .command.cmd-textAboveHead { margin-left: 60px; }
+.commands .command.cmd-pause { margin-left: 60px; }
+.commands .command.cmd-emote, .commands .command.cmd-textAboveHead { margin-left: 90px; }
 
 /* Fork card: question as text, answers underneath */
 .fork-label { min-width: 2.5em; }
@@ -560,3 +561,25 @@ pre {
 .group-card[open] .group-count { display: none; }
 .group-card > .add-row { margin-top: 8px; }
 .entry-row .entry-head input:not(.line-input) { flex: 0 1 14em; min-width: 8em; }
+
+/* A command's tools (up, down, add, duplicate, remove) as one segmented button, pale so it doesn't compete with the fields */
+.btn-group { display: inline-flex; flex: none; margin-left: auto; }
+.btn-group button, .entry-head .btn-group .remove-x { margin: 0; padding: 6px 10px; border-radius: 0; line-height: 1; font-size: 1rem; color: var(--muted); background: #fff; border: 1px solid var(--border); }
+.btn-group button + button { margin-left: -1px; }
+.btn-group button:first-child { border-radius: 6px 0 0 6px; }
+.btn-group button:last-child { border-radius: 0 6px 6px 0; }
+.btn-group button:hover:not(:disabled) { color: #fff; background: var(--accent); border-color: var(--accent-dark); position: relative; }
+.btn-group button:disabled { opacity: 0.4; cursor: default; }
+
+/* The Conditions toggles: the checkbox sits beside its label instead of filling the label column */
+.condition label.check { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+.condition label.check input { width: auto; margin: 0; }
+
+/* Tools are tucked behind a small toggle; a command card is only as wide as its content, and grows when the tools show */
+.btn-group[hidden] { display: none; }
+.btn-group { margin-left: 0; }
+.entry-head .tools-toggle { flex: none; margin-left: auto; padding: 6px 10px; line-height: 1; color: var(--muted); background: #fff; border: 1px solid var(--border); border-radius: 6px; }
+.entry-head .tools-toggle:hover { color: #fff; background: var(--accent); }
+.entry-head .btn-group:not([hidden]) { margin-left: auto; }
+.entry-head .btn-group:not([hidden]) + .tools-toggle { margin-left: 0; }
+.commands .command { width: fit-content; max-width: 100%; }
