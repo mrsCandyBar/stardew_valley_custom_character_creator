@@ -61,9 +61,13 @@ const closePane = () => clearPane();
 document.getElementById("preview-close").addEventListener("click", closePane);
 document.addEventListener("keydown", (e) => e.key === "Escape" && !document.querySelector("dialog[open]") && closePane());
 
+let statusTimer = null;
 function setStatus(text, isError = false) {
+  clearTimeout(statusTimer);
   status.textContent = text;
   status.classList.toggle("error", isError);
+  // Success messages fade away after 2 seconds; errors and the in-progress "Building..." stay until replaced
+  if (text && !isError && text !== "Building...") statusTimer = setTimeout(() => (status.textContent = ""), 2000);
 }
 
 async function api(url, options) {
@@ -557,6 +561,9 @@ const EDITORS = {
     groups: [
       {
         title: "Day of the week",
+        typedKey: true,
+        keyTitle: "Day, e.g. Mon",
+        badKey: (key) => `"${key}" isn't a day. Use ${DAYS.join(", ")}.`,
         empty: "None yet. Optional.",
         addLabel: "Add day",
         fields: [{ title: "Day", options: options(DAYS) }],
@@ -565,6 +572,9 @@ const EDITORS = {
       },
       {
         title: "Season",
+        typedKey: true,
+        keyTitle: "Season, e.g. spring",
+        badKey: (key) => `"${key}" isn't a season. Use ${SEASONS.join(", ")}.`,
         empty: "None yet. Optional.",
         addLabel: "Add season",
         fields: [{ title: "Season", options: SEASON_OPTIONS }],
@@ -573,6 +583,9 @@ const EDITORS = {
       },
       {
         title: "Day of a season",
+        typedKey: true,
+        keyTitle: "Season and day, e.g. spring:3",
+        badKey: (key) => `"${key}" isn't a day of a season. Use season:day, e.g. spring:3 (day 1 to ${MAX_SEASON_DAY}).`,
         empty: "None yet. Optional.",
         addLabel: "Add day of season",
         fields: [
@@ -626,6 +639,7 @@ function createEditor(section) {
   const lists = []; // one list element per group, then the "other" list last
   const addRows = [];
   const pairPickers = {}; // group index -> the festival + when dropdowns, kept to the pairs without dialogue yet
+  const simplePickers = {}; // group index -> the dropdown and row of a one-dropdown group (schedule day, season)
   const dayPickers = {}; // group index -> the "Add day" dropdown and button, kept to the days without a card yet
   // Replace a dropdown's choices, keeping the current pick when it is still there
   const setChoices = (select, choices) => {
@@ -647,6 +661,7 @@ function createEditor(section) {
     });
     const row = el("div", { className: "add-row" }, ...selects, button);
     if (group.dayCard) dayPickers[index] = { select: selects[0], row };
+    else if (group.fields.length === 1) simplePickers[index] = { select: selects[0], row }; // kept to the choices not used yet
     if (group.rowsInCard) {
       // Only offer festival + when pairs that have no dialogue yet
       const refreshWhen = () => {
@@ -710,14 +725,14 @@ function createEditor(section) {
   function card(entry, inGroup = false) {
     const head = el("div", { className: "entry-head" });
     const dayRow = entry.group !== OTHER && (groups[entry.group].dayCard || groups[entry.group].rowsInCard); // a row inside a collapsible card, titled by the card
-    if (entry.group !== OTHER && groups[entry.group].rowsInCard) {
-      // A festival row: the whole key is typed (e.g. spring24:spouse_y2), and must be a festival and variant the game has
+    if (entry.group !== OTHER && (groups[entry.group].rowsInCard || groups[entry.group].typedKey)) {
+      // A row whose whole key is typed (e.g. spring24:spouse_y2, or Mon on a schedule), and must be one the game has
       const group = groups[entry.group];
-      const key = el("input", { value: entry.key, title: "Key, e.g. spring24:spouse_y2" });
+      const key = el("input", { value: entry.key, title: group.keyTitle || "Key, e.g. spring24:spouse_y2" });
       key.addEventListener("change", () => {
         const next = key.value.trim();
         if (!group.parse(next)) {
-          showMessage(`"${next}" isn't a festival key. Use a festival id, optionally followed by :y2, :spouse or :spouse_y2.`);
+          showMessage(group.badKey ? group.badKey(next) : `"${next}" isn't a festival key. Use a festival id, optionally followed by :y2, :spouse or :spouse_y2.`);
           key.value = entry.key;
         } else if (hasKey(next, entry)) {
           showMessage(`${next} already exists.`);
@@ -725,7 +740,7 @@ function createEditor(section) {
         } else {
           showMessage("");
           entry.key = next;
-          openGroups.add(`${entry.group}:${group.parse(next)[0]}`); // it may have moved to another festival's card
+          if (group.rowsInCard) openGroups.add(`${entry.group}:${group.parse(next)[0]}`); // it may have moved to another festival's card
           render();
         }
       });
@@ -889,6 +904,16 @@ function createEditor(section) {
       });
       pane.replaceChildren(...rows, addLine);
     }
+    if (isSchedule) {
+      // Each schedule is a collapsible: the key and remove button in the summary, the stops inside
+      const details = el("details", { className: "entry schedule-card", open: Boolean(entry.cardOpen) });
+      details.addEventListener("toggle", () => (entry.cardOpen = details.open));
+      const summary = el("summary", {}, head);
+      summary.addEventListener("keydown", (e) => e.target !== summary && e.stopPropagation()); // typing a space in the key must not toggle the card
+      details.append(summary, body);
+      drawBody();
+      return details;
+    }
     const card = el("div", { className: dayRow || inGroup ? "entry-row" : "entry" }, head, body);
     drawBody();
     return card;
@@ -929,6 +954,11 @@ function createEditor(section) {
           return groupCard(`${index}:${o.value}`, o.label, rows.map((e) => card(e)), rows.length, group.fields[1].options.length);
         });
         return lists[index].replaceChildren(...(cards.length ? cards : [none(group.empty)]));
+      }
+      if (simplePickers[index]) {
+        const free = group.fields[0].options.filter((o) => !hasKey(group.compose([o.value])));
+        setChoices(simplePickers[index].select, free);
+        simplePickers[index].row.hidden = !loaded || !free.length; // all chosen: hide the picker
       }
       if (!group.dayCard) return lists[index].replaceChildren(...(mine.length ? mine.map((e) => card(e)) : [none(group.empty)]));
       const days = DAYS.filter((day) => mine.some((e) => group.parse(e.key)[0] === day));
@@ -1002,6 +1032,8 @@ function createEditor(section) {
 
   function add(entry) {
     entries.push(entry);
+    entry.expanded = false;
+    entry.cardOpen = true; // a new schedule card opens so it can be seen
     openFor(entry);
     showMessage("");
     render();
@@ -1053,8 +1085,8 @@ function createEditor(section) {
 // Every stop is a row of four toggles (time, location, position, facing); a toggle opens that setting's editor.
 // A line that isn't in that form (e.g. "GOTO Mon" or an "a1740" arrival time) is kept as a plain text line.
 const STOP_PATTERN = /^(\d{3,4}) (\S+) (-?\d+) (-?\d+) ([0-3])(?: (.+))?$/;
-const STOP_TIMES = []; // 6:00 am to 2:00 am (2600) in 10-minute steps, the game's own clock
-for (let t = 600; t <= 2600; t += t % 100 === 50 ? 50 : 10) STOP_TIMES.push(t);
+const STOP_TIMES = []; // 6:00 am to 10:00 pm in 30-minute steps
+for (let t = 600; t <= 2200; t += t % 100 === 30 ? 70 : 30) STOP_TIMES.push(t);
 const ARROWS = ["↑", "→", "↓", "←"]; // up, right, down, left, the same order as FACING
 
 const parseStop = (line) => {
@@ -1077,25 +1109,29 @@ function createStopMap(stop, stops, onChange) {
   const zoomSelect = fieldSelect({ title: "Zoom", options: options([1, 2, 3, 4], (z) => `${z}x`) }, "2");
   const tileSize = () => TILE * zoom;
 
-  const number = (key, title) => {
-    const input = el("input", { type: "number", value: stop[key], title });
-    input.addEventListener("input", () => {
-      if (input.value === "") return;
-      stop[key] = Math.round(Number(input.value));
-      onChange();
-      drawOverlay();
-    });
-    return input;
-  };
-  const xInput = number("x", "Tile across");
-  const yInput = number("y", "Tile down");
+  const times = STOP_TIMES.includes(stop.time) ? STOP_TIMES : [...STOP_TIMES, stop.time].sort((a, b) => a - b);
+  const timeSelect = el("select", { title: "Time" }, ...times.map((t) => el("option", { value: String(t), textContent: clockLabel(t) })));
+  timeSelect.value = String(stop.time);
+  timeSelect.addEventListener("change", () => {
+    stop.time = Number(timeSelect.value);
+    onChange();
+  });
+  const placeSelect = choiceSelect(LOCATIONS, stop.place, "Map");
+  placeSelect.addEventListener("change", () => {
+    stop.place = placeSelect.value;
+    onChange();
+    view.show();
+  });
+  const pickers = el("div", { className: "stop-pickers" },
+    el("label", {}, el("span", { textContent: "Time " }), timeSelect), el("label", {}, el("span", { textContent: "Map " }), placeSelect),
+    el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
   const facingButtons = FACING.map((o, i) =>
     el("button", { type: "button", className: "secondary mode", textContent: ARROWS[i], title: `Face ${o.label}`, onclick: () => { stop.facing = i; onChange(); refreshFacing(); drawOverlay(); } })
   );
   const refreshFacing = () => facingButtons.forEach((b, i) => b.classList.toggle("selected", stop.facing === i));
   refreshFacing();
-  const toolbar = el("div", { className: "map-toolbar" },
-    el("label", {}, "x ", xInput), el("label", {}, "y ", yInput), ...facingButtons, el("span", { className: "grow" }), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
+  const arrows = el("div", { className: "map-arrows", hidden: true }, ...facingButtons); // floats over the map's top right corner
+  const frame = el("div", { className: "map-frame" }, scroll, arrows);
 
   function drawStage() {
     if (!loaded) return;
@@ -1158,8 +1194,6 @@ function createStopMap(stop, stops, onChange) {
     const tile = { x: Math.floor((e.clientX - rect.left) / tileSize()), y: Math.floor((e.clientY - rect.top) / tileSize()) };
     if (tile.x === stop.x && tile.y === stop.y) return;
     Object.assign(stop, tile);
-    xInput.value = tile.x;
-    yInput.value = tile.y;
     onChange();
     drawOverlay();
   };
@@ -1177,26 +1211,30 @@ function createStopMap(stop, stops, onChange) {
     drawStage();
   });
 
-  const node = el("div", { className: "map-panel" }, message, toolbar,
-    el("small", { textContent: "Click or drag on the map to choose the tile. The arrow is the way they face. Numbered dots are the other stops on this map." }), scroll);
-  return {
+  const node = el("div", { className: "map-panel" }, pickers, message,
+    el("small", { textContent: "Click or drag on the map to choose the tile. The arrow is the way they face. Numbered dots are the other stops on this map." }), frame);
+  const view = {
     node,
     async show() {
+      message.hidden = true;
       try {
         loaded = await loadMap(stop.place);
       } catch (err) {
+        loaded = null;
+        scroll.hidden = arrows.hidden = true;
         message.textContent = `${stop.place}: ${err.message}`;
         message.hidden = false;
         return;
       }
       if (!zoom) zoom = Math.min(4, Math.max(1, Math.floor(560 / (loaded.map.width * TILE))));
       zoomSelect.value = String(zoom);
-      scroll.hidden = false;
+      scroll.hidden = arrows.hidden = false;
       drawStage();
       scroll.scrollLeft = (stop.x + 0.5) * tileSize() - scroll.clientWidth / 2; // bring the stop into view
       scroll.scrollTop = (stop.y + 0.5) * tileSize() - scroll.clientHeight / 2;
     },
   };
+  return view;
 }
 
 // The stops of one schedule entry. Reads and writes entry.text (one line per stop), so saving needs nothing new.
@@ -1213,6 +1251,7 @@ function scheduleStops(entry) {
     const view = createStopMap(stop, stops, () => {
       sync();
       summaries.get(stop)?.();
+      previewTitle.textContent = `Stop ${i + 1}: ${clockLabel(stop.time)}, ${placeLabel(stop.place)}`;
     });
     const owner = () => {
       if (stopPaneOwner === owner) stopPaneOwner = null;
@@ -1244,76 +1283,22 @@ function scheduleStops(entry) {
       return el("div", { className: "stop" }, el("div", { className: "stop-head" }, el("span", { className: "step", textContent: i + 1 }), input, remove));
     }
 
-    const chips = {};
-    const toggle = (kind, label) => {
-      const chip = el("button", {
-        type: "button", className: "chip", ariaPressed: "false",
-        onclick: () => {
-          const wasOpen = stop.open === kind;
-          closeEditors();
-          if (!wasOpen) {
-            stop.open = kind;
-            if (kind === "position") openMap(stop, i);
-          }
-          draw();
-        },
-      });
-      chips[kind] = [chip, label];
-      return chip;
-    };
+    // One read-only field showing the stop's line; clicking it opens the time, map and tile editor in the preview pane
+    const field = el("input", { className: "stop-value", readOnly: true, title: "Click to edit this stop", value: composeStop(stop) });
     const refresh = () => {
-      const text = {
-        time: `🕐 ${clockLabel(stop.time)}`,
-        place: `📍 ${placeLabel(stop.place)}`,
-        position: `⌖ ${stop.x}, ${stop.y}`,
-        facing: `${ARROWS[stop.facing]} ${FACING[stop.facing].label}`,
-      };
-      for (const [kind, [chip]] of Object.entries(chips)) {
-        chip.textContent = text[kind];
-        chip.classList.toggle("selected", stop.open === kind);
-        chip.setAttribute("aria-pressed", String(stop.open === kind));
-      }
+      field.value = composeStop(stop);
+      field.classList.toggle("selected", stopPaneOwner !== null && stop.open === "position");
     };
     summaries.set(stop, refresh);
-    const head = el("div", { className: "stop-head" }, el("span", { className: "step", textContent: i + 1 }),
-      toggle("time", "Time"), toggle("place", "Location"), toggle("position", "Position"), toggle("facing", "Facing"), remove);
+    field.addEventListener("click", () => {
+      if (stop.open === "position") return;
+      closeEditors();
+      stop.open = "position";
+      openMap(stop, i);
+      draw();
+    });
     refresh();
-
-    let editor = null;
-    if (stop.open === "time") {
-      const select = el("select", { title: "Time" }, ...(STOP_TIMES.includes(stop.time) ? STOP_TIMES : [...STOP_TIMES, stop.time].sort((a, b) => a - b)).map((t) => el("option", { value: String(t), textContent: clockLabel(t) })));
-      select.value = String(stop.time);
-      const clock = el("div", { className: "clock-holder" }, createClock(stop.time, stop.time + 20));
-      select.addEventListener("change", () => {
-        stop.time = Number(select.value);
-        sync();
-        refresh();
-        clock.replaceChildren(createClock(stop.time, stop.time + 20));
-      });
-      editor = el("div", { className: "time-row" }, clock, el("label", {}, el("span", { textContent: "They arrive at " }), select));
-    } else if (stop.open === "place") {
-      const select = choiceSelect(LOCATIONS, stop.place, "Location");
-      select.addEventListener("change", () => {
-        stop.place = select.value;
-        sync();
-        refresh();
-      });
-      editor = el("div", { className: "add-row" }, select, el("small", { textContent: "Then pick the exact tile with Position." }));
-    } else if (stop.open === "facing") {
-      editor = el("div", { className: "add-row" }, ...FACING.map((o, n) =>
-        el("button", {
-          type: "button", className: `secondary mode${stop.facing === n ? " selected" : ""}`, textContent: `${ARROWS[n]} ${o.label}`,
-          onclick: () => {
-            stop.facing = n;
-            sync();
-            draw();
-          },
-        })
-      ));
-    } else if (stop.open === "position") {
-      editor = el("p", { className: "hint", textContent: "Choosing the tile in the preview pane on the right." });
-    }
-    return el("div", { className: "stop" }, head, ...(editor ? [el("div", { className: "stop-editor" }, editor)] : []));
+    return el("div", { className: "stop" }, el("div", { className: "stop-head" }, el("span", { className: "step", textContent: i + 1 }), field, remove));
   }
 
   const addStop = el("button", {
