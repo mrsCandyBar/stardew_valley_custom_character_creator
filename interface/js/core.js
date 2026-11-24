@@ -1,0 +1,204 @@
+// Page basics: form fields, the preview pane, status messages, API helpers, loading and the New character dialog.
+// Loaded as a plain script (see index.html): it shares globals with the other files in this folder.
+
+const form = document.getElementById("form");
+const folderSelect = document.getElementById("folder");
+const status = document.getElementById("status");
+const output = document.getElementById("output");
+const buildButton = document.getElementById("build");
+const saveButton = document.getElementById("save");
+const modFolderName = document.getElementById("modFolderName");
+
+const DETAIL_FIELDS = [
+  "SDV_Name",
+  "folderLocation",
+  "newCharacterName",
+  "Name",
+  "Author",
+  "Version",
+  "Description",
+  "UniqueID",
+  "MinimumApiVersion",
+  "UpdateKey",
+];
+
+const updateMode = document.getElementById("updateMode");
+const updateKeyRow = document.getElementById("updateKeyRow");
+
+// The key field only shows (and is only required) when the user chooses to add one
+function syncUpdateMode() {
+  const add = updateMode.value === "add";
+  updateKeyRow.hidden = !add;
+  form.UpdateKey.required = add;
+}
+updateMode.addEventListener("change", syncUpdateMode);
+
+// --- Preview pane: the dedicated space on the right for sprites, the map, expanded dialogue and so on ---
+// One thing is shown at a time. Whoever shows something passes an onClose, so it can tidy up when replaced or closed.
+const previewPane = document.getElementById("preview-pane");
+const previewTitle = document.getElementById("preview-title");
+const previewContent = document.getElementById("preview-content");
+let paneClose = null;
+
+function showInPane(title, node, onClose) {
+  const previous = paneClose;
+  paneClose = null; // so the previous owner's own clearing doesn't touch the new content
+  previous?.();
+  paneClose = onClose || (() => {});
+  previewTitle.textContent = title;
+  previewContent.replaceChildren(node);
+  previewPane.classList.add("has-content");
+}
+
+// Empty the pane, but only if `owner` is still what is showing
+function clearPane(owner) {
+  if (owner && paneClose !== owner) return;
+  const close = paneClose;
+  paneClose = null;
+  previewContent.replaceChildren();
+  previewPane.classList.remove("has-content");
+  close?.();
+}
+
+const closePane = () => clearPane();
+document.getElementById("preview-close").addEventListener("click", closePane);
+document.addEventListener("keydown", (e) => e.key === "Escape" && !document.querySelector("dialog[open]") && closePane());
+
+let statusTimer = null;
+function setStatus(text, isError = false) {
+  clearTimeout(statusTimer);
+  status.textContent = text;
+  status.classList.toggle("error", isError);
+  // Success messages fade away after 2 seconds; errors and the in-progress "Building..." stay until replaced
+  if (text && !isError && text !== "Building...") statusTimer = setTimeout(() => (status.textContent = ""), 2000);
+}
+
+async function api(url, options) {
+  const res = await fetch(url, options);
+  const data = await res.json();
+  if (!res.ok) {
+    const error = new Error(data.error || "Request failed");
+    error.output = data.output;
+    throw error;
+  }
+  return data;
+}
+
+function postJson(url, body) {
+  return api(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+function readDetails() {
+  const details = {};
+  for (const key of DETAIL_FIELDS) details[key] = form[key].value.trim();
+  if (updateMode.value === "ignore") details.UpdateKey = "";
+  return details;
+}
+
+function updateModFolderName() {
+  modFolderName.value = `[CP] ${form.SDV_Name.value}-${form.newCharacterName.value}`;
+}
+
+async function loadDetails() {
+  try {
+    const details = await api(`/api/mod-details?folder=${encodeURIComponent(folderSelect.value)}`);
+    for (const key of DETAIL_FIELDS) form[key].value = details[key];
+    updateMode.value = details.UpdateKey ? "add" : "ignore";
+    syncUpdateMode();
+    updateModFolderName();
+    loadAssets();
+    loadEditors();
+    output.hidden = true;
+    setStatus("");
+  } catch (err) {
+    setStatus(err.message, true);
+  }
+}
+
+async function init(selectFolder) {
+  try {
+    const { folders } = await api("/api/characters");
+    folderSelect.innerHTML = folders.map((f) => `<option>${f}</option>`).join("");
+    if (selectFolder) folderSelect.value = selectFolder;
+    if (folders.length) await loadDetails();
+    else setStatus("No character folders found in characters/.", true);
+  } catch (err) {
+    setStatus(`${err.message}. Is server.js running?`, true);
+  }
+}
+
+folderSelect.addEventListener("change", loadDetails);
+form.SDV_Name.addEventListener("input", updateModFolderName);
+form.newCharacterName.addEventListener("input", updateModFolderName);
+
+saveButton.addEventListener("click", async () => {
+  saveButton.disabled = true;
+  try {
+    await postJson("/api/mod-details", { folder: folderSelect.value, details: readDetails() });
+    await saveEditors();
+    setStatus(`Saved the details, dialogue, schedule, gifts and events to ${folderSelect.value}`);
+  } catch (err) {
+    setStatus(err.message, true);
+  } finally {
+    saveButton.disabled = false;
+  }
+});
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!form.checkValidity()) {
+    showTab("details"); // the empty required field is in this tab, and a hidden field can't show its message
+    form.reportValidity();
+    return;
+  }
+  buildButton.disabled = true;
+  output.hidden = true;
+  setStatus("Building...");
+  try {
+    await saveEditors();
+    const result = await postJson("/api/build", { folder: folderSelect.value, details: readDetails() });
+    output.textContent = result.output;
+    output.hidden = false;
+    setStatus("Saved and built. Opened the folder in Explorer.");
+  } catch (err) {
+    setStatus(err.message, true);
+    if (err.output) {
+      output.textContent = err.output;
+      output.hidden = false;
+    }
+  } finally {
+    buildButton.disabled = false;
+  }
+});
+
+// --- New character ---
+const newDialog = document.getElementById("newDialog");
+const newForm = document.getElementById("newForm");
+const newError = document.getElementById("newError");
+
+document.getElementById("new").addEventListener("click", () => {
+  newForm.reset();
+  newError.hidden = true;
+  newDialog.showModal();
+});
+document.getElementById("newCancel").addEventListener("click", () => newDialog.close());
+
+newForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    const { folder } = await postJson("/api/characters", {
+      replacing: newForm.replacing.value,
+      newName: newForm.newName.value,
+    });
+    newDialog.close();
+    await init(folder);
+    setStatus(`Created ${folder} with placeholder text.`);
+  } catch (err) {
+    newError.textContent = err.message;
+    newError.hidden = false;
+  }
+});
