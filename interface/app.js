@@ -2615,7 +2615,7 @@ const parseViewport = (text) => {
 };
 
 // The editor under an event's Viewport/Actors fields. `onChange` is told when a drag or list edit changed event.viewport / event.actors.
-function createMapEditor(event, onChange, onPick, onUnpick) {
+function createMapEditor(event, onChange, onPick, onUnpick, onPlace) {
   let zoom = 0;
   let loaded = null; // { map, base } for the place currently shown
   let mode = "viewport";
@@ -2650,18 +2650,79 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
   const stage = el("canvas");
   const overlay = el("canvas", { className: "map-overlay" });
   const scroll = el("div", { className: "map-scroll", hidden: true }, el("div", { className: "map-stack" }, stage, overlay));
-  const actorList = el("div", { className: "map-actors" });
+  // Floating over the map while the Actors tool is on: the actors' keys (top left) and the way the chosen one faces (top right)
+  let selectedActor = 0; // index into the Actors field
+  const actorList = el("div", { className: "map-keys", hidden: true });
+  const facingButtons = FACING.map((o, i) =>
+    el("button", { type: "button", className: "secondary mode", textContent: ARROWS[i], title: `Face ${o.label}`, onclick: () => {
+      if (picked) {
+        // Choosing a Move's destination: the arrows set the way the actor faces when the move ends
+        picked.command.args = picked.command.args.replace(/^(\S+ -?\d+ -?\d+) [0-3]/, `$1 ${i}`);
+        picked.rerender();
+        refreshFacing();
+        return;
+      }
+      const actors = parseActors(event.actors);
+      if (!actors || !actors[selectedActor]) return;
+      actors[selectedActor].facing = i;
+      event.actors = composeActors(actors);
+      onChange();
+      drawOverlay();
+      refreshFacing();
+    } })
+  );
+  const refreshFacing = () => {
+    const actor = (parseActors(event.actors) || [])[selectedActor];
+    // While a Move is being chosen the arrows show (and set) how the actor ends up facing, not how they start
+    const m = picked && /^\S+ -?\d+ -?\d+ ([0-3])/.exec(picked.command.args);
+    const facing = m ? Number(m[1]) : actor && actor.facing;
+    facingButtons.forEach((b, i) => {
+      b.classList.toggle("selected", (m || !!actor) && facing === i);
+      b.disabled = !m && !actor;
+    });
+  };
+  const arrows = el("div", { className: "map-arrows", hidden: true }, ...facingButtons);
   const zoomSelect = fieldSelect({ title: "Zoom", options: options([1, 2, 3, 4], (z) => `${z}x`) }, "2");
-  const modeButtons = [["viewport", "Camera (viewport)"], ["actors", "Actors"]].map(([value, label]) =>
+  const modeButtons = [["viewport", "Viewport"], ["actors", "Actors"]].map(([value, label]) =>
     el("button", { type: "button", className: "secondary mode", textContent: label, onclick: () => { mode = value; refreshModes(); } })
   );
-  const refreshModes = () => modeButtons.forEach((b, i) => b.classList.toggle("selected", ["viewport", "actors"][i] === mode));
-  refreshModes();
   const hint = el("small", { textContent: "" });
-  const updateHint = () => (hint.textContent = mode === "viewport" ? "Click or drag on the map to place the camera. The bright box is what the player sees (about 20 x 11 tiles)." : "Drag an actor to move them. Click an actor to turn them (the arrow is the way they face).");
+  const pathsLabel = el("label", { className: "check-inline" }, showAllPaths, el("span", { textContent: " Show all move paths" }));
+  // Viewport and Actors are a toggle: the actor list and move paths only show while editing actors
+  const refreshModes = () => {
+    modeButtons.forEach((b, i) => b.classList.toggle("selected", ["viewport", "actors"][i] === mode));
+    hint.textContent = mode === "viewport" ? "Click or drag on the map to place the camera. The bright box is what the player sees (about 20 x 11 tiles)." : "Drag an actor to move them. Click an actor to turn them (the arrow is the way they face).";
+    pathsLabel.hidden = mode !== "actors";
+    syncFloaters();
+    drawOverlay();
+  };
+  const syncFloaters = () => {
+    actorList.hidden = arrows.hidden = mode !== "actors" || scroll.hidden;
+  };
 
-  const toolbar = el("div", { className: "map-toolbar" }, ...modeButtons, el("span", { className: "grow" }),
-    el("label", { className: "check-inline" }, showAllPaths, el("span", { textContent: " Show all move paths" })), el("span", { className: "grow" }), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
+  // The Place: only editable once the Place in the event card has been clicked. The close icon goes back to the Place chosen when it was opened.
+  let placeAtOpen = event.location;
+  const placeSelect = choiceSelect(LOCATIONS, event.location, "Place");
+  const placeReset = el("button", { type: "button", className: "secondary place-reset", textContent: "↩", title: "Go back to the last Place selected", "aria-label": "Go back to the last Place selected" });
+  function setPlaceEditable(editable) {
+    if (editable) placeAtOpen = event.location;
+    placeSelect.disabled = !editable;
+    placeReset.disabled = !editable;
+  }
+  function changePlace(value) {
+    if (!value || value === event.location) return;
+    event.location = value;
+    if (![...placeSelect.options].some((o) => o.value === value)) placeSelect.append(el("option", { value, textContent: `${value} (custom)` }));
+    placeSelect.value = value;
+    onPlace(value);
+    show();
+  }
+  placeSelect.addEventListener("change", () => changePlace(placeSelect.value));
+  placeReset.addEventListener("click", () => changePlace(placeAtOpen));
+  setPlaceEditable(false);
+
+  const toolbar = el("div", { className: "map-toolbar" }, el("div", { className: "place-pick" }, placeSelect, placeReset), el("div", { className: "mode-toggle" }, ...modeButtons), el("span", { className: "grow" }),
+    pathsLabel, el("span", { className: "grow" }), el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
   const tileSize = () => TILE * zoom;
 
   // --- drawing ---
@@ -2705,7 +2766,7 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     const actorNames = (parseActors(event.actors) || []).map((a) => a.name);
     for (const step of replaySteps()) {
       const isPicked = !!picked && step.command === picked.command;
-      if (!step.to || !(showAllPaths.checked || isPicked)) continue;
+      if (!step.to || !((showAllPaths.checked && mode === "actors") || isPicked)) continue;
       const color = ACTOR_COLORS[Math.max(0, actorNames.indexOf(step.who)) % ACTOR_COLORS.length];
       const [x1, y1, x2, y2] = [step.from.x + 0.5, step.from.y + 0.5, step.to.x + 0.5, step.to.y + 0.5].map((n) => n * ts);
       const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -2752,7 +2813,10 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
 
     // While choosing a move, everyone is shown where they stand at that step, so the destination can be judged against them
     const pickedStep = picked && replaySteps().find((st) => st.command === picked.command);
+    const endFacing = pickedStep && /^\S+ -?\d+ -?\d+ ([0-3])/.exec(picked.command.args);
     (pickedStep ? pickedStep.before : parseActors(event.actors) || []).forEach((actor, i) => {
+      // the actor being moved shows the way they will face when the move ends
+      if (endFacing && i === selectedActor) actor = { ...actor, facing: Number(endFacing[1]) };
       const color = ACTOR_COLORS[i % ACTOR_COLORS.length];
       const x = actor.x * ts;
       const y = actor.y * ts;
@@ -2761,6 +2825,16 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
       ctx.lineWidth = 2;
       ctx.fillRect(x, y, ts, ts);
       ctx.strokeRect(x + 1, y + 1, ts - 2, ts - 2);
+      if (mode === "actors" && i === selectedActor) {
+        // the chosen actor: a bright double outline
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x - 2, y - 2, ts + 4, ts + 4);
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - 4, y - 4, ts + 8, ts + 8);
+        ctx.strokeStyle = color;
+      }
       // an arrow towards the way they face: 0 up, 1 right, 2 down, 3 left
       const [dx, dy] = [[0, -1], [1, 0], [0, 1], [-1, 0]][actor.facing] || [0, 0];
       const cx = x + ts / 2;
@@ -2786,55 +2860,58 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     });
   }
 
-  // --- the actor list under the map ---
+  // --- the actor keys floating over the map ---
   function renderActors() {
     const actors = parseActors(event.actors);
     if (!actors) {
-      actorList.replaceChildren(el("p", { className: "hint", textContent: "The Actors text isn't in the form name x y facing, so it can't be shown on the map. Fix it above to see the actors." }));
+      actorList.replaceChildren(el("p", { className: "hint", textContent: "The Actors text isn't in the form name x y facing, so it can't be shown on the map. Fix it in the form to see the actors." }));
+      refreshFacing();
       return;
     }
+    selectedActor = Math.max(0, Math.min(selectedActor, actors.length - 1));
     const save = () => {
       event.actors = composeActors(actors);
       onChange();
       drawOverlay();
     };
     const rows = actors.map((actor, i) => {
-      const name = el("input", { value: actor.name, title: "Who", size: 10 });
-      name.addEventListener("input", () => {
-        actor.name = name.value.replace(/\s+/g, "") || "actor";
+      const label = actor.name === "{name}" ? "NPC" : actor.name;
+      const locked = !!picked; // choosing a Move's destination: the other actors, and removing or adding, stay out of the way
+      const key = el("button", {
+        type: "button", disabled: locked && i !== selectedActor, className: `actor-key${i === selectedActor ? " selected" : ""}`, title: `${actor.name}: click to choose, double-click to rename`,
+        onclick: () => { selectedActor = i; renderActors(); drawOverlay(); },
+        ondblclick: () => {
+          const name = window.prompt("Actor name", actor.name);
+          if (name && name.trim()) {
+            actor.name = name.trim().replace(/\s+/g, "");
+            save();
+            renderActors();
+          }
+        },
+      }, el("span", { className: "swatch", style: `background:${ACTOR_COLORS[i % ACTOR_COLORS.length]}` }), el("span", { textContent: label }));
+      const remove = el("button", { type: "button", disabled: locked, className: "secondary remove-x", textContent: "×", title: `Remove ${actor.name}`, onclick: () => {
+        actors.splice(i, 1);
+        if (selectedActor > i) selectedActor--;
         save();
-      });
-      const number = (key, title) => {
-        const input = el("input", { type: "number", value: actor[key], title });
-        input.addEventListener("input", () => {
-          if (input.value === "") return;
-          actor[key] = Math.round(Number(input.value));
-          save();
-        });
-        return input;
-      };
-      const facing = fieldSelect({ title: "Facing", options: FACING }, String(actor.facing));
-      facing.addEventListener("change", () => {
-        actor.facing = Number(facing.value);
-        save();
-      });
-      return el("div", { className: "add-row actor-row" },
-        el("span", { className: "swatch", style: `background:${ACTOR_COLORS[i % ACTOR_COLORS.length]}` }), name,
-        el("label", {}, "x ", number("x", "Tile across")), el("label", {}, "y ", number("y", "Tile down")), facing,
-        el("button", { type: "button", className: "secondary remove-x", textContent: "×", title: "Remove", onclick: () => { actors.splice(i, 1); save(); renderActors(); } }));
+        renderActors();
+      } });
+      return el("div", { className: "actor-key-row" }, key, remove);
     });
     actorList.replaceChildren(...rows, el("button", {
       type: "button",
-      className: "secondary",
+      disabled: !!picked,
+      className: "secondary add-actor",
       textContent: "Add actor",
       onclick: () => {
         const view = parseViewport(event.viewport) || { x: 5, y: 5 };
         const name = !actors.some((a) => a.name === "farmer") ? "farmer" : !actors.some((a) => a.name === "{name}") ? "{name}" : `actor${actors.length + 1}`;
         actors.push({ name, x: view.x, y: view.y, facing: 2 });
+        selectedActor = actors.length - 1;
         save();
         renderActors();
       },
     }));
+    refreshFacing();
   }
 
   // --- mouse ---
@@ -2854,6 +2931,7 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
       const index = actors ? actors.findLastIndex((a) => a.x === tile.x && a.y === tile.y) : -1;
       if (index < 0) return;
       drag = { kind: "actor", index, moved: false, from: tile };
+      selectedActor = index; // the arrows then turn this one
     }
     overlay.setPointerCapture(e.pointerId);
     onChange();
@@ -2880,15 +2958,6 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     drawOverlay();
   });
   const endDrag = () => {
-    if (drag && drag.kind === "actor" && !drag.moved) {
-      // a click without a drag turns the actor to face the next way
-      const actors = parseActors(event.actors);
-      if (actors && actors[drag.index]) {
-        actors[drag.index].facing = (actors[drag.index].facing + 1) % 4;
-        event.actors = composeActors(actors);
-        onChange();
-      }
-    }
     if (drag) {
       drag = null;
       renderActors();
@@ -2912,17 +2981,18 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     const step = replaySteps().find((st) => st.command === picked.command);
     const m = /^(\S+) (-?\d+) (-?\d+) ([0-3])/.exec(picked.command.args);
     if (!step || !step.from || !m) return;
-    const [dx, dy] = [tile.x - step.from.x, tile.y - step.from.y];
+    let [dx, dy] = [tile.x - step.from.x, tile.y - step.from.y];
+    // A move only goes in a straight line from where the actor starts. A click off the line snaps to whichever line is nearer:
+    // the click is |dy| tiles from the actor's row and |dx| tiles from their column.
     if (dx && dy) {
-      // A move only goes in a straight line: walk across first, then up or down
-      picked.command.args = `${m[1]} ${dx} 0 ${dx > 0 ? 1 : 3}`;
-      const second = { type: "move", args: `${m[1]} 0 ${dy} ${m[4]}` };
-      picked.commands.splice(picked.commands.indexOf(picked.command) + 1, 0, second);
-      picked.command = second;
-    } else {
-      picked.command.args = `${m[1]} ${dx} ${dy} ${m[4]}`;
+      if (Math.abs(dy) <= Math.abs(dx)) dy = 0;
+      else dx = 0;
     }
+    // They end up facing the way they walked (the arrows can still change that afterwards)
+    const facing = dx ? (dx > 0 ? 1 : 3) : dy ? (dy > 0 ? 2 : 0) : m[4];
+    picked.command.args = `${m[1]} ${dx} ${dy} ${facing}`;
     picked.rerender();
+    refreshFacing();
     updateBanner();
     drawOverlay();
   }
@@ -2930,10 +3000,15 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     picked = info && picked && picked.command === info.command ? null : info; // choosing the same one again turns it off
     if (picked) {
       mode = "actors"; // opened from a Move: the Actors tool is the one wanted afterwards
+      // the actor being moved is the selected one
+      const who = /^(\S+)/.exec(picked.command.args);
+      const index = who ? (parseActors(event.actors) || []).findIndex((a) => a.name === who[1]) : -1;
+      if (index >= 0) selectedActor = index;
       refreshModes();
-      updateHint();
       setOpen(true);
     }
+    renderActors(); // while a Move is chosen, only its actor can be selected
+    refreshFacing();
     updateBanner();
     drawOverlay();
     onPick();
@@ -2943,6 +3018,7 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
   async function show() {
     message.hidden = true;
     scroll.hidden = true;
+    syncFloaters();
     loaded = null;
     try {
       loaded = await loadMap(event.location);
@@ -2954,6 +3030,7 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     if (!zoom) zoom = Math.min(4, Math.max(1, Math.floor(900 / (loaded.map.width * TILE))));
     zoomSelect.value = String(zoom);
     scroll.hidden = false;
+    syncFloaters();
     drawStage();
     renderActors();
     updateBanner();
@@ -2962,8 +3039,7 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     zoom = Number(zoomSelect.value);
     drawStage();
   });
-  modeButtons.forEach((b) => b.addEventListener("click", updateHint));
-  updateHint();
+  refreshModes();
 
   // The map lives in the preview pane on the right so it stays in view while the form scrolls
   let isOpen = false;
@@ -2972,6 +3048,8 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
     if (picked) {
       // The map is gone, so the Move is no longer being chosen: only the highlight changes, the rows are not redrawn
       picked = null;
+      renderActors();
+      refreshFacing();
       onUnpick();
     }
   };
@@ -2985,13 +3063,15 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
       clearPane(closeFromPane);
     }
   }
-  const panel = el("div", { className: "map-panel" }, message, toolbar, hint, banner, scroll, actorList);
+  const frame = el("div", { className: "map-frame" }, scroll, actorList, arrows);
+  const panel = el("div", { className: "map-panel" }, message, toolbar, hint, banner, frame);
   return {
     // Clicking the Viewport or Actors field opens the map on the matching tool
+    // Passing no tool means the Place was clicked: the Place dropdown here can then be used to swap the map
     open(nextMode) {
-      mode = nextMode;
+      if (nextMode) mode = nextMode;
+      setPlaceEditable(!nextMode);
       refreshModes();
-      updateHint();
       setOpen(true);
     },
     // The Move commands' "Show on map" buttons
@@ -3014,7 +3094,6 @@ function createMapEditor(event, onChange, onPick, onUnpick) {
 }
 
 let eventCustomTrack = ""; // the id of the character's uploaded track, for the Play music command's dropdown
-let eventAudio = null; // the music preview currently playing, if any
 
 function createEventsEditor(section) {
   const { title, hint } = section.dataset;
@@ -3057,11 +3136,17 @@ function createEventsEditor(section) {
     const labelled = (label, node, note) => el("label", {}, el("span", { textContent: label }), node, ...(note ? [el("small", { textContent: note })] : []));
 
     const locationInput = choiceSelect(LOCATIONS, event.location, "Place");
+    // Clicking the Place shows the map instead of the native list; the Place is swapped from the dropdown above the map
+    locationInput.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      locationInput.focus();
+      mapEditor.open(null);
+    });
     locationInput.addEventListener("change", () => {
+      // (keyboard changes)
       event.location = locationInput.value;
       refresh();
       mapEditor.setLocation();
-      render();
     });
 
     // Viewport and actors: text fields, plus the map view that edits the same two values
@@ -3074,7 +3159,13 @@ function createEventsEditor(section) {
         actorsInput.value = event.actors;
       },
       () => refreshLists(),
-      () => lists.forEach((l) => l.sync())
+      () => lists.forEach((l) => l.sync()),
+      (place) => {
+        locationInput.value = place;
+        if (locationInput.value !== place) locationInput.append(el("option", { value: place, textContent: `${place} (custom)` }));
+        locationInput.value = place;
+        refresh();
+      }
     );
     viewportInput.addEventListener("input", () => mapEditor.redraw());
     // The command lists (main and fork) share the map: their Move commands can be chosen on it
@@ -3091,7 +3182,8 @@ function createEventsEditor(section) {
     };
     actorsInput.addEventListener("input", () => mapEditor.redraw());
     // Clicking (or tabbing into) the viewport or actors field shows the map in the preview pane
-    for (const [input, mode] of [[viewportInput, "viewport"], [actorsInput, "actors"]]) {
+    for (const [input, mode] of [[viewportInput, "viewport"], [actorsInput, "actors"], [locationInput, null]]) {
+      if (!mode) continue; // the Place is handled above
       input.addEventListener("click", () => mapEditor.open(mode));
       input.addEventListener("focus", () => mapEditor.open(mode));
     }
@@ -3112,37 +3204,15 @@ function createEventsEditor(section) {
     const choices = [...(customTrack ? [[customTrack, `Your track: ${customTrack}`]] : []), ...MUSIC];
     const known = choices.some(([v]) => v === event.music);
     const musicSelect = choiceSelect([...choices, [OTHER_CHOICE, "Other (type a track name)..."]], known ? event.music : OTHER_CHOICE, "Starting music");
-    // Only the character's own uploaded track can be previewed; the game's tracks are locked in its sound bank
-    const playButton = el("button", { type: "button", className: "secondary", textContent: "Play" });
-    const syncPlay = () => {
-      const playable = !!customTrack && musicSelect.value === customTrack;
-      playButton.disabled = !playable;
-      playButton.title = playable ? "Preview your uploaded track" : "Only your own uploaded track can be previewed here";
-    };
-    playButton.addEventListener("click", () => {
-      if (eventAudio && !eventAudio.paused) {
-        eventAudio.pause();
-        playButton.textContent = "Play";
-        return;
-      }
-      eventAudio?.pause();
-      eventAudio = new Audio(assetUrl("music"));
-      eventAudio.addEventListener("ended", () => (playButton.textContent = "Play"));
-      eventAudio.play().then(() => (playButton.textContent = "Stop")).catch(() => {});
-    });
     const musicCustom = el("input", { value: known ? "" : event.music, placeholder: "Track name", title: "Track name", hidden: known });
     musicSelect.addEventListener("change", () => {
       const other = musicSelect.value === OTHER_CHOICE;
       event.music = other ? musicCustom.value : musicSelect.value;
       musicCustom.hidden = !other;
-      eventAudio?.pause();
-      playButton.textContent = "Play";
-      syncPlay();
       if (other) musicCustom.focus();
     });
     musicCustom.addEventListener("input", () => (event.music = musicCustom.value));
-    musicBox.append(musicSelect, playButton, musicCustom);
-    syncPlay();
+    musicBox.append(musicSelect, musicCustom);
 
     const skippable = el("input", { type: "checkbox", checked: event.skippable });
     skippable.addEventListener("change", () => (event.skippable = skippable.checked));
@@ -3182,15 +3252,18 @@ function createEventsEditor(section) {
       "details",
       { className: "entry event", open: !!event.open },
       summary,
-      labelled("Event ID", text("id", { title: "Event ID" }), "A unique number. Part of the event's key in the game."),
-      labelled("Place", locationInput, "The map the event happens in (Data/Events/<place>)."),
-      el("div", { className: "field" }, el("span", { textContent: "Conditions" }), el("div", {}, conditions.input,
-        el("small", { textContent: "All optional. Click to switch on hearts, time of day or weather in the preview panel, or type them separated by /." }))),
-      el("h4", { textContent: "Setup" }),
-      labelled("Starting music", musicBox, "The track playing as the event opens. Pick None for silence. Play previews your uploaded track (Assets tab); Stardew's own tracks can't be previewed here."),
-      labelled("Viewport", viewportInput, "The map tile the camera starts on, as x y."),
-      labelled("Actors", actorsInput, "Who is in the scene and where: name x y facing, repeated (e.g. farmer 15 16 0 {name} 11 10 0). Click the viewport or actors to show the map."),
-      el("label", { className: "check indent" }, skippable, el("span", { textContent: "Skippable" })),
+      el("div", { className: "setup-wrap" },
+        el("details", { className: "setup-card", open: true },
+          el("summary", { textContent: "Setup Scene" }),
+          el("div", { className: "event-row id-row" },
+            labelled("Event ID", text("id", { title: "Event ID" }), "A unique number."),
+            labelled("Conditions", conditions.input, "Optional. Click to set them in the preview panel."),
+            labelled("Starting music", musicBox, "The track playing as the event opens.")),
+          el("div", { className: "event-row place-row" },
+            labelled("Place", locationInput, "The map the event happens in."),
+            labelled("Viewport", viewportInput, "Camera start tile, x y."),
+            labelled("Actors", actorsInput, "name x y facing, repeated."))),
+        el("label", { className: "check skippable" }, skippable, el("span", { textContent: "Skippable" }))),
       el("h4", { textContent: "Commands" }),
       createCommandList(event.commands, forks, mapHooks),
       el("h4", { textContent: "Fork steps" }),
@@ -3540,7 +3613,6 @@ function showTab(name, focus = false) {
     if (active && focus) tab.focus();
   }
   for (const panel of tabPanels) panel.hidden = panel.dataset.panel !== name;
-  eventAudio?.pause();
   closePane(); // the pane belongs to the tab that filled it; this also stops any audio playing in it
   try {
     history.replaceState(null, "", name === "dialogue" ? `#dialogue/${currentSub}` : `#${name}`); // a refresh stays on this tab
