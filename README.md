@@ -22,18 +22,25 @@ The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), s
 
 Run `node server.js` and open http://localhost:3000 for a form that edits a character's `modDetails.json` and runs the build.
 
-- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Marriage dialogue, Schedule, Gift tastes, Events). Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
+- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Schedule, Gifts, Events, Mail). Dialogue has its own tabs: Day, Festivals, Marriage and Other. Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
 - **Save** (bottom right) writes the form to the selected character's `modDetails.json`.
 - **Build & open dist folder** saves, runs `build.js` and opens the built folder.
 - **New character** asks for the character being replaced and the new name, then copies [templates/character/](templates/character/) into `characters/<Replacing>-<NewName>` with the names filled in. The template uses placeholder text, and its `assets/` folder starts empty, so add `custom_sprites.png` and `custom_portraits.png`.
 
 - **Assets** lets you upload the portraits (`custom_portraits.png`), sprites (`custom_sprites.png`) and a music track (`.ogg`) into the selected character's `assets/` folder, replacing the old file. **View** shows the image, or **Play** plays the track. The music file name is stored in the character's `music.json`, which `musicChange.js` reads; with no track set there is no music change.
 
-- **Dialogue** and **Marriage dialogue** list every entry as a card. Under *Day dialogue*, add a day (Mon to Sun) with an optional heart count (1 to 14), which makes keys like `Sun` or `Sun4`. Under *Other dialogue*, add any key, e.g. `Introduction` or `Festival_Egg`. Each line you type in a card is one `#` section. Save writes `dialogue.json` and `marriageDialogue.json`.
-- **Schedule** works the same way. Add a schedule for a day of the week (`Mon`), a season (`spring`, `summer`, `fall`, `winter`) or one day of a season (`spring:1`); every one of them is optional. Each line in a card is one stop (`600 Beach 34 39 0`). Any other key, such as `Rain`, goes under *Other schedules*. Save writes `schedule.json`.
-- **Gift tastes** has three parts. *Generic reactions* are the five lines the character says for a loved, liked, neutral, disliked or hated gift, each with a sprite face dropdown (`$0` to `$8`) and the text. *Item categories* are the item numbers for loves, likes, dislikes, hates and neutral, typed as numbers separated by spaces (`universal_neutral` also works). *Specific items* are optional: pick an item from the dropdown (`(O)0` to `(O)999`), a sprite face and the text. Text can't contain `/`. The game ignores extra fields in the gift string, so these are built into the dialogue as `AcceptGift_(O)<id>` (not tested in-game yet). Save writes `giftTastes.json`.
+- **Dialogue** and **Marriage dialogue** list every entry as a card. Under *Day dialogue*, add a day (Mon to Sun) with an optional heart count (1 to 14), which makes keys like `Sun` or `Sun4`. Under *Other dialogue*, add any key, e.g. `Introduction` or `FlowerDance_Decline`. Each line you type in a card is one `#` section. Save writes `dialogue.json` and `marriageDialogue.json`.
 
-The interface edits the mod details, assets, dialogue, schedule, gift tastes and events. The other changes are still edited in their `.js` files.
+- **Festivals** is what the character says when you talk to them at a festival. Pick one of the eight festivals and when it is (year 1, year 2 onwards, or married, year 1 or 2 onwards), then write the lines. Save writes `festivalDialogue.json`, and the build adds `<Name>`, `<Name>_y2`, `<Name>_spouse` or `<Name>_spouse_y2` to the game's own `Data/Festivals/<id>` file (e.g. `spring24` is the Flower Dance), leaving the rest of that festival alone. Whether the player is dancing with them, winning events and so on is separate dialogue: see the Festivals group in the Dialogue tab (`FlowerDance_Accept`, `wonEggHunt`, ...).
+
+- **Schedule** works the same way. Add a schedule for a day of the week (`Mon`), a season (`spring`, `summer`, `fall`, `winter`) or one day of a season (`spring:1`); every one of them is optional. Each stop (`600 Beach 34 39 0`) is a row of four toggles: time, location, position and facing. Position opens the map in the preview pane, where you click or drag to pick the tile. Lines the editor can't break down (such as `GOTO Mon`) stay as text. Any other key, such as `Rain`, goes under *Other schedules*. Save writes `schedule.json`.
+- **Gift tastes** has three parts. *Generic reactions* are the five lines the character says for a loved, liked, neutral, disliked or hated gift, each with a clickable portrait face (`$0` to `$8`, click to cycle to the next; shows the `$n` text if no portrait is uploaded) and the text. *Item categories* are the item numbers for loves, likes, dislikes, hates and neutral, chosen from the same item table with checkboxes (shown as icon chips you can remove, with the name and number on hover; numbers are saved without the `(O)`). Click Add to open the table. Ids that aren't in it, such as negative category numbers like `-4` or `universal_neutral`, are kept if they are already in the file but can't be added from the interface. *Specific items* are optional: click the item button to open a searchable table of icon, name and number (from `interface/gameSprites/`; rebuild its list with `node interface/gameSprites/makeItems.js` if you replace `Objects.json` or `springobjects.png`), a clickable portrait face and the text. Text can't contain `/`. The game ignores extra fields in the gift string, so these are built into the dialogue as `AcceptGift_(O)<id>` (not tested in-game yet). Save writes `giftTastes.json`.
+
+- **Mail** is a list of letters from the character. Each has a subject (the mailbox title), the letter text, optional attached items (picked like gift items) and money, and when it is sent: a trigger (when a day starts or ends), the friendship points needed with the character (250 per heart), an optional extra game state query, whether it arrives today or tomorrow, and whether it is sent only once. **Preview** shows the letter in the pane. Use `@` for the player's name, `{newName}` for the new character's name (to sign it) and `{name}` for the Stardew character's name. It is saved to `mail.json`; each letter's key in the game is `<UniqueID>_<letter ID>`.
+- **Events** open a map view in the preview pane when you click the Viewport or Actors field. It draws the event's Place from the game's own maps: in Camera mode, click or drag to set the viewport (the bright box is roughly what the player sees); in Actors mode, drag actors to move them and click one to turn it. The text fields and the list under the map stay in sync. Each Move command has a **Show on map** button: the map shows where that actor starts that step (their Actors tile moved along by their earlier Moves) and you click the destination tile to fill in the tiles across and down. A move only goes in a straight line, so a click on a corner becomes two Moves (across, then up or down). **Show all move paths** draws every Move as numbered arrows. It needs the game's maps unpacked with [StardewXnbHack](https://github.com/Pathoschild/StardewXnbHack) and the `Maps` folder from its `Content (unpacked)` copied to `game_assets/Maps` (git-ignored, as it is the game's art). Places with no map there (e.g. Temp) show a message instead.
+  - **Replace the game's events** (tickbox at the top of the Events tab, on by default, saved as `disableDefaultEvents` in `events.json`): when ticked, the build deletes the replaced character's own Stardew Valley events, so only yours play. Untick it to blend yours with the game's. Only events that need just that character's friendship or marriage are removed; group scenes that need several NPCs (such as the 10-heart Saloon and Haley's House scenes) stay, as they belong to the other characters too. The build finds them in the game's unpacked `Data/Events` (the same StardewXnbHack unpack as the maps) in `Content (unpacked)` in the usual Steam folders; if yours is elsewhere, set the `STARDEW_CONTENT` environment variable to that folder. If they can't be found the build prints a warning and leaves the game's events on. Players who already saw an event keep that history; removed events just never trigger again.
+
+The interface edits the mod details, assets, dialogue, festivals, schedule, gift tastes, events and mail. The other changes are still edited in their `.js` files.
 
 ## Characters
 
@@ -79,17 +86,19 @@ Stardew packs many values into one long string separated by a character (`/` for
 | --- | --- | --- |
 | `spriteChange.js` | `Characters/<SDV_Name>` | Loads the custom sprite sheet. |
 | `portraitChange.js` | `Portraits/<SDV_Name>` | Loads the custom portraits. |
-| `displayNameChange.js` | `Data/Characters` | Sets `DisplayName` to `<newCharacterName>?`. |
+| `displayNameChange.js` | `Data/Characters` | Sets `DisplayName` to `<newCharacterName>`. |
 | `giftTastesChange.js` | `Data/NPCGiftTastes` | Reads `giftTastes.json` and joins the sections with `/`: five reaction + item list pairs in the game's order (love, like, dislike, hate, neutral). |
 | `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Reads `dialogue.json`, joining each entry's lines with `#`, and adds `AcceptGift_(O)<id>` entries from the specific items in `giftTastes.json`. |
+| `festivalChange.js` | `Data/Festivals/<id>` | Reads `festivalDialogue.json` and adds the character's own line to each festival it has entries for. |
 | `marriageDialogueChange.js` | `Characters/Dialogue/MarriageDialogue` | Reads `marriageDialogue.json`, joining each entry's lines with `#`. `{name}` in a key becomes `SDV_Name`. |
 | `eventChange.js` | `Data/Events/ArchaeologyHouse`, `ElliottHouse`, `Beach`, `Farm` | Reads `events.json`, joining each event's commands with `/` and grouping events by location. |
+| `mailChange.js` | `Data/Mail`, `Data/TriggerActions` | Reads `mail.json`: writes each letter to `Data/Mail` and adds a trigger action that sends it. Adds nothing when there are no letters. |
 | `scheduleChange.js` | `Characters/schedules/<SDV_Name>` | Reads `schedule.json`, joining each schedule's stops with `/`. Not tested in-game yet, and currently commented out in `changes.js` (it was reported as an infinite loop). |
 | `musicChange.js` | `Data/AudioChanges` | Custom music track. |
 
 ### Dialogue data
 
-`dialogue.json`, `marriageDialogue.json` and `schedule.json` each hold `{ "entries": [{ "key": "Mon4", "lines": ["..."] }] }`. Day keys are `Mon` to `Sun` with an optional heart count after them (`Sun`, `Sun4`, up to `Sun14`). Other keys are things like `Introduction`, `one` and `Festival_Egg`. A duplicate key stops the build with an error. Edit them in the interface or by hand.
+`dialogue.json`, `marriageDialogue.json` and `schedule.json` each hold `{ "entries": [{ "key": "Mon4", "lines": ["..."] }] }`. Day keys are `Mon` to `Sun` with an optional heart count after them (`Sun`, `Sun4`, up to `Sun14`). Other keys are things like `Introduction`, `one` and `FlowerDance_Decline`. A duplicate key stops the build with an error. Edit them in the interface or by hand.
 
 ### Event data
 
@@ -103,6 +112,8 @@ Stardew packs many values into one long string separated by a character (`/` for
 | `skippable` | Adds `skippable` after the setup. |
 | `commands` | The rest of the script, in order: a list of `{ type, args }`, each written as `<type> <args>` (`speak`, `pause`, `move`, `emote`, `playMusic`, `stopMusic`, `question`, `fork`, `end` and so on). Any other command works as a custom command in the interface. |
 | `forkName`, `forkCommands` | Optional. The fork entry a question's answer jumps to, with its own commands. |
+
+In the interface a `question` command followed by a `fork` command is shown as one **Fork** card: the question as text, `fork0` or `fork1`, the fork's name and the answers (joined with `#` in the file). Adding a Fork also creates the event's `forkName` and `forkCommands`, and their steps appear under the main ones. An event can have one fork, and removing the card removes the fork and its steps.
 
 `{name}` anywhere in the file becomes `SDV_Name`. A command of type `raw` is written exactly as its `args` (Elliott's `pastLifeEvent` fork starts with a blank one). Nothing can contain a `/`, since it separates the commands. The events are Elliott's six: 9999002 and 9999006 in `ElliottHouse`, 9999004 in `ArchaeologyHouse`, 9999008 and 9999010 in `Beach`, and 9999014 in `Farm` (work in progress).
 
@@ -118,4 +129,3 @@ Everything below is built to `<folderLocation>/<modFolderName>` when you run `no
 
 ## TODO
 
-- Gift tastes: replace the item dropdown (`(O)0` to `(O)999`) with a picker of clickable item images, and replace the sprite face dropdown (`$0` to `$8`) with the character's portrait at that index, so you click the face you want.

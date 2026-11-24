@@ -1,11 +1,12 @@
 {
   "SDV_Name": "Elliott",
-  "folderLocation": "./dist",
+  "folderLocation": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stardew Valley\\Mods",
   "newCharacterName": "Sephiroth",
   "Name": "My Character Replacement - Elliot to Sephiroth",
   "Author": "PastelBeans_",
   "Version": "1.0.0",
   "Description": "Replaces Elliot with Sephiroth.",
   "UniqueID": "PastelBeans_.ElliotToSephiroth",
-  "MinimumApiVersion": "4.0.0"
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKey": ""
 }

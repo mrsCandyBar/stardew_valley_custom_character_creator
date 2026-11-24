@@ -11,9 +11,9 @@
     {
       "key": "Mon",
       "lines": [
-        "Morning. A woman named Marnie brought me eggs yesterday. Simply out of... kindness. ",
-        "$2I kept waiting for her to ask me to join her... cause, but she just smiled and left. It is... confusing... ",
-        "$0why would she do that?"
+        "Hi... You are the newcomer tending the old farmstead, correct? I am... Sephiroth.",
+        "$2I... arrived in this valley quite a while back, and I am... still adjusting to a place where people greet... strangers without suspicion or fear.",
+        "$0Pay me no mind—I...  have no intention of disturbing the peace here. Just... this... familiarity amongst strangers is... jarring to me."
       ]
     },
     {
@@ -49,16 +49,16 @@
       "key": "Tue",
       "lines": [
         "Some months back I had been struck down, I was so sure of... my success. ",
-        "$5Yet here I am. No Jenova. No Shinra. No grand purpose. ",
+        "$2Yet here I am. No Jenova. No Shinra. No grand purpose. ",
         "$8Just... here... in a town full of people who think my sword is an overly dramatic fishing tool. ",
-        "$5I do not know what to do with this quiet."
+        "$4I do not know what to do with this quiet."
       ]
     },
     {
       "key": "Tue2",
       "lines": [
         "I saw you checking the bulletin board in town. ",
-        "$4Are you gathering intelligence on me? I would advise you to reconsider."
+        "$8Are you gathering intelligence on me? I would advise you to reconsider."
       ]
     },
     {
@@ -79,7 +79,7 @@
       "key": "Tue8",
       "lines": [
         "I've decided to keep the Masamune safely put away. There is no success to be found in ruin. ",
-        "$7Being 'here'... with you... is a purpose I never anticipated, yet I am grateful for it."
+        "$1Being 'here'... with you... is a purpose I never anticipated, yet I am grateful for it."
       ]
     },
     {
@@ -93,7 +93,7 @@
     {
       "key": "Wed2",
       "lines": [
-        "The fisherman spoke to you earlier. Did you ask him about the stranger in the cabin? ",
+        "$2The fisherman spoke to you earlier. Did you ask him about the stranger in the cabin? ",
         "$5Trust me stranger. Some things... are better left in the past where they belong."
       ]
     },
@@ -101,20 +101,20 @@
       "key": "Wed4",
       "lines": [
         "Willy convinced me to try holding the fishing rod. My stance was perfect, but my timing was... terrible. ",
-        "$4The fish escaped. It is frustrating, but... not entirely unpleasant."
+        "$6The fish escaped. It is frustrating, but... not entirely unpleasant."
       ]
     },
     {
       "key": "Wed6",
       "lines": [
-        "Willy let me keep an extra crab from his traps today. I had no use for a live crustacean, so I left it by the tide pools. ",
+        "$1Willy let me keep an extra crab from his traps today. I had no use for a live crustacean, so I left it by the tide pools. ",
         "$3This valley is changing how I view small victories."
       ]
     },
     {
       "key": "Wed8",
       "lines": [
-        "Willy says I'm actually getting the hang of casting a line. ",
+        "$1Willy says I'm actually getting the hang of casting a line. ",
         "$3I even caught a small fish yesterday. It felt... rewarding. A different kind of victory!"
       ]
     },
@@ -143,22 +143,22 @@
       "key": "Thu6",
       "lines": [
         "The sunset was remarkably clear today. ",
-        "$5I found myself wishing you were walking the shoreline at the same time. ",
+        "$6I found myself wishing you were walking the shoreline at the same time. ",
         "$3Talking to you helps quiet the noise in my mind."
       ]
     },
     {
       "key": "Thu8",
       "lines": [
-        "When I walk the shore at dusk now, I no longer look at my hands and see a weapon. ",
-        "$1I see a life that belongs to me. Thank you for walking beside me while I figured that out."
+        "$1When I walk the shore at dusk now, I no longer look at my hands and see a weapon. ",
+        "$3I see a life that belongs to me. Thank you for walking beside me while I figured that out."
       ]
     },
     {
       "key": "Fri",
       "lines": [
         "The villagers invited me to the saloon. They want to play billiards. ",
-        "$3I asked if the loser must forfeit their soul to the Lifestream. ",
+        "$1I asked if the loser must forfeit their soul to the Lifestream. ",
         "$8Robin laughed and said it just costs a starfruit wine... What even is starfruit wine?"
       ]
     },
@@ -166,29 +166,29 @@
       "key": "Fri2",
       "lines": [
         "You spent time at the saloon. A crowded room is an ideal place to exchange secrets... ",
-        "$4Not that I noticed..."
+        "$1Not that I noticed..."
       ]
     },
     {
       "key": "Fri4",
       "lines": [
-        "I walked to the saloon last night. I didn't go in, but I saw you through the window. You seemed... at peace. ",
+        "$1I walked to the saloon last night. I didn't go in, but I saw you through the window. You seemed... at peace. ",
         "$6I find myself wondering what that feels like."
       ]
     },
     {
       "key": "Fri6",
       "lines": [
-        "I almost went inside the saloon tonight because I knew you would be there. ",
-        "$1I didn't go in, but... the choice was mine this time and not... fear."
+        "$1I almost went inside the saloon tonight because I knew you would be there. ",
+        "$3I didn't go in, but... the choice was mine this time and not... fear."
       ]
     },
     {
       "key": "Fri8",
       "lines": [
-        "I went to the saloon last night. I sat in the corner... ",
+        "$1I went to the saloon last night. I sat in the corner... ",
         "$8then Gus brought me a plate of food, and Robin waved. ",
-        "$5I did not feel like an outsider. I felt... seen."
+        "$6I did not feel like an outsider. I felt... seen."
       ]
     },
     {
@@ -196,14 +196,14 @@
       "lines": [
         "I almost introduced myself to Pierre as the Ultimate Soldier today. ",
         "$7He looked perplexed and thought I was talking about a theatrical play. ",
-        "$5I think he thinks I am eccentric."
+        "$8I think he thinks I am eccentric."
       ]
     },
     {
       "key": "Sat2",
       "lines": [
         "I saw you buying supplies at the market. ",
-        "$4Planning a long excursion, or preparing a perimeter?"
+        "$0Planning a long excursion, or preparing a perimeter?"
       ]
     },
     {
@@ -224,8 +224,8 @@
     {
       "key": "Sat8",
       "lines": [
-        "Pierre gave me a discount on seeds today. ",
-        "$1He called me a good neighbor. Me! A neighbor! ",
+        "$1Pierre gave me a discount on seeds today. ",
+        "$3He called me a good neighbor. Me! A neighbor! ",
         "$3I think... I am beginning to understand how to just... live... I like this place."
       ]
     },
@@ -234,7 +234,7 @@
       "lines": [
         "Sundays are quiet. The Mayor asked if I wanted to help with the upcoming festival. ",
         "$8Me! Organizing a festival? If he knew what I had happened in Nibelheim- but thankfully he does not! ",
-        "$5They just see a traveler with long hair. It is a... strange mercy."
+        "$0They just see a traveler with long hair. It is a... strange mercy."
       ]
     },
     {
@@ -255,14 +255,14 @@
     {
       "key": "Sun6",
       "lines": [
-        "Sundays no longer feel heavy with memories of... past events. ",
+        "$1Sundays no longer feel heavy with memories of... past events. ",
         "$3Now, they just feel like a quiet prelude to whatever news you will bring from your farm."
       ]
     },
     {
       "key": "Sun8",
       "lines": [
-        "The Mayor asked if I would officially join the town committee. I declined, but thanked him. ",
+        "$1The Mayor asked if I would officially join the town committee. I declined, but thanked him. ",
         "$1I do not need a title anymore. ",
         "$6Having a home here... and a connection to you... is more than enough."
       ]
@@ -288,13 +288,15 @@
     {
       "key": "four",
       "lines": [
-        "I had a dream of the sky crashing last night. Reality cracking and splintering all around me. Normally I wake up reaching for my sword. But this morning... I did not feel the urge to draw blood. I do not understand this place."
+        "$2I had a dream of the sky crashing last night. Reality cracking and splintering all around me. Normally I wake up reaching for my sword. But this morning... I did not feel the urge to draw blood. I do not understand this place."
       ]
     },
     {
       "key": "five",
       "lines": [
-        "I found this quartz in the mines. I thought you might want it- Wait. Do not misunderstand. I did not go looking for it for *you*. It was blocking my path- and my hands were full, so I had to put it somewhere... Take it."
+        "$1I found this quartz in the mines. I thought you might want it- ",
+        "$8Wait. Do not misunderstand. I did not go looking for it for *you*. ",
+        "$4It was blocking my path- and my hands were full, so I had to put it somewhere... Take it."
       ]
     },
     {
@@ -306,13 +308,14 @@
     {
       "key": "seven",
       "lines": [
-        "You are an unusual person. You approach me without fear, despite... everything. I have been following your behavior, but I have yet to find a practical reason for your persistence."
+        "You are an unusual person. You approach me without fear, despite... everything.",
+        "$8I have been following your behavior, but I have yet to find a practical reason for your persistence."
       ]
     },
     {
       "key": "eight",
       "lines": [
-        "In my past, alliances were forged for war, and they always ended in betrayal. Yet, you continue to bring me crops and listen to my silence. I... do not mind your presence. In fact, the beach is less chaotic when you are here."
+        "$6In my past, alliances were forged for war, and they always ended in betrayal. Yet, you continue to bring me crops and listen to my silence. I... do not mind your presence. In fact, the beach is less chaotic when you are here."
       ]
     },
     {
@@ -330,13 +333,13 @@
     {
       "key": "Festival_Luau",
       "lines": [
-        "The Governor is tasting a communal soup. Everyone threw a random item into the pot. If I dropped Void Essence in there, would it grant them cosmic power or simply ruin dinner? Best not to test that today."
+        "$1The Governor is tasting a communal soup. Everyone threw a random item into the pot. If I dropped Void Essence in there, would it grant them cosmic power or simply ruin dinner? Best not to test that today."
       ]
     },
     {
       "key": "Festival_DanceOfJellies",
       "lines": [
-        "Jellyfish gather in the waters this evening in absolute silence. It is an efficient, natural rhythm. Watching them... is surprisingly quiet."
+        "$1Jellyfish gather in the waters this evening in absolute silence. It is an efficient, natural rhythm. Watching them... is surprisingly quiet."
       ]
     },
     {
@@ -348,13 +351,643 @@
     {
       "key": "Festival_Spirit",
       "lines": [
-        "The townsfolk built a maze to simulate terror... They tried... really hard. Still... you seem to be enjoying the diversion. I will watch you instead."
+        "$1The townsfolk built a maze to simulate terror... They tried... really hard. Still... you seem to be enjoying the diversion. I will watch you instead."
       ]
     },
     {
       "key": "Festival_Ice",
       "lines": [
         "Willy told me my sword was cheating for carving the ice holes. I am freezing, my hair is full of frost, and I do not understand why we are competing over frozen carp."
+      ]
+    },
+    {
+      "key": "AcceptGift",
+      "lines": [
+        "$3Are you... sure?"
+      ]
+    },
+    {
+      "key": "AcceptGift_Positive",
+      "lines": [
+        "$3Really? Are you... sure?"
+      ]
+    },
+    {
+      "key": "AcceptGift_Neutral",
+      "lines": [
+        "$1Thank you, this is nice"
+      ]
+    },
+    {
+      "key": "AcceptGift_Negative",
+      "lines": [
+        "$8... this is... interesting?"
+      ]
+    },
+    {
+      "key": "AcceptBirthdayGift_Positive",
+      "lines": [
+        "$8You remembered the date... and went out of your way to find something this... precious. Thank you, {{playerName}}. A rare gesture of goodwill—and one I will not soon forget."
+      ]
+    },
+    {
+      "key": "AcceptBirthdayGift_Neutral",
+      "lines": [
+        "$3A birthday tribute? I rarely have reason to mark the passage of time anymore. Even so, your thoughtfulness is appreciated, thank you {{playerName}}"
+      ]
+    },
+    {
+      "key": "AcceptBirthdayGift_Negative",
+      "lines": [
+        "$4An unusual choice. It seems our tastes differ considerably... yet the fact that you thought to acknowledge this day at all carries its own weight. Thank you, {{playerName}}"
+      ]
+    },
+    {
+      "key": "GreenRain",
+      "lines": [
+        "$7At first glance, that emerald glow reminded me of Mako... or worse. Stay close to shelter if you need to, {{playerName}}—I will keep watch over the perimeter until we are certain it is safe."
+      ]
+    },
+    {
+      "key": "GreenRain_2",
+      "lines": [
+        "$1The green rain returns. Last year I braced for a catastrophe; now I see it is simply the valley's way of nurturing new life.",
+        "$3It is strange... watching something bloom without an ulterior motive behind it...",
+        "$4I am glad I stayed to see it."
+      ]
+    },
+    {
+      "key": "GreenRainFinished",
+      "lines": [
+        "The air feels lighter today, and the moss has already taken root. Nobody was harmed, and yet... several villagers thanked me merely for standing guard...",
+        "$0{{playerName}}, I still do not understand why they trust me so easily. All I can do is try to be worthy of it."
+      ]
+    },
+    {
+      "key": "danceRejection",
+      "lines": [
+        "$1Dance? With me... I appreciate the offer, {{playerName}}, truly. It means more than you know to simply be asked.",
+        "$3However, my movements are trained for the battlefield, not a spring celebration—and we hardly know one another yet. ",
+        "$1Please, enjoy the festival with someone better suited for it."
+      ]
+    },
+    {
+      "key": "FlowerDance_Decline",
+      "lines": [
+        "$1Dance? With me... I appreciate the offer, {{playerName}}, truly. It means more than you know to simply be asked.",
+        "$3However, my movements are trained for the battlefield, not a spring celebration—and we hardly know one another yet. ",
+        "$1Please, enjoy the festival with someone better suited for it."
+      ]
+    },
+    {
+      "key": "FlowerDance_Accept",
+      "lines": [
+        "$8You're certain you want me as your partner?",
+        "$2I have spent my life mastering war and battle tactics, {{playerName}}. Dancing is... not quite my specialty but...",
+        "Perhaps... for you I will try. Lead the way."
+      ]
+    },
+    {
+      "key": "dumped",
+      "lines": [
+        "...'Cause you already know him, it's coincidental. That he learns your body and mind the way I do...",
+        "$1...The secrets you told me, were they confidential. Or do you let anyone inside your mental?...",
+        "$2...I bet you ain't told him the things that we been through. I know you're not flossin' your wrist like you been doin'...",
+        "$2...The fact that I actually started to trust you. Then you broke my heart, someone bring me a tissue...",
+        "$4...Or maybe my notebook, I'll sharpen my pencil. To write you a letter and show you I'm into you (show it)...",
+        "$4...Stay down forever, even if it's pleasure, go 'head. Sign your name on the package I sent to you (open). Open it up and when you get to cheesin'. I hope that you believe in the end that I got you (got you)...",
+        "$7...How can I move forward when every relationship I get in. Don't hit the same if it ain't you?...",
+        "$2...So please, don't fall in love with me. Don't fall in love with me...",
+        "DJ Khalid is a smart man... If only I had been smart enough to see the signs, or heard this song before you left me. 'Please don't fall in love with me.' ",
+        "$2Even now... after you left me. I still will only... ever, sing for you... "
+      ]
+    },
+    {
+      "key": "divorced",
+      "lines": [
+        "$1...I'll use you as a warning sign...",
+        "...That if you talk enough sense then you'll lose your mind...",
+        "$1...And I'll use you as a focal point...",
+        "$2...So I don't lose sight of what I want...",
+        "$0...And I've moved further than I thought I could...",
+        "$4...But I missed you more than I thought I would...",
+        "$2...And I'll use you as a warning sign...",
+        "$2...That if you talk enough sense then you'll lose your mind...",
+        "$3...And I found love where it wasn't supposed to be...",
+        "$2...Right in front of me...",
+        "$2...Talk some sense to me...",
+        "$4(He keeps singing 'I found' by 'Amber Run' to ignore you.)"
+      ]
+    },
+    {
+      "key": "FlowerDance_Accept_Spouse",
+      "lines": [
+        "$3Did I keep pace well enough? I found myself watching you more than the steps.",
+        "$1Let us linger for a little while longer before heading back to the farm, {{playerName}}. I want to remember this."
+      ]
+    },
+    {
+      "key": "wonEggHunt",
+      "lines": [
+        "$1Congratulations on your victory at the egg hunt, {{playerName}}.",
+        "$3Your speed and awareness of the terrain were impressive—even without SOLDIER enhancements, you swept the square before the others barely had time to blink.",
+        "$1It is good to see that keen eye of yours put to use in celebration rather than conflict."
+      ]
+    },
+    {
+      "key": "wonIceFishing",
+      "lines": [
+        "$1Well done at the ice fishing contest, {{playerName}}. Watching you hold your focus in that biting wind without a flicker of impatience was remarkable.",
+        "$2Most warriors rely on strength alone, yet true discipline lies in stillness.",
+        "$3You earned that trophy fairly—enjoy the victory."
+      ]
+    },
+    {
+      "key": "Resort_Entering",
+      "lines": [
+        "$3An island untouched by Shinra, Mako reactors, or war...",
+        "$1The sea air is warm, and the horizon stretches out without a single smokestack in sight. ",
+        "$8However... I... scarcely know what to do with a day meant purely for rest."
+      ]
+    },
+    {
+      "key": "Resort_Leaving",
+      "lines": [
+        "The sun is beginning to dip toward the horizon—it seems our shore leave has come to an end.",
+        "$1I feel surprisingly rested, {{playerName}}. Thank you for encouraging me to take the day away from the valley."
+      ]
+    },
+    {
+      "key": "Resort",
+      "lines": [
+        "$7Gus insisted I try a tropical fruit drink earlier, and the villagers keep telling me to 'relax.'",
+        "It takes a surprising amount of discipline to stand still when there is no mission waiting, {{playerName}}... though...",
+        "$1I suppose I am beginning to get the hang of it."
+      ]
+    },
+    {
+      "key": "Resort_Shore",
+      "lines": [
+        "The tide moves with such steady, unhurried patience.",
+        "Back in my old life, I only ever crossed the ocean on transport ships bound for another conflict. ",
+        "$1Looking out at the water simply because it is peaceful... it feels like a small luxury."
+      ]
+    },
+    {
+      "key": "Resort_Chair",
+      "lines": [
+        "I have spent half my life sleeping on hard cots or cold ground on campaign.",
+        "$2Sitting in a cushioned chair listening to the waves feels almost... decadent? ",
+        "$3...though I cannot deny it feels... really good."
+      ]
+    },
+    {
+      "key": "Resort_Towel",
+      "lines": [
+        "$6The sun here is relentless—though after so many years in dim laboratories and snowy wastes, I find I do not mind the warmth.",
+        "$8Just do not expect me to fall asleep out in the open, {{playerName}}."
+      ]
+    },
+    {
+      "key": "Resort_Umbrella",
+      "lines": [
+        "$1The shade beneath these umbrellas is quite pleasant.",
+        "Truthfully, I have never been much for lounging in direct sunlight—this heavy coat was certainly not designed with tropical weather in mind."
+      ]
+    },
+    {
+      "key": "Resort_Bar",
+      "lines": [
+        "$1Gus has a remarkable talent for turning simple island fruit into something refreshing.",
+        "$3Have you taken a break from your work to try one yet, {{playerName}}? Even the hardest-working farmer deserves a moment in the shade."
+      ]
+    },
+    {
+      "key": "Resort_Wander",
+      "lines": [
+        "$1I walked the perimeter of the cove earlier out of sheer habit—nothing out of place, save for a few overly curious crabs.",
+        "$8It is a strange relief to patrol a shoreline where the greatest danger is sunburn."
+      ]
+    },
+    {
+      "key": "Mon1",
+      "lines": [
+        "Morning... A woman named Marnie brought me eggs yesterday. Simply out of... kindness. ",
+        "$8I kept waiting for her to ask me to join her... cause, but she just smiled and left. It is... confusing... ",
+        "$2...why would she do that?"
+      ]
+    },
+    {
+      "key": "Mon3",
+      "lines": [
+        "Another week begins in Pelican Town. Back where I came from, Mondays simply meant new orders and fresh deployments.",
+        "Here, the villagers begin their week by sweeping porches and trading seeds. It is a quiet rhythm, {{playerName}}... and one I find myself wishing I had known far sooner."
+      ]
+    },
+    {
+      "key": "Mon5",
+      "lines": [
+        "I spent the morning walking near the river before the town woke.",
+        "For much of my life, I allowed other voices—and my own pride—to dictate who I was. Once the noise finally stopped, I realized how little I truly knew about simply living as a decent man.",
+        "$1Thank you for speaking with me as an equal, {{playerName}}. It helps more than you know."
+      ]
+    },
+    {
+      "key": "Mon7",
+      "lines": [
+        "$1Hey, {{playerName}}. I was just thinking about how strangely things turn out.",
+        "$0When I first awoke in this valley, I expected exile—or worse. Instead, I found a quiet corner of the world where a man is judged by his deeds today rather than his ghosts.",
+        "$3Seeing you at the start of the week has quietly become something I look forward to."
+      ]
+    },
+    {
+      "key": "Mon9",
+      "lines": [
+        "$1You always seem to carry a touch of morning sunlight with you whenever you stop to talk, {{playerName}}.",
+        "$2There was a time when I believed I had forfeited any right to warmth or companionship.",
+        "$3Being near you makes it remarkably difficult to keep believing that. Take care of yourself today—and come find me if you have a spare moment later."
+      ]
+    },
+    {
+      "key": "Mon10",
+      "lines": [
+        "$3Good morning, my love.",
+        "$6...Forgive me, I still pause slightly when I say those words aloud—not out of hesitation, {{playerName}}, only wonder that I am finally permitted to call someone mine.",
+        "$1Whatever this week brings, you never have to face a single moment of it alone."
+      ]
+    },
+    {
+      "key": "Tue1",
+      "lines": [
+        "I passed Caroline and Jodi near the square earlier—both stopped to ask how I was settling in.",
+        "Where I come from, people either kept a fearful distance or approached only when they wanted something.",
+        "It is... disorienting to be greeted with nothing more than ordinary kindness."
+      ]
+    },
+    {
+      "key": "Tue3",
+      "lines": [
+        "I spent part of the morning reading in the library. Gunther has gathered an intriguing collection of local history.",
+        "$8There are no records of Mako, Jenova, or Shinra anywhere in these archives... ",
+        "$1For the first time in my life, I am standing in a world where my name carries no shadow"
+      ]
+    },
+    {
+      "key": "Tue5",
+      "lines": [
+        "It is strange how ingrained certain habits become. Even while walking a quiet forest trail, my eyes still scan the trees for ambush points.",
+        "$2I spent far too many years mistaking vigilance for living.",
+        "$1Learning to simply walk without expecting a battle takes more discipline than any sword form I ever mastered."
+      ]
+    },
+    {
+      "key": "Tue7",
+      "lines": [
+        "$1I was hoping I might cross paths with you today, {{playerName}}.",
+        "$1Whenever my thoughts grow overly heavy, a brief conversation with you seems to clear the fog faster than hours of quiet meditation.",
+        "$3You have a rare gift for putting people at ease—even someone as stubbornly guarded as myself."
+      ]
+    },
+    {
+      "key": "Tue9",
+      "lines": [
+        "$1I caught myself smiling for no reason at all while walking through town earlier—Harvey actually asked if I was feeling quite well.",
+        "$6I suppose I am still adjusting to how differently the world looks when someone like you cares for me, {{playerName}}.",
+        "$3Stay safe out on the farm today. Come find me whenever your work is through."
+      ]
+    },
+    {
+      "key": "Tue10",
+      "lines": [
+        "Every Tuesday when the townsfolk gather to exercise at Pierre's, I used to stand outside wondering what ordinary life felt like.",
+        "$1Now, watching you come down the path toward me... I realize I no longer have to wonder.",
+        "$3You have become my home, {{playerName}}. Wherever you go, my heart is already there."
+      ]
+    },
+    {
+      "key": "Wed1",
+      "lines": [
+        "The town square is unusually quiet today. Someone mentioned the general store remains closed mid-week.",
+        "$1I prefer the stillness, truthfully. Crowds have a way of putting old instincts on edge.",
+        "Do not let me keep you from your duties."
+      ]
+    },
+    {
+      "key": "Wed3",
+      "lines": [
+        "$1I walked up toward the mountain lake earlier this morning. The water is crystal clear—untouched by industry or Mako extraction.",
+        "$3Where I come from, the planet itself always felt weary. Here, the earth feels alive and whole. It is a rare thing to witness, {{playerName}}"
+      ]
+    },
+    {
+      "key": "Wed5",
+      "lines": [
+        "Long ago, I had comrades I trusted beside me... before pride and manipulation severed everything I held dear.",
+        "$1When I arrived here, I swore I would never allow myself to bring harm to innocent people again.",
+        "$4Being treated as a neighbor rather than a monster is a... joy. I never realized how badly I wanted to belong like this before..."
+      ]
+    },
+    {
+      "key": "Wed7",
+      "lines": [
+        "$1Mid-week already—time moves differently when you are not counting down to a mission briefing.",
+        "$3I actually caught myself offering Marlon advice on blade balance at the Adventurer's Guild yesterday. He looked half-impressed and half-convinced I was a retired mercenary.",
+        "$3It feels good to simply exist without hiding in the shadows. Thank you {{playerName}}, for helping me find my footing here"
+      ]
+    },
+    {
+      "key": "Wed9",
+      "lines": [
+        "$0I found myself watching the path from the farm earlier, wondering when you might pass through town.",
+        "$1For someone who spent years detaching himself from every earthly tie, I seem to have become remarkably weak to the sound of your footsteps, {{playerName}}.",
+        "$2Have you eaten properly today? Do not neglect yourself for the sake of the harvest"
+      ]
+    },
+    {
+      "key": "Wed10",
+      "lines": [
+        "$1The whole town slows down on Wednesdays, and for once, I welcome the quiet.",
+        "$1There was a time when silence only meant loneliness to me. Now, knowing you are out there beneath the same sky makes even the quietest afternoon feel full.",
+        "$3Come find me tonight when the sun sets, {{playerName}}. I would like nothing more than to simply be near you."
+      ]
+    },
+    {
+      "key": "Thu1",
+      "lines": [
+        "$1Good afternoon. You have been keeping a steady pace on that farm of yours.",
+        "$1I am still unused to a place where days pass without alarms or crisis reports. Even the air here feels unhurried.",
+        "Carry on, {{playerName}}—I will not hold you up."
+      ]
+    },
+    {
+      "key": "Thu3",
+      "lines": [
+        "I spoke briefly with Linus up by the mountain ridge earlier. He asked nothing of my past—only whether I had eaten and if I appreciated the quiet.",
+        "$1It is remarkable how much wisdom lives in a man who owns almost nothing. In many ways, he understands peace far better than any general I ever knew."
+      ]
+    },
+    {
+      "key": "Thu5",
+      "lines": [
+        "For years, I believed strength meant carrying every burden alone and never allowing anyone close enough to see a flaw.",
+        "$2Now that the fog in my mind has cleared, I see how hollow that pride truly was.",
+        "I cannot erase what I did in another life, {{playerName}}... yet every quiet day here teaches me a little more about how to be a decent man."
+      ]
+    },
+    {
+      "key": "Thu7",
+      "lines": [
+        "$1You look as though you have been working hard since dawn, {{playerName}}.",
+        "$3If ever the weight of your farm—or the mines—grows too heavy to carry alone, say the word. My blade is no longer drawn for conquest, yet I would gladly lend my strength to a true friend.",
+        "$1Take care of yourself today."
+      ]
+    },
+    {
+      "key": "Thu9",
+      "lines": [
+        "I was trying to read by the river earlier, though I confess I read the same page three times without retaining a word.",
+        "$4My thoughts kept drifting back to the way you smiled at me yesterday, {{playerName}}.",
+        "$6It seems a lifetime of SOLDIER focus is entirely defenseless against you."
+      ]
+    },
+    {
+      "key": "Thu10",
+      "lines": [
+        "$2Once, I chased power across an entire world, believing it would finally make me whole.",
+        "$1How foolish that seems now, when a single quiet evening beside you gives me more peace than any victory ever could.",
+        "$3Whenever your work is done today, {{playerName}}, come find me. My time belongs entirely to you."
+      ]
+    },
+    {
+      "key": "Fri1",
+      "lines": [
+        "The townsfolk seem noticeably lighter in spirit as the week draws to a close.",
+        "$2Back where I came from, the end of a week meant little —duty did not pause for the calendar.",
+        "It is unusual watching people gather simply to share a meal and laughter."
+      ]
+    },
+    {
+      "key": "Fri3",
+      "lines": [
+        "Gus waved me inside the saloon earlier and insisted I try a glass of apple cider on the house—claiming I looked like a man who carried too much on his shoulders.",
+        "$8I scarcely knew how to respond. No one has ever tried to disarm me with warm cider before."
+      ]
+    },
+    {
+      "key": "Fri5",
+      "lines": [
+        "$1Seeing the villagers unwind together on Friday evenings brings back distant memories of my younger days...",
+        "$2I spent far too long believing I stood apart from ordinary humanity. It was a lie that cost me everything...",
+        "$1Watching people celebrate simple friendships reminds me of what truly matters."
+      ]
+    },
+    {
+      "key": "Fri7",
+      "lines": [
+        "$1You made it through another demanding week on the farm, {{playerName}}.",
+        "$1If you are heading toward the saloon tonight, perhaps I will join you at a quiet corner table for a while.",
+        "$3I have come to realize that good company makes even the longest week worthwhile"
+      ]
+    },
+    {
+      "key": "Fri9",
+      "lines": [
+        "$1Everyone in town seems eager for the weekend to begin, yet I find I only look forward to it because it means a better chance of seeing you, {{playerName}}.",
+        "$6You have quietly become the brightest part of my week.",
+        "$3Do not work too late tonight—save a little energy for me."
+      ]
+    },
+    {
+      "key": "Fri10",
+      "lines": [
+        "$1Let the rest of the valley crowd into the saloon tonight—I have no desire for noise or company save yours, {{playerName}}.",
+        "$4Every Friday that passes reminds me how grateful I am that fate dropped me into this quiet corner of the world, right into your path.",
+        "$1Come find me when evening falls, my love. I will be waiting."
+      ]
+    },
+    {
+      "key": "Sat1",
+      "lines": [
+        "Good morrow. The valley feels remarkably unhurried on weekends.",
+        "$1I saw Vincent and Jas racing past the square earlier without a single worry in the world. It is... unfamiliar, seeing children grow up so far removed from conflict.",
+        "$1Enjoy your day, {{playerName}}."
+      ]
+    },
+    {
+      "key": "Sat3",
+      "lines": [
+        "$8I woke at dawn out of sheer habit, only to realize there was nowhere I was required to report.",
+        "$5Having an entire day with no mission, no training drill, and no crisis to resolve... ",
+        "$2I am... still learning how to fill the quiet hours."
+      ]
+    },
+    {
+      "key": "Sat5",
+      "lines": [
+        "$2Sometimes on quiet afternoons, my hand still drifts toward where my blade used to rest—an old reflex born from decades of expecting danger.",
+        "$7Now that Jenova's shadow is gone, I realize how deeply I mistook fear for respect.",
+        "$4If I can spend the rest of my days simply lending a steady hand to good people like you, {{playerName}}, that will be more than enough."
+      ]
+    },
+    {
+      "key": "Sat7",
+      "lines": [
+        "$1I was just taking a walk along the river when I spotted you coming down the path, {{playerName}}.",
+        "$1Truthfully, I have come to value our conversations far more than my solitary walks. Even a man accustomed to silence can grow fond of the right company.",
+        "$1Tell me—how has the farm been treating you this week?"
+      ]
+    },
+    {
+      "key": "Sat9",
+      "lines": [
+        "Saturdays used to feel empty to me—just long stretches of quiet with too many memories for company.",
+        "$4Now, every time you... stop to talk with me, the entire afternoon brightens.",
+        "$8You have no idea... how... deeply you have changed my world, {{playerName}}. ",
+        "$4Go well and stay safe, okay?"
+      ]
+    },
+    {
+      "key": "Sat10",
+      "lines": [
+        "$3Look at how calm the valley is today, {{playerName}}... golden light on the water, a gentle breeze in the trees, and you... standing right beside me.",
+        "$1I thought... peace was an illusion meant for 'other' people. Now, looking at you, I know it is real—and I intend to spend every day proving myself worthy of sharing it with you.",
+        "$3Come walk with me a while when you have any free time to spare."
+      ]
+    },
+    {
+      "key": "Sun1",
+      "lines": [
+        "Good morning. Even by this valley's standards, Sundays seem unusually tranquil.",
+        "I passed a few villagers heading toward the shrine at Pierre's earlier—though none looked at me with anything other than a polite nod.",
+        "$1A peaceful day to you, {{playerName}}."
+      ]
+    },
+    {
+      "key": "Sun3",
+      "lines": [
+        "For most of my life, rest was merely a brief pause between battles—a chance to sharpen steel and review tactics.",
+        "Watching the sun drift across the hills without a single obligation waiting... ",
+        "$1I am beginning to understand why people cherish a day of true stillness, {{playerName}}"
+      ]
+    },
+    {
+      "key": "Sun5",
+      "lines": [
+        "$1Sundays tend to invite quiet reflection.",
+        "$2I know I can never undo the harm I caused before I fell into this world, {{playerName}}—nor would I ever ask for easy forgiveness.",
+        "$2All I can do is ensure that every day I am given here brings peace rather than sorrow to those around me."
+      ]
+    },
+    {
+      "key": "Sun7",
+      "lines": [
+        "$1Whenever another week draws to a close, I find myself thinking about how different my life here would be had you not reached out to me, {{playerName}}.",
+        "$4You never treated me like a legend or a monster—only a neighbor.",
+        "$4Thank you for being my friend. Whatever tomorrow brings, I am glad to face it alongside you."
+      ]
+    },
+    {
+      "key": "Sun9",
+      "lines": [
+        "$4I spent the morning walking near the old ruins by the river, simply thinking about you.",
+        "$6It still amazes me how easily you disarmed every wall I spent a lifetime building, {{playerName}}.",
+        "$3Rest well tonight, my dear—and know that my thoughts are never far from you."
+      ]
+    },
+    {
+      "key": "Sun10",
+      "lines": [
+        "$3Another week ends, and another begins—yet for the first time in my life, I look toward tomorrow without a trace of dread.",
+        "$4You have given me a home, a purpose, and a love I never dreamed a man like me could possess, {{playerName}}.",
+        "$6No matter what the future holds, my heart belongs to you—today, tomorrow, and always."
+      ]
+    },
+    {
+      "key": "spring_Mon",
+      "lines": [
+        "$4The wind carries blossom petals down from the mountain ridge all morning.",
+        "$2Back where I came from, the air smelled of steel and Mako exhaust. ",
+        "$1Breathing in clean spring air still feels almost surreal, {{playerName}}."
+      ]
+    },
+    {
+      "key": "spring_Wed",
+      "lines": [
+        "$1I paused beside your fields earlier to watch the new shoots breaking through the soil.",
+        "$3There is a quiet strength in growth—something far harder to nurture than destruction. You have a true gift for it, {{playerName}}."
+      ]
+    },
+    {
+      "key": "spring_Fri",
+      "lines": [
+        "$1Spring afternoons have a way of softening even the heaviest memories.",
+        "$1Seeing you walk through town with soil on your boots and a smile on your face makes this valley feel more like home every day, {{playerName}}."
+      ]
+    },
+    {
+      "key": "summer_Tue",
+      "lines": [
+        "This coat was designed to withstand harsh winds and battlefield conditions—not a Pelican Town midsummer afternoon.",
+        "$1Still, I would gladly endure the warmth a hundred times over if it means walking beneath a clear sky without a single crisis on the horizon."
+      ]
+    },
+    {
+      "key": "summer_Thu",
+      "lines": [
+        "I walked down to the beach earlier to listen to the tide.",
+        "$1The ocean here is vast and unhurried—no warships on the horizon, no distant explosions. Just... sunlight on the water.",
+        "$4It is a strangely healing sound, {{playerName}}."
+      ]
+    },
+    {
+      "key": "summer_Sat",
+      "lines": [
+        "$0Summer evenings linger so gently in this valley, as though the sun itself is reluctant to say goodnight.",
+        "$1I find myself feeling much the same way whenever you stop by to talk, {{playerName}}."
+      ]
+    },
+    {
+      "key": "fall_Mon",
+      "lines": [
+        "When I first saw the trees turning crimson and gold along the mountain path, my heart skipped a beat—for a fraction of a second, I mistook the color for flames.",
+        "Then a cool breeze scattered the leaves across the grass, and I remembered where I was.",
+        "$1Autumn in this valley is breathtaking, {{playerName}}... once old instincts step aside."
+      ]
+    },
+    {
+      "key": "fall_Wed",
+      "lines": [
+        "$1The entire valley smells of baked apples, woodsmoke, and fresh harvest this time of year.",
+        "$1Everyone works hard, yet there is no greed or bitterness in it—only quiet pride in what they have tended together."
+      ]
+    },
+    {
+      "key": "fall_Fri",
+      "lines": [
+        "$1Watching the leaves fall reminds me that everything eventually changes—even a man who once believed he was carved from stone.",
+        "$3Thank you for standing by me through every season, {{playerName}}. I do not take a single day of it for granted."
+      ]
+    },
+    {
+      "key": "winter_Tue",
+      "lines": [
+        "Snow used to bring a cold, hollow ache to my chest—a reminder of isolation and things better left forgotten.",
+        "$1Yet here... smoke rises warmly from every chimney, and the villagers greet one another with laughter even in the frost.",
+        "$1It seems even winter loses its bite when a place is filled with good people, {{playerName}}."
+      ]
+    },
+    {
+      "key": "winter_Thu",
+      "lines": [
+        "$1The forest is remarkably still after a fresh snowfall. Every footstep sounds like a whisper.",
+        "$1I have always appreciated quiet, {{playerName}}... though it is far nicer knowing a warm hearth and friendly faces wait just beyond the trees."
+      ]
+    },
+    {
+      "key": "winter_Sun",
+      "lines": [
+        "$1Your cheeks are pink from the winter wind, {{playerName}}—have you been out working in the cold since dawn?",
+        "$1Do not push yourself too hard in this weather. Step inside somewhere warm soon... and come find me if you need someone to keep the chill away."
       ]
     }
   ]

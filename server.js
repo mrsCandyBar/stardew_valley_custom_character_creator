@@ -4,6 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { execFile } = require("child_process");
+const { readMap, tilesheetFile } = require("./maps");
 
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
@@ -22,9 +23,10 @@ const MOD_FIELDS = [
   "Description",
   "UniqueID",
   "MinimumApiVersion",
+  "UpdateKey",
 ];
 
-const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript" };
+const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".ttf": "font/ttf", ".woff2": "font/woff2" };
 function send(res, status, body, type = "application/json") {
   res.writeHead(status, { "Content-Type": type });
   res.end(typeof body === "string" || Buffer.isBuffer(body) ? body : JSON.stringify(body));
@@ -96,16 +98,19 @@ function assetFile(dir, kind) {
 }
 
 // Keyed lists: { entries: [{ key, lines: [...] }] }. Marriage keys may contain "{name}", schedule keys a ":" (spring:1).
-const ENTRY_FILES = { dialogue: "dialogue.json", marriage: "marriageDialogue.json", schedule: "schedule.json" };
+const ENTRY_FILES = { dialogue: "dialogue.json", marriage: "marriageDialogue.json", schedule: "schedule.json", festival: "festivalDialogue.json" };
 const ENTRY_KEY = /^[\w.{}:-]{1,80}$/;
+// Festival keys are a festival id plus an optional ":variant", e.g. spring24 or spring24:spouse_y2 (see festivalChange.js).
+const FESTIVAL_KEY = /^(spring13|spring24|summer11|summer28|fall16|fall27|winter8|winter25)(:(y2|spouse|spouse_y2))?$/;
 
-function cleanEntries(body) {
+function cleanEntries(body, type) {
   if (!Array.isArray(body)) throw new Error("Expected a list of entries.");
   const seen = new Set();
   return body.map((item) => {
     const key = String(item?.key ?? "").trim();
     if (!ENTRY_KEY.test(key)) throw new Error(`"${key}" isn't a valid key (letters, numbers, _ - . : { } only).`);
     if (seen.has(key)) throw new Error(`The key ${key} is used twice.`);
+    if (type === "festival" && !FESTIVAL_KEY.test(key)) throw new Error(`"${key}" isn't a festival the game has (pick one from the lists).`);
     seen.add(key);
     const lines = (Array.isArray(item.lines) ? item.lines : []).map(String).filter((line) => line.trim() !== "");
     if (!lines.length) throw new Error(`${key} needs at least one line.`);
@@ -144,7 +149,7 @@ function cleanGiftTastes(body) {
   const seen = new Set();
   const items = (Array.isArray(body?.items) ? body.items : []).map((entry) => {
     const item = String(entry?.item ?? "");
-    if (!/^\d{1,6}$/.test(item)) throw new Error(`"${item}" isn't a valid item number.`);
+    if (!/^\w{1,60}$/.test(item)) throw new Error(`"${item}" isn't a valid item id.`); // numbers, plus named ids like MossSoup
     if (seen.has(item)) throw new Error(`The item (O)${item} is used twice.`);
     seen.add(item);
     return { item, ...cleanReaction(entry, `Item (O)${item}`) };
@@ -165,6 +170,11 @@ function cleanCommands(list, label) {
   return (Array.isArray(list) ? list : []).map((command, i) => {
     const where = `${label}, command ${i + 1}`;
     const type = String(command?.type ?? "");
+    // A Repeat group is expanded when the mod is built: { type: "repeat", times, commands }
+    if (type === "repeat") {
+      const times = Math.min(99, Math.max(1, Math.floor(Number(command.times)) || 1));
+      return { type, times, commands: cleanCommands(command.commands, `${where} (repeat)`) };
+    }
     if (type !== "raw" && !/^\w+$/.test(type)) throw new Error(`${where}: the command type must be one word.`);
     return { type, args: oneLine(command?.args, where, { required: false }) };
   });
@@ -203,6 +213,53 @@ function cleanEvents(body) {
       keys.add(key);
     }
     return out;
+  });
+}
+
+// Mail: { mail: [{ id, subject, text, items: [{ item, count }], money, trigger, friendshipPoints, condition, delivery, once }] }
+// The letter is built as "<text> %item ... %%[#]<subject>", so none of those markers may appear in the text itself.
+const MAIL_TRIGGERS = ["DayStarted", "DayEnding"];
+const MAIL_DELIVERY = ["Today", "Tomorrow"];
+
+function cleanMail(body) {
+  if (!Array.isArray(body)) throw new Error("Expected a list of letters.");
+  const ids = new Set();
+  return body.map((letter) => {
+    const id = String(letter?.id ?? "").trim();
+    if (!/^\w{1,60}$/.test(id)) throw new Error(`"${id}" isn't a valid letter ID (letters, numbers and _ only).`);
+    if (ids.has(id)) throw new Error(`The letter ID ${id} is used twice.`);
+    ids.add(id);
+    const label = `Letter ${id}`;
+
+    const subject = String(letter.subject ?? "").replace(/\s*\r?\n\s*/g, " ").trim();
+    if (!subject) throw new Error(`${label} needs a subject (the title shown in the mailbox).`);
+    const text = String(letter.text ?? "").replace(/\r\n/g, "\n").trim();
+    if (!text) throw new Error(`${label} needs some text.`);
+    for (const [name, value] of [["subject", subject], ["text", text]]) {
+      if (/\[#\]|%item|%%|\^/.test(value)) throw new Error(`${label}: the ${name} can't contain [#], %item, %% or ^ (use a new line for a line break).`);
+    }
+
+    const seen = new Set();
+    const items = (Array.isArray(letter.items) ? letter.items : []).map((entry) => {
+      const item = String(entry?.item ?? "");
+      if (!/^\w{1,60}$/.test(item)) throw new Error(`${label}: "${item}" isn't a valid item id.`);
+      if (seen.has(item)) throw new Error(`${label}: the item (O)${item} is attached twice.`);
+      seen.add(item);
+      const count = Math.floor(Number(entry.count));
+      if (!(count >= 1 && count <= 999)) throw new Error(`${label}: the number of (O)${item} must be 1 to 999.`);
+      return { item, count };
+    });
+    const money = Math.floor(Number(letter.money) || 0);
+    if (money < 0 || money > 1e7) throw new Error(`${label}: the money must be 0 to 10,000,000.`);
+
+    const trigger = String(letter.trigger ?? "DayStarted");
+    if (!MAIL_TRIGGERS.includes(trigger)) throw new Error(`${label}: the trigger must be ${MAIL_TRIGGERS.join(" or ")}.`);
+    const delivery = String(letter.delivery ?? "Today");
+    if (!MAIL_DELIVERY.includes(delivery)) throw new Error(`${label}: the delivery must be ${MAIL_DELIVERY.join(" or ")}.`);
+    const friendshipPoints = Math.floor(Number(letter.friendshipPoints) || 0);
+    if (friendshipPoints < 0 || friendshipPoints > 3500) throw new Error(`${label}: the friendship points must be 0 to 3500.`);
+    const condition = String(letter.condition ?? "").replace(/\s*\r?\n\s*/g, " ").trim();
+    return { id, subject, text, items, money, trigger, friendshipPoints, condition, delivery, once: letter.once !== false };
   });
 }
 
@@ -246,7 +303,7 @@ async function handleApi(req, res, url) {
     return send(res, 415, { error: isUpload ? "Expected a file upload" : "Expected JSON" });
   }
 
-  // Dialogue, marriage dialogue and schedule lists (type is "dialogue", "marriage" or "schedule").
+  // Dialogue, marriage dialogue, schedule and festival dialogue lists (type is "dialogue", "marriage", "schedule" or "festival").
   if (url.pathname === "/api/entries") {
     const body = req.method === "POST" ? await readBody(req) : {};
     const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
@@ -255,13 +312,17 @@ async function handleApi(req, res, url) {
     const file = path.join(dir, fileName);
 
     if (req.method === "GET") {
-      if (!fs.existsSync(file)) return send(res, 404, { error: `No ${fileName} in this character folder.` });
+      // Characters made before festival dialogue existed have no file yet: that just means no lines
+      if (!fs.existsSync(file)) {
+        if (fileName === ENTRY_FILES.festival) return send(res, 200, { entries: [] });
+        return send(res, 404, { error: `No ${fileName} in this character folder.` });
+      }
       return send(res, 200, { entries: JSON.parse(fs.readFileSync(file, "utf8")).entries || [] });
     }
     if (req.method === "POST") {
       let entries;
       try {
-        entries = cleanEntries(body.entries);
+        entries = cleanEntries(body.entries, body.type);
       } catch (err) {
         return send(res, 400, { error: err.message });
       }
@@ -302,7 +363,8 @@ async function handleApi(req, res, url) {
 
     if (req.method === "GET") {
       if (!fs.existsSync(file)) return send(res, 404, { error: "No events.json in this character folder." });
-      return send(res, 200, { events: JSON.parse(fs.readFileSync(file, "utf8")).events || [] });
+      const saved = JSON.parse(fs.readFileSync(file, "utf8"));
+      return send(res, 200, { events: saved.events || [], disableDefaultEvents: saved.disableDefaultEvents !== false });
     }
     if (req.method === "POST") {
       let events;
@@ -311,9 +373,44 @@ async function handleApi(req, res, url) {
       } catch (err) {
         return send(res, 400, { error: err.message });
       }
-      fs.writeFileSync(file, JSON.stringify({ events }, null, 2) + "\n");
+      const disableDefaultEvents = body.disableDefaultEvents !== false;
+      fs.writeFileSync(file, JSON.stringify({ disableDefaultEvents, events }, null, 2) + "\n");
       return send(res, 200, { saved: "events.json", count: events.length });
     }
+  }
+
+  // Mail (mail.json). A character with no mail.json yet just has no letters.
+  if (url.pathname === "/api/mail") {
+    const body = req.method === "POST" ? await readBody(req) : {};
+    const dir = characterDir(req.method === "POST" ? body.folder : url.searchParams.get("folder"));
+    if (!dir) return send(res, 404, { error: "Unknown character folder" });
+    const file = path.join(dir, "mail.json");
+
+    if (req.method === "GET") {
+      return send(res, 200, { mail: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")).mail || [] : [] });
+    }
+    if (req.method === "POST") {
+      let mail;
+      try {
+        mail = cleanMail(body.mail);
+      } catch (err) {
+        return send(res, 400, { error: err.message });
+      }
+      fs.writeFileSync(file, JSON.stringify({ mail }, null, 2) + "\n");
+      return send(res, 200, { saved: "mail.json", count: mail.length });
+    }
+  }
+
+  // A game map (from game_assets/Maps) for the events editor: its tile layers and tilesheets as JSON, and the tilesheet images.
+  if (req.method === "GET" && url.pathname === "/api/map") {
+    const map = readMap(url.searchParams.get("name") || "");
+    if (!map) return send(res, 404, { error: "No map for this place in game_assets/Maps. Unpack the game's maps with StardewXnbHack (see the README)." });
+    return send(res, 200, map);
+  }
+  if (req.method === "GET" && url.pathname === "/api/map-image") {
+    const file = tilesheetFile(url.searchParams.get("name") || "");
+    if (!file) return send(res, 404, { error: "No such tilesheet" });
+    return send(res, 200, fs.readFileSync(file), "image/png");
   }
 
   // Which assets a character has, for the Assets section.

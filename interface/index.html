@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Character Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="layout">
   <main>
     <h1>Stardew Valley Character Creator</h1>
 
@@ -27,10 +30,10 @@
           <button type="button" class="tab" role="tab" id="tab-details" data-tab="details" aria-controls="panel-details">Details</button>
           <button type="button" class="tab" role="tab" id="tab-assets" data-tab="assets" aria-controls="panel-assets">Assets</button>
           <button type="button" class="tab" role="tab" id="tab-dialogue" data-tab="dialogue" aria-controls="panel-dialogue">Dialogue</button>
-          <button type="button" class="tab" role="tab" id="tab-marriage" data-tab="marriage" aria-controls="panel-marriage">Marriage dialogue</button>
           <button type="button" class="tab" role="tab" id="tab-schedule" data-tab="schedule" aria-controls="panel-schedule">Schedule</button>
-          <button type="button" class="tab" role="tab" id="tab-gifts" data-tab="gifts" aria-controls="panel-gifts">Gift tastes</button>
+          <button type="button" class="tab" role="tab" id="tab-gifts" data-tab="gifts" aria-controls="panel-gifts">Gifts</button>
           <button type="button" class="tab" role="tab" id="tab-events" data-tab="events" aria-controls="panel-events">Events</button>
+          <button type="button" class="tab" role="tab" id="tab-mail" data-tab="mail" aria-controls="panel-mail">Mail</button>
         </div>
 
       <section class="panel" role="tabpanel" id="panel-details" data-panel="details" aria-labelledby="tab-details">
@@ -63,6 +66,19 @@
         <label><span>Description</span> <textarea name="Description" rows="2"></textarea></label>
         <label><span>Unique ID</span> <input name="UniqueID" required></label>
         <label><span>Minimum API version</span> <input name="MinimumApiVersion" required></label>
+        <label>
+          <span>Update checking</span>
+          <select id="updateMode">
+            <option value="ignore">Ignore (no update key)</option>
+            <option value="add">Add an update key</option>
+          </select>
+          <small>SMAPI warns about mods with no update keys. Ignoring writes an empty <code>UpdateKeys</code> list, which silences that warning.</small>
+        </label>
+        <label id="updateKeyRow" hidden>
+          <span>Update key</span>
+          <input name="UpdateKey" placeholder="Nexus:12345 or GitHub:yourname/yourrepo">
+          <small>Also accepts <code>ModDrop:12345</code>. Written to <code>UpdateKeys</code> in manifest.json.</small>
+        </label>
       </section>
 
       <section class="panel" role="tabpanel" id="panel-assets" data-panel="assets" aria-labelledby="tab-assets" hidden>
@@ -72,19 +88,17 @@
         <div class="asset" data-kind="portrait" data-accept="image/png">
           <span class="asset-label">Portraits</span>
           <span class="asset-state"></span>
-          <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">View</button></span>
+          <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">Preview</button></span>
           <small>PNG, saved as <code>custom_portraits.png</code>.</small>
           <input type="file" accept=".png,image/png" hidden>
-          <div class="preview" hidden></div>
         </div>
 
         <div class="asset" data-kind="sprite" data-accept="image/png">
           <span class="asset-label">Sprites</span>
           <span class="asset-state"></span>
-          <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">View</button></span>
+          <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">Preview</button></span>
           <small>PNG sprite sheet, saved as <code>custom_sprites.png</code>.</small>
           <input type="file" accept=".png,image/png" hidden>
-          <div class="preview" hidden></div>
         </div>
 
         <div class="asset" data-kind="music" data-accept="audio/ogg">
@@ -93,24 +107,36 @@
           <span class="asset-buttons"><button type="button" class="secondary upload">Upload</button><button type="button" class="secondary view">Play</button></span>
           <small>OGG track, saved under its own name and recorded in <code>music.json</code>.</small>
           <input type="file" accept=".ogg,audio/ogg" hidden>
-          <div class="preview" hidden></div>
         </div>
       </section>
 
       <!-- The list editors fill themselves in (see createEditor in app.js) -->
-      <section class="panel dialogue-editor" role="tabpanel" id="panel-dialogue" data-panel="dialogue" aria-labelledby="tab-dialogue" hidden data-type="dialogue" data-title="Dialogue"
+      <section class="panel" role="tabpanel" id="panel-dialogue" data-panel="dialogue" aria-labelledby="tab-dialogue" hidden>
+        <div class="subtabs" role="tablist" aria-label="Dialogue sections">
+          <button type="button" class="subtab" role="tab" data-sub="day">Day</button>
+          <button type="button" class="subtab" role="tab" data-sub="festival">Festivals</button>
+          <button type="button" class="subtab" role="tab" data-sub="marriage">Marriage</button>
+          <button type="button" class="subtab" role="tab" data-sub="other">Other</button>
+        </div>
+        <section class="dialogue-editor" id="sub-dialogue" data-type="dialogue" data-title="Dialogue"
         data-hint="Saved to dialogue.json. Each line you type is one section of the speech bubble sequence. A portrait code like $1 at the start of a line changes the portrait."></section>
-      <section class="panel dialogue-editor" role="tabpanel" id="panel-marriage" data-panel="marriage" aria-labelledby="tab-marriage" hidden data-type="marriage" data-title="Marriage dialogue"
+        <section class="dialogue-editor" id="sub-marriage" data-type="marriage" data-title="Marriage dialogue"
         data-hint="Saved to marriageDialogue.json. Use {name} in a key where the Stardew character's name goes, e.g. Indoor_Morning_{name}."></section>
+        <section class="dialogue-editor" id="sub-festival" data-type="festival" data-title="Festivals"
+        data-hint="Saved to festivalDialogue.json. What the character says when you talk to them at a festival, added to the game's own Data/Festivals file for it. Each festival can have a line for year 1, year 2 onwards, and for when they are married to the player."></section>
+      </section>
 
       <section class="panel dialogue-editor" role="tabpanel" id="panel-schedule" data-panel="schedule" aria-labelledby="tab-schedule" hidden data-type="schedule" data-title="Schedule"
-        data-hint="Saved to schedule.json. Each line is one stop: time, location, x, y, facing (e.g. 600 Beach 34 39 0). A schedule can be for a weekday, a season, or one day of a season, and all of them are optional."></section>
+        data-hint="Saved to schedule.json. Each schedule is a list of stops. Click a stop's time, location, position or facing to change it; position opens the map on the right. A schedule can be for a weekday, a season, or one day of a season, and all of them are optional."></section>
 
-      <section class="panel gift-editor" role="tabpanel" id="panel-gifts" data-panel="gifts" aria-labelledby="tab-gifts" hidden data-title="Gift tastes"
+      <section class="panel gift-editor" role="tabpanel" id="panel-gifts" data-panel="gifts" aria-labelledby="tab-gifts" hidden data-title="Gifts"
         data-hint="Saved to giftTastes.json. A face like $4 is the portrait shown while they speak (0 to 8). Specific items are optional and are saved as AcceptGift_(O)&lt;id&gt; dialogue."></section>
 
       <section class="panel events-editor" role="tabpanel" id="panel-events" data-panel="events" aria-labelledby="tab-events" hidden data-title="Events"
         data-hint="Saved to events.json. An event is its ID, the place it happens, when it can trigger and a script of commands. Use {name} where the Stardew character's name goes. The first few settings are required; everything after that is a list of commands you build up."></section>
+
+      <section class="panel mail-editor" role="tabpanel" id="panel-mail" data-panel="mail" aria-labelledby="tab-mail" hidden data-title="Mail"
+        data-hint="Saved to mail.json. Each letter is sent to the player by a trigger: when a day starts or ends, once the friendship points (250 per heart) and any extra condition are met. It can have items or money attached. Use @ for the player's name and {newName} for the new character's name."></section>
       </div>
 
       <div class="actions">
@@ -125,6 +151,13 @@
       </div>
     </form>
   </main>
+
+  <aside id="preview-pane" aria-label="Preview">
+    <div class="preview-head"><strong id="preview-title"></strong><button type="button" id="preview-close" class="secondary">Close</button></div>
+    <p class="preview-empty">Previews show up here: sprites, portraits, music, the event map, event conditions and expanded dialogue. Look for the Preview, Play and Expand buttons, or click an event's Conditions, Viewport, Actors or speech.</p>
+    <div id="preview-content"></div>
+  </aside>
+  </div>
 
   <dialog id="newDialog">
     <form method="dialog" id="newForm">

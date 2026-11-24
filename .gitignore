@@ -1,2 +1,5 @@
 # Build output (created by `node build.js`)
 dist/
+
+# The game's unpacked maps (copyrighted art, made with StardewXnbHack)
+game_assets/
