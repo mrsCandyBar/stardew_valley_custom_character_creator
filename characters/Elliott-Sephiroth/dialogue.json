@@ -967,6 +967,28 @@
         "$1Watching the leaves fall reminds me that everything eventually changes—even a man who once believed he was carved from stone.",
         "$3Thank you for standing by me through every season, {{playerName}}. I do not take a single day of it for granted."
       ]
+    },
+    {
+      "key": "winter_Tue",
+      "lines": [
+        "Snow used to bring a cold, hollow ache to my chest—a reminder of isolation and things better left forgotten.",
+        "$1Yet here... smoke rises warmly from every chimney, and the villagers greet one another with laughter even in the frost.",
+        "$1It seems even winter loses its bite when a place is filled with good people, {{playerName}}."
+      ]
+    },
+    {
+      "key": "winter_Thu",
+      "lines": [
+        "$1The forest is remarkably still after a fresh snowfall. Every footstep sounds like a whisper.",
+        "$1I have always appreciated quiet, {{playerName}}... though it is far nicer knowing a warm hearth and friendly faces wait just beyond the trees."
+      ]
+    },
+    {
+      "key": "winter_Sun",
+      "lines": [
+        "$1Your cheeks are pink from the winter wind, {{playerName}}—have you been out working in the cold since dawn?",
+        "$1Do not push yourself too hard in this weather. Step inside somewhere warm soon... and come find me if you need someone to keep the chill away."
+      ]
     }
   ]
 }
