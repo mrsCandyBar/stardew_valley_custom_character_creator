@@ -615,6 +615,358 @@
         "$6...Forgive me, I still pause slightly when I say those words aloud—not out of hesitation, {{playerName}}, only wonder that I am finally permitted to call someone mine.",
         "$1Whatever this week brings, you never have to face a single moment of it alone."
       ]
+    },
+    {
+      "key": "Tue1",
+      "lines": [
+        "I passed Caroline and Jodi near the square earlier—both stopped to ask how I was settling in.",
+        "Where I come from, people either kept a fearful distance or approached only when they wanted something.",
+        "It is... disorienting to be greeted with nothing more than ordinary kindness."
+      ]
+    },
+    {
+      "key": "Tue3",
+      "lines": [
+        "I spent part of the morning reading in the library. Gunther has gathered an intriguing collection of local history.",
+        "$8There are no records of Mako, Jenova, or Shinra anywhere in these archives... ",
+        "$1For the first time in my life, I am standing in a world where my name carries no shadow"
+      ]
+    },
+    {
+      "key": "Tue5",
+      "lines": [
+        "It is strange how ingrained certain habits become. Even while walking a quiet forest trail, my eyes still scan the trees for ambush points.",
+        "$2I spent far too many years mistaking vigilance for living.",
+        "$1Learning to simply walk without expecting a battle takes more discipline than any sword form I ever mastered."
+      ]
+    },
+    {
+      "key": "Tue7",
+      "lines": [
+        "$1I was hoping I might cross paths with you today, {{playerName}}.",
+        "$1Whenever my thoughts grow overly heavy, a brief conversation with you seems to clear the fog faster than hours of quiet meditation.",
+        "$3You have a rare gift for putting people at ease—even someone as stubbornly guarded as myself."
+      ]
+    },
+    {
+      "key": "Tue9",
+      "lines": [
+        "$1I caught myself smiling for no reason at all while walking through town earlier—Harvey actually asked if I was feeling quite well.",
+        "$6I suppose I am still adjusting to how differently the world looks when someone like you cares for me, {{playerName}}.",
+        "$3Stay safe out on the farm today. Come find me whenever your work is through."
+      ]
+    },
+    {
+      "key": "Tue10",
+      "lines": [
+        "Every Tuesday when the townsfolk gather to exercise at Pierre's, I used to stand outside wondering what ordinary life felt like.",
+        "$1Now, watching you come down the path toward me... I realize I no longer have to wonder.",
+        "$3You have become my home, {{playerName}}. Wherever you go, my heart is already there."
+      ]
+    },
+    {
+      "key": "Wed1",
+      "lines": [
+        "The town square is unusually quiet today. Someone mentioned the general store remains closed mid-week.",
+        "$1I prefer the stillness, truthfully. Crowds have a way of putting old instincts on edge.",
+        "Do not let me keep you from your duties."
+      ]
+    },
+    {
+      "key": "Wed3",
+      "lines": [
+        "$1I walked up toward the mountain lake earlier this morning. The water is crystal clear—untouched by industry or Mako extraction.",
+        "$3Where I come from, the planet itself always felt weary. Here, the earth feels alive and whole. It is a rare thing to witness, {{playerName}}"
+      ]
+    },
+    {
+      "key": "Wed5",
+      "lines": [
+        "Long ago, I had comrades I trusted beside me... before pride and manipulation severed everything I held dear.",
+        "$1When I arrived here, I swore I would never allow myself to bring harm to innocent people again.",
+        "$4Being treated as a neighbor rather than a monster is a... joy. I never realized how badly I wanted to belong like this before..."
+      ]
+    },
+    {
+      "key": "Wed7",
+      "lines": [
+        "$1Mid-week already—time moves differently when you are not counting down to a mission briefing.",
+        "$3I actually caught myself offering Marlon advice on blade balance at the Adventurer's Guild yesterday. He looked half-impressed and half-convinced I was a retired mercenary.",
+        "$3It feels good to simply exist without hiding in the shadows. Thank you {{playerName}}, for helping me find my footing here"
+      ]
+    },
+    {
+      "key": "Wed9",
+      "lines": [
+        "$0I found myself watching the path from the farm earlier, wondering when you might pass through town.",
+        "$1For someone who spent years detaching himself from every earthly tie, I seem to have become remarkably weak to the sound of your footsteps, {{playerName}}.",
+        "$2Have you eaten properly today? Do not neglect yourself for the sake of the harvest"
+      ]
+    },
+    {
+      "key": "Wed10",
+      "lines": [
+        "$1The whole town slows down on Wednesdays, and for once, I welcome the quiet.",
+        "$1There was a time when silence only meant loneliness to me. Now, knowing you are out there beneath the same sky makes even the quietest afternoon feel full.",
+        "$3Come find me tonight when the sun sets, {{playerName}}. I would like nothing more than to simply be near you."
+      ]
+    },
+    {
+      "key": "Thu1",
+      "lines": [
+        "$1Good afternoon. You have been keeping a steady pace on that farm of yours.",
+        "$1I am still unused to a place where days pass without alarms or crisis reports. Even the air here feels unhurried.",
+        "Carry on, {{playerName}}—I will not hold you up."
+      ]
+    },
+    {
+      "key": "Thu3",
+      "lines": [
+        "I spoke briefly with Linus up by the mountain ridge earlier. He asked nothing of my past—only whether I had eaten and if I appreciated the quiet.",
+        "$1It is remarkable how much wisdom lives in a man who owns almost nothing. In many ways, he understands peace far better than any general I ever knew."
+      ]
+    },
+    {
+      "key": "Thu5",
+      "lines": [
+        "For years, I believed strength meant carrying every burden alone and never allowing anyone close enough to see a flaw.",
+        "$2Now that the fog in my mind has cleared, I see how hollow that pride truly was.",
+        "I cannot erase what I did in another life, {{playerName}}... yet every quiet day here teaches me a little more about how to be a decent man."
+      ]
+    },
+    {
+      "key": "Thu7",
+      "lines": [
+        "$1You look as though you have been working hard since dawn, {{playerName}}.",
+        "$3If ever the weight of your farm—or the mines—grows too heavy to carry alone, say the word. My blade is no longer drawn for conquest, yet I would gladly lend my strength to a true friend.",
+        "$1Take care of yourself today."
+      ]
+    },
+    {
+      "key": "Thu9",
+      "lines": [
+        "I was trying to read by the river earlier, though I confess I read the same page three times without retaining a word.",
+        "$4My thoughts kept drifting back to the way you smiled at me yesterday, {{playerName}}.",
+        "$6It seems a lifetime of SOLDIER focus is entirely defenseless against you."
+      ]
+    },
+    {
+      "key": "Thu10",
+      "lines": [
+        "$2Once, I chased power across an entire world, believing it would finally make me whole.",
+        "$1How foolish that seems now, when a single quiet evening beside you gives me more peace than any victory ever could.",
+        "$3Whenever your work is done today, {{playerName}}, come find me. My time belongs entirely to you."
+      ]
+    },
+    {
+      "key": "Fri1",
+      "lines": [
+        "The townsfolk seem noticeably lighter in spirit as the week draws to a close.",
+        "$2Back where I came from, the end of a week meant little —duty did not pause for the calendar.",
+        "It is unusual watching people gather simply to share a meal and laughter."
+      ]
+    },
+    {
+      "key": "Fri3",
+      "lines": [
+        "Gus waved me inside the saloon earlier and insisted I try a glass of apple cider on the house—claiming I looked like a man who carried too much on his shoulders.",
+        "$8I scarcely knew how to respond. No one has ever tried to disarm me with warm cider before."
+      ]
+    },
+    {
+      "key": "Fri5",
+      "lines": [
+        "$1Seeing the villagers unwind together on Friday evenings brings back distant memories of my younger days...",
+        "$2I spent far too long believing I stood apart from ordinary humanity. It was a lie that cost me everything...",
+        "$1Watching people celebrate simple friendships reminds me of what truly matters."
+      ]
+    },
+    {
+      "key": "Fri7",
+      "lines": [
+        "$1You made it through another demanding week on the farm, {{playerName}}.",
+        "$1If you are heading toward the saloon tonight, perhaps I will join you at a quiet corner table for a while.",
+        "$3I have come to realize that good company makes even the longest week worthwhile"
+      ]
+    },
+    {
+      "key": "Fri9",
+      "lines": [
+        "$1Everyone in town seems eager for the weekend to begin, yet I find I only look forward to it because it means a better chance of seeing you, {{playerName}}.",
+        "$6You have quietly become the brightest part of my week.",
+        "$3Do not work too late tonight—save a little energy for me."
+      ]
+    },
+    {
+      "key": "Fri10",
+      "lines": [
+        "$1Let the rest of the valley crowd into the saloon tonight—I have no desire for noise or company save yours, {{playerName}}.",
+        "$4Every Friday that passes reminds me how grateful I am that fate dropped me into this quiet corner of the world, right into your path.",
+        "$1Come find me when evening falls, my love. I will be waiting."
+      ]
+    },
+    {
+      "key": "Sat1",
+      "lines": [
+        "Good morrow. The valley feels remarkably unhurried on weekends.",
+        "$1I saw Vincent and Jas racing past the square earlier without a single worry in the world. It is... unfamiliar, seeing children grow up so far removed from conflict.",
+        "$1Enjoy your day, {{playerName}}."
+      ]
+    },
+    {
+      "key": "Sat3",
+      "lines": [
+        "$8I woke at dawn out of sheer habit, only to realize there was nowhere I was required to report.",
+        "$5Having an entire day with no mission, no training drill, and no crisis to resolve... ",
+        "$2I am... still learning how to fill the quiet hours."
+      ]
+    },
+    {
+      "key": "Sat5",
+      "lines": [
+        "$2Sometimes on quiet afternoons, my hand still drifts toward where my blade used to rest—an old reflex born from decades of expecting danger.",
+        "$7Now that Jenova's shadow is gone, I realize how deeply I mistook fear for respect.",
+        "$4If I can spend the rest of my days simply lending a steady hand to good people like you, {{playerName}}, that will be more than enough."
+      ]
+    },
+    {
+      "key": "Sat7",
+      "lines": [
+        "$1I was just taking a walk along the river when I spotted you coming down the path, {{playerName}}.",
+        "$1Truthfully, I have come to value our conversations far more than my solitary walks. Even a man accustomed to silence can grow fond of the right company.",
+        "$1Tell me—how has the farm been treating you this week?"
+      ]
+    },
+    {
+      "key": "Sat9",
+      "lines": [
+        "Saturdays used to feel empty to me—just long stretches of quiet with too many memories for company.",
+        "$4Now, every time you... stop to talk with me, the entire afternoon brightens.",
+        "$8You have no idea... how... deeply you have changed my world, {{playerName}}. ",
+        "$4Go well and stay safe, okay?"
+      ]
+    },
+    {
+      "key": "Sat10",
+      "lines": [
+        "$3Look at how calm the valley is today, {{playerName}}... golden light on the water, a gentle breeze in the trees, and you... standing right beside me.",
+        "$1I thought... peace was an illusion meant for 'other' people. Now, looking at you, I know it is real—and I intend to spend every day proving myself worthy of sharing it with you.",
+        "$3Come walk with me a while when you have any free time to spare."
+      ]
+    },
+    {
+      "key": "Sun1",
+      "lines": [
+        "Good morning. Even by this valley's standards, Sundays seem unusually tranquil.",
+        "I passed a few villagers heading toward the shrine at Pierre's earlier—though none looked at me with anything other than a polite nod.",
+        "$1A peaceful day to you, {{playerName}}."
+      ]
+    },
+    {
+      "key": "Sun3",
+      "lines": [
+        "For most of my life, rest was merely a brief pause between battles—a chance to sharpen steel and review tactics.",
+        "Watching the sun drift across the hills without a single obligation waiting... ",
+        "$1I am beginning to understand why people cherish a day of true stillness, {{playerName}}"
+      ]
+    },
+    {
+      "key": "Sun5",
+      "lines": [
+        "$1Sundays tend to invite quiet reflection.",
+        "$2I know I can never undo the harm I caused before I fell into this world, {{playerName}}—nor would I ever ask for easy forgiveness.",
+        "$2All I can do is ensure that every day I am given here brings peace rather than sorrow to those around me."
+      ]
+    },
+    {
+      "key": "Sun7",
+      "lines": [
+        "$1Whenever another week draws to a close, I find myself thinking about how different my life here would be had you not reached out to me, {{playerName}}.",
+        "$4You never treated me like a legend or a monster—only a neighbor.",
+        "$4Thank you for being my friend. Whatever tomorrow brings, I am glad to face it alongside you."
+      ]
+    },
+    {
+      "key": "Sun9",
+      "lines": [
+        "$4I spent the morning walking near the old ruins by the river, simply thinking about you.",
+        "$6It still amazes me how easily you disarmed every wall I spent a lifetime building, {{playerName}}.",
+        "$3Rest well tonight, my dear—and know that my thoughts are never far from you."
+      ]
+    },
+    {
+      "key": "Sun10",
+      "lines": [
+        "$3Another week ends, and another begins—yet for the first time in my life, I look toward tomorrow without a trace of dread.",
+        "$4You have given me a home, a purpose, and a love I never dreamed a man like me could possess, {{playerName}}.",
+        "$6No matter what the future holds, my heart belongs to you—today, tomorrow, and always."
+      ]
+    },
+    {
+      "key": "spring_Mon",
+      "lines": [
+        "$4The wind carries blossom petals down from the mountain ridge all morning.",
+        "$2Back where I came from, the air smelled of steel and Mako exhaust. ",
+        "$1Breathing in clean spring air still feels almost surreal, {{playerName}}."
+      ]
+    },
+    {
+      "key": "spring_Wed",
+      "lines": [
+        "$1I paused beside your fields earlier to watch the new shoots breaking through the soil.",
+        "$3There is a quiet strength in growth—something far harder to nurture than destruction. You have a true gift for it, {{playerName}}."
+      ]
+    },
+    {
+      "key": "spring_Fri",
+      "lines": [
+        "$1Spring afternoons have a way of softening even the heaviest memories.",
+        "$1Seeing you walk through town with soil on your boots and a smile on your face makes this valley feel more like home every day, {{playerName}}."
+      ]
+    },
+    {
+      "key": "summer_Tue",
+      "lines": [
+        "This coat was designed to withstand harsh winds and battlefield conditions—not a Pelican Town midsummer afternoon.",
+        "$1Still, I would gladly endure the warmth a hundred times over if it means walking beneath a clear sky without a single crisis on the horizon."
+      ]
+    },
+    {
+      "key": "summer_Thu",
+      "lines": [
+        "I walked down to the beach earlier to listen to the tide.",
+        "$1The ocean here is vast and unhurried—no warships on the horizon, no distant explosions. Just... sunlight on the water.",
+        "$4It is a strangely healing sound, {{playerName}}."
+      ]
+    },
+    {
+      "key": "summer_Sat",
+      "lines": [
+        "$0Summer evenings linger so gently in this valley, as though the sun itself is reluctant to say goodnight.",
+        "$1I find myself feeling much the same way whenever you stop by to talk, {{playerName}}."
+      ]
+    },
+    {
+      "key": "fall_Mon",
+      "lines": [
+        "When I first saw the trees turning crimson and gold along the mountain path, my heart skipped a beat—for a fraction of a second, I mistook the color for flames.",
+        "Then a cool breeze scattered the leaves across the grass, and I remembered where I was.",
+        "$1Autumn in this valley is breathtaking, {{playerName}}... once old instincts step aside."
+      ]
+    },
+    {
+      "key": "fall_Wed",
+      "lines": [
+        "$1The entire valley smells of baked apples, woodsmoke, and fresh harvest this time of year.",
+        "$1Everyone works hard, yet there is no greed or bitterness in it—only quiet pride in what they have tended together."
+      ]
+    },
+    {
+      "key": "fall_Fri",
+      "lines": [
+        "$1Watching the leaves fall reminds me that everything eventually changes—even a man who once believed he was carved from stone.",
+        "$3Thank you for standing by me through every season, {{playerName}}. I do not take a single day of it for granted."
+      ]
     }
   ]
 }
