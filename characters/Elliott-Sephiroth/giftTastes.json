@@ -5,15 +5,15 @@
       "text": "... I don't know what to say except... thank you"
     },
     "like": {
-      "face": "$1",
+      "face": "$3",
       "text": "How thoughtful. I will keep this."
     },
     "neutral": {
-      "face": "$0",
+      "face": "$1",
       "text": "Not quite my taste but your heart is in the right place I suppose"
     },
     "dislike": {
-      "face": "$7",
+      "face": "$0",
       "text": "... do not go out of your way next time."
     },
     "hate": {
@@ -24,11 +24,11 @@
   "categories": {
     "loves": [
       "769",
-      "74",
       "637",
       "279",
       "591",
-      "340"
+      "340",
+      "72"
     ],
     "likes": [
       "335",
@@ -65,7 +65,7 @@
       "text": "Void Essence... I used to use power like this to bring down empires. To hold it here... it is a jarring juxtaposition. Thank you."
     },
     {
-      "item": "74",
+      "item": "72",
       "face": "$8",
       "text": "This light... glows exactly like Holy materia... A beautiful relic of a bygone time... I will guard it with my life."
     },
@@ -102,12 +102,12 @@
     {
       "item": "591",
       "face": "$4",
-      "text": "A tulip? Huh... It's actually kind of beautiful. It reminds me of a song... about a freezing night in the city where two people share a jacket to keep warm. About drying your tears and building something real. Thank you... Let's let this be our opportunity."
+      "text": "A tulip? Huh... It's actually kind of beautiful. It reminds me of a song... about a freezing night in the city where two people share a jacket to keep warm... About drying your tears and building something real. Thank you... Let's let this be... our opportunity."
     },
     {
       "item": "637",
       "face": "$3",
-      "text": "Blood-red beneath a bitter rind... how fitting. It reminds me of the story of Hades, standing in the silent dark, offering a lonely queen a reason to stay... only... you've reversed our roles..."
+      "text": "Blood-red beneath a bitter rind... how fitting. It reminds me of the story of Hades, standing in the silent dark, offering a lonely queen a reason to stay... only... you have reversed our roles..."
     },
     {
       "item": "771",

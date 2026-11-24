@@ -150,15 +150,296 @@
     {
       "key": "Indoor_Night_1",
       "lines": [
-        "$1Another peaceful day has come to a close.",
-        "$1Go on to bed whenever you are ready, {{playerName}}. I will extinguish the lamps and join you shortly."
+        "$1...I'll imagine we fell in love. I'll nap under moonlight skies with you...",
+        "$3...I think I'll picture us, you with the waves. The ocean's colors on your face...",
+        "$4...I'll leave my heart with your air. So let me fly with you...",
+        "$4...Will you be forever with me?... (He keeps singing 'Blue' by Yung Kai)"
       ]
     },
     {
       "key": "Good_0",
       "lines": [
-        "Before I fell into this valley, I believed warmth and trust were weaknesses meant for ordinary people.",
-        "$1You dismantled every defense I ever built without raising a single blade, {{playerName}}. I am endlessly glad you did."
+        "If I were given the chance to rewrite my past, I would hesitate—not because I do not regret the pain I caused, but because every winding road eventually led me to your door.",
+        "$3I love you, {{playerName}}. More deeply than I ever thought a man like me was capable of loving."
+      ]
+    },
+    {
+      "key": "Indoor_Night_2",
+      "lines": [
+        "$1...when you said Tulips. I knew that you're mine...",
+        "$3...When I caught you there, crying in the night...",
+        "$1...Wearing my jacket, wearing that smile...",
+        "$6...I knew that I'd found you...",
+        "$1...Were you unawares? Did it catch you out?...",
+        "$1...Or did it break you in right from the start?...",
+        "$1...This is pure as fire, this is pure as snow...",
+        "$3...I knew that I'd found you...",
+        "$1...This could be an opportunity...",
+        "$1...If you promise to let it grow...",
+        "$3This... was the song you reminded me of when you gifted me Tulips. A song by Bloc Party that reminds me of you. Tulips...",
+        "$3'Cause you're the one I love!"
+      ]
+    },
+    {
+      "key": "Indoor_Night_3",
+      "lines": [
+        "$1...Boys workin' on empty... Is that the kinda way to face the burning heat?...",
+        "$3...I just think about my baby. I'm so full of love I could barely eat...",
+        "$3...There's nothing sweeter than my baby. I'd never want once from the cherry tree",
+        "$3...Cause my baby's sweet as can be...",
+        "$4...She'd give me toothaches just from kissin' me...",
+        "$0...When... my... time comes around...",
+        "$1...Lay me gently in the cold dark earth...",
+        "$1...No grave... can hold my body down...",
+        "$3...I'll crawl home to her...",
+        "(He kisses {{playerName}}'s cheek and keeps singing 'Work Song' by Hozier)"
+      ]
+    },
+    {
+      "key": "Indoor_Night_4",
+      "lines": [
+        "...When I was young, before we begun...",
+        "$1...I never thought we all had someone...",
+        "$1...I took your breath but you took the rest...",
+        "$3...I promised you always... a place on my chest...",
+        "...There might come a day...",
+        "$2...When you feel that I'm not who I was...",
+        "$4...You might find a better one... and end it for us...",
+        "...So I wrote... our... days on our... kitchen table...",
+        "$6...If you ever forget... that you love me...",
+        "$4(He avoids your gaze continues singing 'If you ever forget that you love me' by Isak Danielson)"
+      ]
+    },
+    {
+      "key": "Outdoor_3",
+      "lines": [
+        "$1...I had a thought, dear. However scary. About that night, the bugs and the dirt...",
+        "$2...Why were you digging? What did you bury. Before those hands pulled me, From the earth?...",
+        "$1...I will not ask you where you came from. I will not ask you, neither should you...",
+        "$3Is it silly to say you've turned me into a whimsical man? This life is surreal to me. I find it so... peaceful and free'ing... I find myself drawn to things I would never have dreamed of since you've come to Stardew Valley.",
+        "$1You've brought song into my life {{playerName}}",
+        "And so I will sing those songs for you. I heard one of your favorites was 'Like real people do' by Hozier, and so...",
+        "$3...Honey just put your sweet lips on my lips. We should just kiss like real people do..."
+      ]
+    },
+    {
+      "key": "Outdoor_4",
+      "lines": [
+        "$1...I wanna get to Heaven. Baby, tell me what to do...",
+        "...I'm scared this is ending. Expose the lies from the truth...",
+        "$2...Will I ever get to Heaven? I'd go through Hell for you...",
+        "$6...Can we keep on transcending? Or maybe I'm just meant to lose...",
+        "$4...Maybe I'm just meant to lose you... (He avoids your gaze as he reflects on the bittersweet lyrics by David Kushner's \"I wanna get to heaven\")"
+      ]
+    },
+    {
+      "key": "Rainy_Day_2",
+      "lines": [
+        "$4...Forgive me. I did not hear you walk in.",
+        "$6The storm felt a little too heavy today, so I found myself humming an old melody to keep my thoughts from drifting too far back.",
+        "$3However... seeing you always brings me right back to the present, {{playerName}}. Thank you for bringing the quiet to the storm today."
+      ]
+    },
+    {
+      "key": "Rainy_Day_3",
+      "lines": [
+        "Rain has a way of washing the color out of everything, leaving only the memories you try not to examine too closely.",
+        "$2There are days I still wonder how a man with my past was permitted to end up somewhere this gentle.",
+        "$4...Stay safe out there today, {{playerName}}. Knowing you will come back through that door is the only thing that quiets the noise."
+      ]
+    },
+    {
+      "key": "Rainy_Day_4",
+      "lines": [
+        "Once, I knew nothing of seasons—only campaigns, ash, and the next horizon to conquer.",
+        "$2Standing here watching rain nourish crops I helped plant... it feels almost like watching a stranger's life.",
+        "$4A good life, {{playerName}}. Even if part of me still feels like a ghost borrowing someone else's warmth."
+      ]
+    },
+    {
+      "key": "Rainy_Night_2",
+      "lines": [
+        "On nights when the rain beats against the glass like this, it is easy to remember everyone I failed... and everyone I hurt.",
+        "$2I cannot undo the past, {{playerName}}. No amount of quiet days here will ever erase it.",
+        "$1Yet when you sit beside me in the dark and hold my hand without flinching... it feels enough to simply try to be better tomorrow."
+      ]
+    },
+    {
+      "key": "Rainy_Night_3",
+      "lines": [
+        "$0Listen... to the rain on the eaves... It is strange how something so dreary outside can make a single room feel like the entire world.",
+        "$2Sometimes I look at you in the firelight and feel a sudden fear that I will wake up back in the dark, and none of this was real.",
+        "$4Stay close tonight, {{playerName}}. Remind me I am really here."
+      ]
+    },
+    {
+      "key": "Rainy_Night_4",
+      "lines": [
+        "The storm shows no sign of letting up before dawn.",
+        "$1Let the rain wash away whatever remains of yesterday. Tomorrow is another chance to live as a better man than the one I was.",
+        "$1Come to bed when you are ready, {{playerName}}. I will keep the dark at bay until morning."
+      ]
+    },
+    {
+      "key": "Rainy_Night_{name}",
+      "lines": [
+        "$2I am not much for conversation tonight, {{playerName}}. The weather has left my thoughts rather heavy.",
+        "$0You need not say anything to fix it. Simply sitting beside you while the storm passes is more comfort than I deserve."
+      ]
+    },
+    {
+      "key": "Good_1",
+      "lines": [
+        "$1Once, I measured my worth solely by the edge of a blade and the fear in other men's eyes.",
+        "$4Now, my proudest accomplishment is seeing you smile over morning coffee, {{playerName}}.",
+        "$3It is a gentler kind of strength... and I am grateful every day that you taught me how to hold it."
+      ]
+    },
+    {
+      "key": "Good_2",
+      "lines": [
+        "$2There are still moments when old regrets feel heavy, {{playerName}}—ghosts do not vanish overnight.",
+        "$1Yet the moment I hear your footsteps on the porch, the weight simply lifts.",
+        "$3You have become my sanctuary. Whatever you need of me today, name it. Whatever it is, it is yours. Now and evermore."
+      ]
+    },
+    {
+      "key": "Neutral_0",
+      "lines": [
+        "I caught myself humming earlier while sweeping the porch—something I have not done since my earliest days as a cadet, long before everything went wrong.",
+        "$1I suppose happiness sneaks up on a man when he is not looking, {{playerName}}. Thank you for giving me a reason to sing again."
+      ]
+    },
+    {
+      "key": "Neutral_1",
+      "lines": [
+        "You have been working yourself far too hard lately, {{playerName}}.",
+        "$1Come here for just a moment... Let me hold you before you rush back out into the fields. Even the valley can wait five minutes."
+      ]
+    },
+    {
+      "key": "Neutral_2",
+      "lines": [
+        "Forgive me if I seem overly quiet today. My thoughts have simply been wandering through old memories.",
+        "$6I am well, {{playerName}}—truly. Take care of yourself out there."
+      ]
+    },
+    {
+      "key": "Bad_0",
+      "lines": [
+        "Ah... {{playerName}}. I did not expect you to stop and speak with me today.",
+        "$8If I have done something to disappoint you, tell me plainly. I would rather face the truth than guess at shadows."
+      ]
+    },
+    {
+      "key": "Bad_1",
+      "lines": [
+        "$2The farmhouse is in order. You need not concern yourself with me.",
+        "$5I am well accustomed to solitude, {{playerName}}. Do whatever it is you need to do."
+      ]
+    },
+    {
+      "key": "Bad_2",
+      "lines": [
+        "$2The silence in this house feels very different than it did when we first wed... heavier, somehow.",
+        "$4I do not know how to mend a rift without a sword, {{playerName}}. Tell me what I am doing wrong."
+      ]
+    },
+    {
+      "key": "spouseRoom_{name}",
+      "lines": [
+        "$3I have been organizing a few mementos and volumes I managed to salvage from my travels.",
+        "$1It is strange seeing the remnants of my old life resting beneath a peaceful farmhouse roof... yet nothing here feels threatening anymore.",
+        "$3Make yourself at home in here whenever you wish, {{playerName}}. There are no secrets left between us."
+      ]
+    },
+    {
+      "key": "funLeave_{name}",
+      "lines": [
+        "$1I thought I might take a quiet walk toward the mountain lake and the forest edge today.",
+        "$3Old habits—I still feel the need to stretch my legs and observe the horizon from time to time.",
+        "$1Do not worry, {{playerName}}. I will be back before sundown."
+      ]
+    },
+    {
+      "key": "funReturn_{name}",
+      "lines": [
+        "$1I had a pleasant walk today. Gunther and I spoke briefly about ancient history, and Linus offered me some wild berries along the path.",
+        "$4It still marvels me how easily this town accepts my presence... though coming back through our front door remains the best part of my day, {{playerName}}."
+      ]
+    },
+    {
+      "key": "jobLeave_{name}",
+      "lines": [
+        "$1I prepared something warm for you before you head out into the fields today.",
+        "$3Please take care of yourself, {{playerName}}. Your well-being means everything to me."
+      ]
+    },
+    {
+      "key": "jobReturn_{name}",
+      "lines": [
+        "I rose early and watered the crops for you this morning, {{playerName}}.",
+        "There is something deeply calming about tending to growing things. Consider it a small token of my gratitude."
+      ]
+    },
+    {
+      "key": "OneKid_0",
+      "lines": [
+        "$4When I first held %kid1, my hands were actually trembling—not out of fear, {{playerName}}, but from the sheer weight of wanting to protect someone so small.",
+        "$2I spent my entire life wielding a blade meant to end lives.",
+        "$4To nurture a new one instead... I never dreamed I would be trusted with such a gift."
+      ]
+    },
+    {
+      "key": "OneKid_1",
+      "lines": [
+        "$1%kid1 was restless earlier, so I walked the hallway humming an old lullaby until they drifted off.",
+        "$3It seems my voice is better suited to putting children to sleep than giving orders on a battlefield. I cannot say I mind."
+      ]
+    },
+    {
+      "key": "OneKid_2",
+      "lines": [
+        "$3Watching %kid1 play on the rug without a single worry in the world...",
+        "$8I never had a real childhood of my own, {{playerName}}. Everything was training, tests, and expectations from the very beginning.",
+        "$4Seeing our child grow up safe, warm, and deeply loved mends a part of me I thought was beyond repair."
+      ]
+    },
+    {
+      "key": "OneKid_3",
+      "lines": [
+        "$3Do not worry about the house today, {{playerName}}. I have already fed %kid1 and checked every corner of the nursery twice.",
+        "$7Nothing in this valley—or any other world—will ever harm a hair on their head while I am standing watch!"
+      ]
+    },
+    {
+      "key": "TwoKids_0",
+      "lines": [
+        "$8This farmhouse used to be as quiet as an empty barracks. Now, between %kid1 and %kid2, there is scarcely a silent moment all day.",
+        "$3Yet I would not trade a single footstep or laugh for all the quiet in the world, {{playerName}}."
+      ]
+    },
+    {
+      "key": "TwoKids_1",
+      "lines": [
+        "$6Watching %kid1 look out for %kid2 earlier brought a lump to my throat.",
+        "$5Family used to be nothing more than a word in a Shinra file to me.",
+        "$4Looking at the two of them—and looking at you, {{playerName}}—I finally understand what it truly means."
+      ]
+    },
+    {
+      "key": "TwoKids_2",
+      "lines": [
+        "$1%kid1 insisted on showing me a shiny pebble earlier, while %kid2 tried to tug on my coat at the exact same moment.",
+        "$3I have faced entire armies without breaking a sweat, {{playerName}}, yet two toddlers nearly managed to outflank me before breakfast."
+      ]
+    },
+    {
+      "key": "TwoKids_3",
+      "lines": [
+        "$1Sometimes at night, after %kid1 and %kid2 are fast asleep, I stand in the doorway just listening to them breathe.",
+        "$1No war. No voices in the dark. Just a warm house, two children who know nothing but kindness, and the woman who made it all possible.",
+        "$4Thank you for everything, {{playerName}}."
       ]
     }
   ]

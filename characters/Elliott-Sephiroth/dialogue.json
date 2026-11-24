@@ -11,9 +11,9 @@
     {
       "key": "Mon",
       "lines": [
-        "Morning. A woman named Marnie brought me eggs yesterday. Simply out of... kindness. ",
-        "$2I kept waiting for her to ask me to join her... cause, but she just smiled and left. It is... confusing... ",
-        "$4why would she do that?"
+        "Hi... You are the newcomer tending the old farmstead, correct? I am... Sephiroth.",
+        "$2I... arrived in this valley quite a while back, and I am... still adjusting to a place where people greet... strangers without suspicion or fear.",
+        "$0Pay me no mind—I...  have no intention of disturbing the peace here. Just... this... familiarity amongst strangers is... jarring to me."
       ]
     },
     {
@@ -445,6 +445,175 @@
         "$8You're certain you want me as your partner?",
         "$2I have spent my life mastering war and battle tactics, {{playerName}}. Dancing is... not quite my specialty but...",
         "Perhaps... for you I will try. Lead the way."
+      ]
+    },
+    {
+      "key": "dumped",
+      "lines": [
+        "...'Cause you already know him, it's coincidental. That he learns your body and mind the way I do...",
+        "$1...The secrets you told me, were they confidential. Or do you let anyone inside your mental?...",
+        "$2...I bet you ain't told him the things that we been through. I know you're not flossin' your wrist like you been doin'...",
+        "$2...The fact that I actually started to trust you. Then you broke my heart, someone bring me a tissue...",
+        "$4...Or maybe my notebook, I'll sharpen my pencil. To write you a letter and show you I'm into you (show it)...",
+        "$4...Stay down forever, even if it's pleasure, go 'head. Sign your name on the package I sent to you (open). Open it up and when you get to cheesin'. I hope that you believe in the end that I got you (got you)...",
+        "$7...How can I move forward when every relationship I get in. Don't hit the same if it ain't you?...",
+        "$2...So please, don't fall in love with me. Don't fall in love with me...",
+        "DJ Khalid is a smart man... If only I had been smart enough to see the signs, or heard this song before you left me. 'Please don't fall in love with me.' ",
+        "$2Even now... after you left me. I still will only... ever, sing for you... "
+      ]
+    },
+    {
+      "key": "divorced",
+      "lines": [
+        "$1...I'll use you as a warning sign...",
+        "...That if you talk enough sense then you'll lose your mind...",
+        "$1...And I'll use you as a focal point...",
+        "$2...So I don't lose sight of what I want...",
+        "$0...And I've moved further than I thought I could...",
+        "$4...But I missed you more than I thought I would...",
+        "$2...And I'll use you as a warning sign...",
+        "$2...That if you talk enough sense then you'll lose your mind...",
+        "$3...And I found love where it wasn't supposed to be...",
+        "$2...Right in front of me...",
+        "$2...Talk some sense to me...",
+        "$4(He keeps singing 'I found' by 'Amber Run' to ignore you.)"
+      ]
+    },
+    {
+      "key": "FlowerDance_Accept_Spouse",
+      "lines": [
+        "$3Did I keep pace well enough? I found myself watching you more than the steps.",
+        "$1Let us linger for a little while longer before heading back to the farm, {{playerName}}. I want to remember this."
+      ]
+    },
+    {
+      "key": "wonEggHunt",
+      "lines": [
+        "$1Congratulations on your victory at the egg hunt, {{playerName}}.",
+        "$3Your speed and awareness of the terrain were impressive—even without SOLDIER enhancements, you swept the square before the others barely had time to blink.",
+        "$1It is good to see that keen eye of yours put to use in celebration rather than conflict."
+      ]
+    },
+    {
+      "key": "wonIceFishing",
+      "lines": [
+        "$1Well done at the ice fishing contest, {{playerName}}. Watching you hold your focus in that biting wind without a flicker of impatience was remarkable.",
+        "$2Most warriors rely on strength alone, yet true discipline lies in stillness.",
+        "$3You earned that trophy fairly—enjoy the victory."
+      ]
+    },
+    {
+      "key": "Resort_Entering",
+      "lines": [
+        "$3An island untouched by Shinra, Mako reactors, or war...",
+        "$1The sea air is warm, and the horizon stretches out without a single smokestack in sight. ",
+        "$8However... I... scarcely know what to do with a day meant purely for rest."
+      ]
+    },
+    {
+      "key": "Resort_Leaving",
+      "lines": [
+        "The sun is beginning to dip toward the horizon—it seems our shore leave has come to an end.",
+        "$1I feel surprisingly rested, {{playerName}}. Thank you for encouraging me to take the day away from the valley."
+      ]
+    },
+    {
+      "key": "Resort",
+      "lines": [
+        "$7Gus insisted I try a tropical fruit drink earlier, and the villagers keep telling me to 'relax.'",
+        "It takes a surprising amount of discipline to stand still when there is no mission waiting, {{playerName}}... though...",
+        "$1I suppose I am beginning to get the hang of it."
+      ]
+    },
+    {
+      "key": "Resort_Shore",
+      "lines": [
+        "The tide moves with such steady, unhurried patience.",
+        "Back in my old life, I only ever crossed the ocean on transport ships bound for another conflict. ",
+        "$1Looking out at the water simply because it is peaceful... it feels like a small luxury."
+      ]
+    },
+    {
+      "key": "Resort_Chair",
+      "lines": [
+        "I have spent half my life sleeping on hard cots or cold ground on campaign.",
+        "$2Sitting in a cushioned chair listening to the waves feels almost... decadent? ",
+        "$3...though I cannot deny it feels... really good."
+      ]
+    },
+    {
+      "key": "Resort_Towel",
+      "lines": [
+        "$6The sun here is relentless—though after so many years in dim laboratories and snowy wastes, I find I do not mind the warmth.",
+        "$8Just do not expect me to fall asleep out in the open, {{playerName}}."
+      ]
+    },
+    {
+      "key": "Resort_Umbrella",
+      "lines": [
+        "$1The shade beneath these umbrellas is quite pleasant.",
+        "Truthfully, I have never been much for lounging in direct sunlight—this heavy coat was certainly not designed with tropical weather in mind."
+      ]
+    },
+    {
+      "key": "Resort_Bar",
+      "lines": [
+        "$1Gus has a remarkable talent for turning simple island fruit into something refreshing.",
+        "$3Have you taken a break from your work to try one yet, {{playerName}}? Even the hardest-working farmer deserves a moment in the shade."
+      ]
+    },
+    {
+      "key": "Resort_Wander",
+      "lines": [
+        "$1I walked the perimeter of the cove earlier out of sheer habit—nothing out of place, save for a few overly curious crabs.",
+        "$8It is a strange relief to patrol a shoreline where the greatest danger is sunburn."
+      ]
+    },
+    {
+      "key": "Mon1",
+      "lines": [
+        "Morning... A woman named Marnie brought me eggs yesterday. Simply out of... kindness. ",
+        "$8I kept waiting for her to ask me to join her... cause, but she just smiled and left. It is... confusing... ",
+        "$2...why would she do that?"
+      ]
+    },
+    {
+      "key": "Mon3",
+      "lines": [
+        "Another week begins in Pelican Town. Back where I came from, Mondays simply meant new orders and fresh deployments.",
+        "Here, the villagers begin their week by sweeping porches and trading seeds. It is a quiet rhythm, {{playerName}}... and one I find myself wishing I had known far sooner."
+      ]
+    },
+    {
+      "key": "Mon5",
+      "lines": [
+        "I spent the morning walking near the river before the town woke.",
+        "For much of my life, I allowed other voices—and my own pride—to dictate who I was. Once the noise finally stopped, I realized how little I truly knew about simply living as a decent man.",
+        "$1Thank you for speaking with me as an equal, {{playerName}}. It helps more than you know."
+      ]
+    },
+    {
+      "key": "Mon7",
+      "lines": [
+        "$1Hey, {{playerName}}. I was just thinking about how strangely things turn out.",
+        "$0When I first awoke in this valley, I expected exile—or worse. Instead, I found a quiet corner of the world where a man is judged by his deeds today rather than his ghosts.",
+        "$3Seeing you at the start of the week has quietly become something I look forward to."
+      ]
+    },
+    {
+      "key": "Mon9",
+      "lines": [
+        "$1You always seem to carry a touch of morning sunlight with you whenever you stop to talk, {{playerName}}.",
+        "$2There was a time when I believed I had forfeited any right to warmth or companionship.",
+        "$3Being near you makes it remarkably difficult to keep believing that. Take care of yourself today—and come find me if you have a spare moment later."
+      ]
+    },
+    {
+      "key": "Mon10",
+      "lines": [
+        "$3Good morning, my love.",
+        "$6...Forgive me, I still pause slightly when I say those words aloud—not out of hesitation, {{playerName}}, only wonder that I am finally permitted to call someone mine.",
+        "$1Whatever this week brings, you never have to face a single moment of it alone."
       ]
     }
   ]

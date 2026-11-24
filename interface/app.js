@@ -440,7 +440,7 @@ for (const row of assetRows) {
 // Keys that match no group go in the "other" list, where the key is typed in.
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const SEASONS = ["spring", "summer", "fall", "winter"];
-const MAX_HEARTS = 14;
+const MAX_HEARTS = 10;
 const MAX_SEASON_DAY = 28;
 
 const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
