@@ -428,7 +428,7 @@ pre {
 .entry-head .remove-x { margin-left: auto; }
 
 /* Day cards: a card per day with a row per heart count; the dialogue reads as text on the card, not an input */
-.day-card > h4 { margin: 0 0 8px; font-size: 1rem; }
+
 .entry-row { margin-bottom: 6px; padding: 4px; border-radius: 4px; }
 .entry-row .entry-head { margin-bottom: 0; flex-wrap: nowrap; }
 .entry-row.viewing { background: #e6dcc6; box-shadow: 0 0 0 2px var(--accent); border-top-color: transparent; }
@@ -484,3 +484,28 @@ pre {
 .letter-text { margin: 0; white-space: pre-wrap; }
 .letter-gifts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; padding-top: 10px; border-top: 1px solid #b5833f; }
 .letter-gift { display: flex; align-items: center; gap: 6px; }
+
+/* Dialogue sub-tabs (Day, Festivals, Marriage, Other) */
+.subtabs { display: flex; gap: 2px; margin-bottom: 1.5em; border-bottom: 1px solid var(--border); }
+.subtab {
+  padding: 6px 14px;
+  color: var(--muted);
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  border-radius: 6px 6px 0 0;
+}
+.subtab:hover { color: var(--text); background: #efe9dc; }
+.subtab[aria-selected="true"] { color: var(--accent-dark); border-bottom-color: var(--accent); }
+.dialogue-editor[hidden], .entry-group[hidden] { display: none; }
+
+/* Collapsible cards (day, festival, marriage and other dialogue groups) */
+.group-card > summary { display: flex; align-items: baseline; gap: 10px; cursor: pointer; font-weight: 600; list-style: none; }
+.group-card > summary::-webkit-details-marker { display: none; }
+.group-card > summary::before { content: "▸"; color: var(--muted); }
+.group-card[open] > summary::before { content: "▾"; }
+.group-card[open] > summary { margin-bottom: 8px; }
+.group-title { font-size: 1rem; }
+.group-count { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+.group-card[open] .group-count { display: none; }
+.group-card > .add-row { margin-top: 8px; }
+.entry-row .entry-head input:not(.line-input) { flex: 0 1 14em; min-width: 8em; }

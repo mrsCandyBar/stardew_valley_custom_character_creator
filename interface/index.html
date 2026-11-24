@@ -30,10 +30,8 @@
           <button type="button" class="tab" role="tab" id="tab-details" data-tab="details" aria-controls="panel-details">Details</button>
           <button type="button" class="tab" role="tab" id="tab-assets" data-tab="assets" aria-controls="panel-assets">Assets</button>
           <button type="button" class="tab" role="tab" id="tab-dialogue" data-tab="dialogue" aria-controls="panel-dialogue">Dialogue</button>
-          <button type="button" class="tab" role="tab" id="tab-marriage" data-tab="marriage" aria-controls="panel-marriage">Marriage dialogue</button>
-          <button type="button" class="tab" role="tab" id="tab-festival" data-tab="festival" aria-controls="panel-festival">Festivals</button>
           <button type="button" class="tab" role="tab" id="tab-schedule" data-tab="schedule" aria-controls="panel-schedule">Schedule</button>
-          <button type="button" class="tab" role="tab" id="tab-gifts" data-tab="gifts" aria-controls="panel-gifts">Gift tastes</button>
+          <button type="button" class="tab" role="tab" id="tab-gifts" data-tab="gifts" aria-controls="panel-gifts">Gifts</button>
           <button type="button" class="tab" role="tab" id="tab-events" data-tab="events" aria-controls="panel-events">Events</button>
           <button type="button" class="tab" role="tab" id="tab-mail" data-tab="mail" aria-controls="panel-mail">Mail</button>
         </div>
@@ -113,18 +111,25 @@
       </section>
 
       <!-- The list editors fill themselves in (see createEditor in app.js) -->
-      <section class="panel dialogue-editor" role="tabpanel" id="panel-dialogue" data-panel="dialogue" aria-labelledby="tab-dialogue" hidden data-type="dialogue" data-title="Dialogue"
+      <section class="panel" role="tabpanel" id="panel-dialogue" data-panel="dialogue" aria-labelledby="tab-dialogue" hidden>
+        <div class="subtabs" role="tablist" aria-label="Dialogue sections">
+          <button type="button" class="subtab" role="tab" data-sub="day">Day</button>
+          <button type="button" class="subtab" role="tab" data-sub="festival">Festivals</button>
+          <button type="button" class="subtab" role="tab" data-sub="marriage">Marriage</button>
+          <button type="button" class="subtab" role="tab" data-sub="other">Other</button>
+        </div>
+        <section class="dialogue-editor" id="sub-dialogue" data-type="dialogue" data-title="Dialogue"
         data-hint="Saved to dialogue.json. Each line you type is one section of the speech bubble sequence. A portrait code like $1 at the start of a line changes the portrait."></section>
-      <section class="panel dialogue-editor" role="tabpanel" id="panel-marriage" data-panel="marriage" aria-labelledby="tab-marriage" hidden data-type="marriage" data-title="Marriage dialogue"
+        <section class="dialogue-editor" id="sub-marriage" data-type="marriage" data-title="Marriage dialogue"
         data-hint="Saved to marriageDialogue.json. Use {name} in a key where the Stardew character's name goes, e.g. Indoor_Morning_{name}."></section>
-
-      <section class="panel dialogue-editor" role="tabpanel" id="panel-festival" data-panel="festival" aria-labelledby="tab-festival" hidden data-type="festival" data-title="Festivals"
+        <section class="dialogue-editor" id="sub-festival" data-type="festival" data-title="Festivals"
         data-hint="Saved to festivalDialogue.json. What the character says when you talk to them at a festival, added to the game's own Data/Festivals file for it. Each festival can have a line for year 1, year 2 onwards, and for when they are married to the player."></section>
+      </section>
 
       <section class="panel dialogue-editor" role="tabpanel" id="panel-schedule" data-panel="schedule" aria-labelledby="tab-schedule" hidden data-type="schedule" data-title="Schedule"
         data-hint="Saved to schedule.json. Each schedule is a list of stops. Click a stop's time, location, position or facing to change it; position opens the map on the right. A schedule can be for a weekday, a season, or one day of a season, and all of them are optional."></section>
 
-      <section class="panel gift-editor" role="tabpanel" id="panel-gifts" data-panel="gifts" aria-labelledby="tab-gifts" hidden data-title="Gift tastes"
+      <section class="panel gift-editor" role="tabpanel" id="panel-gifts" data-panel="gifts" aria-labelledby="tab-gifts" hidden data-title="Gifts"
         data-hint="Saved to giftTastes.json. A face like $4 is the portrait shown while they speak (0 to 8). Specific items are optional and are saved as AcceptGift_(O)&lt;id&gt; dialogue."></section>
 
       <section class="panel events-editor" role="tabpanel" id="panel-events" data-panel="events" aria-labelledby="tab-events" hidden data-title="Events"

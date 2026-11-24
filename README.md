@@ -22,7 +22,7 @@ The default `folderLocation` (`./dist`) is listed in [.gitignore](.gitignore), s
 
 Run `node server.js` and open http://localhost:3000 for a form that edits a character's `modDetails.json` and runs the build.
 
-- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Marriage dialogue, Festivals, Schedule, Gift tastes, Events, Mail). Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
+- The **Saved character** picker is above the card. Everything else is in tabs (Details, Assets, Dialogue, Schedule, Gifts, Events, Mail). Dialogue has its own tabs: Day, Festivals, Marriage and Other. Switching character keeps you on the same tab and reloads it, so you can compare characters. A refresh stays on the tab too.
 - **Save** (bottom right) writes the form to the selected character's `modDetails.json`.
 - **Build & open dist folder** saves, runs `build.js` and opens the built folder.
 - **New character** asks for the character being replaced and the new name, then copies [templates/character/](templates/character/) into `characters/<Replacing>-<NewName>` with the names filled in. The template uses placeholder text, and its `assets/` folder starts empty, so add `custom_sprites.png` and `custom_portraits.png`.
@@ -86,7 +86,7 @@ Stardew packs many values into one long string separated by a character (`/` for
 | --- | --- | --- |
 | `spriteChange.js` | `Characters/<SDV_Name>` | Loads the custom sprite sheet. |
 | `portraitChange.js` | `Portraits/<SDV_Name>` | Loads the custom portraits. |
-| `displayNameChange.js` | `Data/Characters` | Sets `DisplayName` to `<newCharacterName>?`. |
+| `displayNameChange.js` | `Data/Characters` | Sets `DisplayName` to `<newCharacterName>`. |
 | `giftTastesChange.js` | `Data/NPCGiftTastes` | Reads `giftTastes.json` and joins the sections with `/`: five reaction + item list pairs in the game's order (love, like, dislike, hate, neutral). |
 | `dialogueChange.js` | `Characters/Dialogue/<SDV_Name>` | Reads `dialogue.json`, joining each entry's lines with `#`, and adds `AcceptGift_(O)<id>` entries from the specific items in `giftTastes.json`. |
 | `festivalChange.js` | `Data/Festivals/<id>` | Reads `festivalDialogue.json` and adds the character's own line to each festival it has entries for. |

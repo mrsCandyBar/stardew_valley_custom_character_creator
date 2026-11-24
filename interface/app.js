@@ -133,7 +133,7 @@ saveButton.addEventListener("click", async () => {
   try {
     await postJson("/api/mod-details", { folder: folderSelect.value, details: readDetails() });
     await saveEditors();
-    setStatus(`Saved the details, dialogue, marriage dialogue, festivals, schedule, gift tastes and events to ${folderSelect.value}`);
+    setStatus(`Saved the details, dialogue, schedule, gifts and events to ${folderSelect.value}`);
   } catch (err) {
     setStatus(err.message, true);
   } finally {
@@ -489,6 +489,7 @@ const FESTIVAL_VARIANTS = [
 ];
 const composeFestival = (festival, variant) => (variant ? `${festival}:${variant}` : festival);
 const festivalGroup = {
+  rowsInCard: true, // one collapsible card per festival, with a row per "when" inside
   title: "Festival dialogue",
   empty: "None yet. Pick a festival and when it is, then add it.",
   addLabel: "Add festival dialogue",
@@ -532,12 +533,18 @@ const EDITORS = {
   dialogue: {
     groups: [dayHeartsGroup],
     otherTitle: "Other dialogue",
+    otherGroup: (key) => key.split("_")[0] || key, // fun_12 and fun_3 share a "fun" card
     otherPlaceholder: "e.g. Introduction, one, FlowerDance_Decline",
     suggestions: DIALOGUE_KEYS,
   },
   marriage: {
-    groups: [dayHeartsGroup],
-    otherTitle: "Other dialogue",
+    groups: [], // only the keys below, no day + heart count cards
+    otherTitle: "Marriage dialogue",
+    // The first word: up to the first "_", and a camelCase key is cut at its first capital (Bad_0 -> Bad, funLeave_{name} -> fun)
+    otherGroup: (key) => {
+      const first = key.split("_")[0];
+      return /^[a-z]/.test(first) ? first.match(/^[a-z]+/)[0] : first || key;
+    },
     otherPlaceholder: "e.g. Indoor_Morning_{name}, fun_12",
     suggestions: MARRIAGE_KEYS,
   },
@@ -599,7 +606,7 @@ function fieldSelect(field, value) {
 
 function createEditor(section) {
   const { type, title, hint } = section.dataset;
-  const { groups, otherTitle, otherPlaceholder, suggestions, noOther } = EDITORS[type];
+  const { groups, otherTitle, otherPlaceholder, suggestions, noOther, otherGroup } = EDITORS[type];
   const OTHER = -1;
   let entries = []; // { key, text (one line per section), group: index into groups, or OTHER }
   let loaded = false;
@@ -618,6 +625,7 @@ function createEditor(section) {
 
   const lists = []; // one list element per group, then the "other" list last
   const addRows = [];
+  const pairPickers = {}; // group index -> the festival + when dropdowns, kept to the pairs without dialogue yet
   const dayPickers = {}; // group index -> the "Add day" dropdown and button, kept to the days without a card yet
   // Replace a dropdown's choices, keeping the current pick when it is still there
   const setChoices = (select, choices) => {
@@ -639,9 +647,18 @@ function createEditor(section) {
     });
     const row = el("div", { className: "add-row" }, ...selects, button);
     if (group.dayCard) dayPickers[index] = { select: selects[0], row };
+    if (group.rowsInCard) {
+      // Only offer festival + when pairs that have no dialogue yet
+      const refreshWhen = () => {
+        const festival = selects[0].value;
+        setChoices(selects[1], group.fields[1].options.filter((o) => !hasKey(group.compose([festival, o.value]))));
+      };
+      selects[0].addEventListener("change", refreshWhen);
+      pairPickers[index] = { selects, row, refreshWhen };
+    }
     lists.push(list);
     addRows.push(row);
-    section.append(el("div", { className: "entry-group" }, el("h3", { textContent: group.title }), list, row));
+    section.append(el("div", { className: "entry-group part-day" }, el("h3", { textContent: group.title }), list, row));
   });
 
   const otherList = el("div");
@@ -652,7 +669,7 @@ function createEditor(section) {
   const addOtherButton = el("button", { type: "button", className: "secondary", textContent: "Add" });
   const otherRow = el("div", { className: "add-row" }, addSelect, addKey, addOtherButton);
   addRows.push(otherRow);
-  if (!noOther) section.append(el("div", { className: "entry-group" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
+  if (!noOther) section.append(el("div", { className: "entry-group part-other" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
 
   function refreshSuggestions() {
     const current = addSelect.value;
@@ -690,10 +707,30 @@ function createEditor(section) {
 
   const hasKey = (key, except) => entries.some((e) => e !== except && e.key === key);
 
-  function card(entry) {
+  function card(entry, inGroup = false) {
     const head = el("div", { className: "entry-head" });
-    const dayRow = entry.group !== OTHER && groups[entry.group].dayCard; // a heart-count row inside a day card
-    if (entry.group !== OTHER) {
+    const dayRow = entry.group !== OTHER && (groups[entry.group].dayCard || groups[entry.group].rowsInCard); // a row inside a collapsible card, titled by the card
+    if (entry.group !== OTHER && groups[entry.group].rowsInCard) {
+      // A festival row: the whole key is typed (e.g. spring24:spouse_y2), and must be a festival and variant the game has
+      const group = groups[entry.group];
+      const key = el("input", { value: entry.key, title: "Key, e.g. spring24:spouse_y2" });
+      key.addEventListener("change", () => {
+        const next = key.value.trim();
+        if (!group.parse(next)) {
+          showMessage(`"${next}" isn't a festival key. Use a festival id, optionally followed by :y2, :spouse or :spouse_y2.`);
+          key.value = entry.key;
+        } else if (hasKey(next, entry)) {
+          showMessage(`${next} already exists.`);
+          key.value = entry.key;
+        } else {
+          showMessage("");
+          entry.key = next;
+          openGroups.add(`${entry.group}:${group.parse(next)[0]}`); // it may have moved to another festival's card
+          render();
+        }
+      });
+      head.append(key);
+    } else if (entry.group !== OTHER) {
       const group = groups[entry.group];
       const values = group.parse(entry.key);
       const selects = group.fields.map((field, i) => fieldSelect(field, values[i]));
@@ -852,7 +889,7 @@ function createEditor(section) {
       });
       pane.replaceChildren(...rows, addLine);
     }
-    const card = el("div", { className: dayRow ? "entry-row" : "entry" }, head, body);
+    const card = el("div", { className: dayRow || inGroup ? "entry-row" : "entry" }, head, body);
     drawBody();
     return card;
   }
@@ -880,16 +917,65 @@ function createEditor(section) {
       // Sort by each dropdown's position, so Mon, Mon2, Mon4 ... Tue and spring, spring:1 ... summer read in order
       const rank = (e) => group.parse(e.key).reduce((total, v, i) => total * 100 + group.fields[i].options.findIndex((o) => o.value === v), 0);
       const mine = entries.filter((e) => e.group === index).sort((a, b) => rank(a) - rank(b));
-      if (!group.dayCard) return lists[index].replaceChildren(...(mine.length ? mine.map(card) : [none(group.empty)]));
+      if (group.rowsInCard) {
+        const picker = pairPickers[index];
+        const freeFestivals = group.fields[0].options.filter((f) => group.fields[1].options.some((o) => !hasKey(group.compose([f.value, o.value]))));
+        setChoices(picker.selects[0], freeFestivals);
+        picker.refreshWhen();
+        picker.row.hidden = !loaded || !freeFestivals.length; // everything has dialogue: hide the picker
+        const present = group.fields[0].options.filter((o) => mine.some((e) => group.parse(e.key)[0] === o.value));
+        const cards = present.map((o) => {
+          const rows = mine.filter((e) => group.parse(e.key)[0] === o.value);
+          return groupCard(`${index}:${o.value}`, o.label, rows.map((e) => card(e)), rows.length, group.fields[1].options.length);
+        });
+        return lists[index].replaceChildren(...(cards.length ? cards : [none(group.empty)]));
+      }
+      if (!group.dayCard) return lists[index].replaceChildren(...(mine.length ? mine.map((e) => card(e)) : [none(group.empty)]));
       const days = DAYS.filter((day) => mine.some((e) => group.parse(e.key)[0] === day));
       const freeDays = group.fields[0].options.filter((o) => !days.includes(o.value));
       setChoices(dayPickers[index].select, freeDays);
       dayPickers[index].row.hidden = !loaded || !freeDays.length; // nothing left to add: hide the picker
       lists[index].replaceChildren(...(days.length ? days.map((day) => dayCard(group, index, day, mine.filter((e) => group.parse(e.key)[0] === day))) : [none(group.empty)]));
     });
-    const others = entries.filter((e) => e.group === OTHER);
-    otherList.replaceChildren(...(others.length ? others.map(card) : [none("None yet.")]));
+    // Alphabetical by key, numbers in natural order (fun_2 before fun_12)
+    const others = entries
+      .filter((e) => e.group === OTHER)
+      .sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true, sensitivity: "base" }));
+    otherList.replaceChildren(...(others.length ? (otherGroup ? groupedOthers(others) : others.map((e) => card(e))) : [none("None yet.")]));
     refreshSuggestions();
+  }
+
+  // Which collapsible cards are open, kept across redraws
+  const openGroups = new Set();
+  // A collapsible card: a title, "(n out of m dialogues added)" while it is closed, then its rows
+  function groupCard(id, title, rows, added, possible, footer) {
+    const details = el("details", { className: "entry group-card", open: openGroups.has(id) });
+    details.addEventListener("toggle", () => (details.open ? openGroups.add(id) : openGroups.delete(id)));
+    details.append(
+      el("summary", {}, el("span", { className: "group-title", textContent: title }), el("span", { className: "group-count", textContent: `(${added} out of ${possible} dialogues added)` })),
+      ...rows,
+      ...(footer ? [footer] : [])
+    );
+    return details;
+  }
+
+  // The group an "other" entry belongs to
+  const otherGroupId = (key) => `other:${otherGroup(key)}`;
+  const knownKeys = suggestions.flatMap((set) => set.keys);
+
+  // Other dialogue: one card per key prefix. A key that is alone and has no siblings stays a plain row.
+  function groupedOthers(others) {
+    const byName = new Map();
+    for (const e of others) {
+      const name = otherGroup(e.key);
+      if (!byName.has(name)) byName.set(name, []);
+      byName.get(name).push(e);
+    }
+    return [...byName].map(([name, rows]) => {
+      const possible = new Set([...knownKeys.filter((k) => otherGroup(k) === name), ...rows.map((e) => e.key)]).size;
+      if (rows.length === 1 && possible === 1) return card(rows[0]);
+      return groupCard(otherGroupId(rows[0].key), name, rows.map((e) => card(e, true)), rows.length, possible);
+    });
   }
 
   // One card per day: its heart-count dialogue rows, and a picker to add another heart count
@@ -904,11 +990,19 @@ function createEditor(section) {
       if (hasKey(key)) return showMessage(`${key} already exists.`);
       add({ key, text: "", group: index });
     });
-    return el("div", { className: "entry day-card" }, el("h4", { textContent: day }), ...rows.map(card), addRow);
+    return groupCard(`${index}:${day}`, day, rows.map((e) => card(e)), rows.length, group.fields[1].options.length, addRow);
+  }
+
+  // Open the card a new entry lands in, so it can be seen
+  function openFor(entry) {
+    if (entry.group === OTHER) return otherGroup && openGroups.add(otherGroupId(entry.key));
+    const group = groups[entry.group];
+    if (group.dayCard || group.rowsInCard) openGroups.add(`${entry.group}:${group.parse(entry.key)[0]}`);
   }
 
   function add(entry) {
     entries.push(entry);
+    openFor(entry);
     showMessage("");
     render();
   }
@@ -3422,6 +3516,32 @@ async function saveEditors() {
   for (const editor of editors) await editor.save(folderSelect.value);
 }
 
+// --- Dialogue sub-tabs: Day and Other are the two halves of the dialogue editor ---
+const subButtons = [...document.querySelectorAll(".subtab")];
+const subSections = { dialogue: document.getElementById("sub-dialogue"), marriage: document.getElementById("sub-marriage"), festival: document.getElementById("sub-festival") };
+let currentSub = "day";
+
+function showSub(name) {
+  if (!subButtons.some((b) => b.dataset.sub === name)) name = "day";
+  currentSub = name;
+  for (const b of subButtons) {
+    const active = b.dataset.sub === name;
+    b.setAttribute("aria-selected", String(active));
+    b.tabIndex = active ? 0 : -1;
+  }
+  const dialogueShown = name === "day" || name === "other";
+  subSections.dialogue.hidden = !dialogueShown;
+  subSections.marriage.hidden = name !== "marriage";
+  subSections.festival.hidden = name !== "festival";
+  for (const part of subSections.dialogue.querySelectorAll(".part-day")) part.hidden = name !== "day";
+  for (const part of subSections.dialogue.querySelectorAll(".part-other")) part.hidden = name !== "other";
+  closePane();
+  try {
+    history.replaceState(null, "", `#dialogue/${name}`);
+  } catch {}
+}
+subButtons.forEach((b) => b.addEventListener("click", () => showSub(b.dataset.sub)));
+
 // --- Tabs ---
 const tabButtons = [...document.querySelectorAll(".tab")];
 const tabPanels = [...document.querySelectorAll(".panel")];
@@ -3438,7 +3558,7 @@ function showTab(name, focus = false) {
   eventAudio?.pause();
   closePane(); // the pane belongs to the tab that filled it; this also stops any audio playing in it
   try {
-    history.replaceState(null, "", `#${name}`); // a refresh stays on this tab
+    history.replaceState(null, "", name === "dialogue" ? `#dialogue/${currentSub}` : `#${name}`); // a refresh stays on this tab
   } catch {}
 }
 
@@ -3451,6 +3571,9 @@ document.querySelector(".tabs").addEventListener("keydown", (event) => {
   event.preventDefault();
   showTab(tabButtons[next].dataset.tab, true);
 });
-showTab(location.hash.slice(1));
+// "#dialogue/marriage" opens a sub-tab; the old "#marriage" and "#festival" links still land in the right place
+const [hashTab, hashSub] = location.hash.slice(1).split("/");
+showSub(hashSub ?? { marriage: "marriage", festival: "festival" }[hashTab]);
+showTab({ marriage: "dialogue", festival: "dialogue" }[hashTab] ?? hashTab);
 
 init(); // last, so everything above is defined before the first load
