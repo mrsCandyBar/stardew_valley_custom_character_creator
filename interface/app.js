@@ -319,19 +319,19 @@ function spritePreview(image) {
   stopTimers.push(stop);
 
   const buttons = [
-    ...WALK_CYCLES.map(([label, first]) => el("button", { type: "button", className: "secondary", textContent: label, onclick: () => play([first, first + 1, first + 2, first + 3], label) })),
-    el("button", { type: "button", className: "secondary", textContent: "Stand", onclick: () => play([0], "Standing") }),
+    ...WALK_CYCLES.map(([label, first]) => actionButton(label, () => play([first, first + 1, first + 2, first + 3], label))),
+    actionButton("Stand", () => play([0], "Standing")),
   ];
   const actionButtons = ACTION_ANIMATIONS.map(([label, first, last, span = 1]) => {
     const list = range(first, last).filter((n) => (n - first) % span === 0).map((n) => ({ n, span }));
-    return el("button", { type: "button", className: "secondary", textContent: label, onclick: () => play(list, `${label} (slow)`, SLOW_MS) });
+    return actionButton(label, () => play(list, `${label} (slow)`, SLOW_MS));
   });
 
   // Anything else in the sheet (sitting, kissing, fishing or other custom frames): type the frame numbers, in order
   const custom = el("input", { placeholder: "Frames, e.g. 16,17,18", title: "Frame numbers to play in order" });
   const playCustom = () => play(custom.value.split(/[\s,]+/).filter(Boolean).map(Number).filter(Number.isInteger), "Custom");
   custom.addEventListener("keydown", (event) => event.key === "Enter" && (event.preventDefault(), playCustom()));
-  const customRow = el("div", { className: "add-row" }, custom, el("button", { type: "button", className: "secondary", textContent: "Play frames", onclick: playCustom }));
+  const customRow = controlRow(custom, actionButton("Play frames", playCustom));
 
   const grid = el(
     "div",
@@ -605,17 +605,7 @@ const EDITORS = {
   },
 };
 
-function el(tag, props = {}, ...children) {
-  const node = Object.assign(document.createElement(tag), props);
-  node.append(...children);
-  return node;
-}
-
-function fieldSelect(field, value) {
-  const select = el("select", { title: field.title }, ...field.options.map((o) => el("option", { value: o.value, textContent: o.label })));
-  select.value = value;
-  return select;
-}
+const fieldSelect = (field, value) => dropdown(field.options, value, { title: field.title });
 
 function createEditor(section) {
   const { type, title, hint } = section.dataset;
@@ -641,25 +631,19 @@ function createEditor(section) {
   const pairPickers = {}; // group index -> the festival + when dropdowns, kept to the pairs without dialogue yet
   const simplePickers = {}; // group index -> the dropdown and row of a one-dropdown group (schedule day, season)
   const dayPickers = {}; // group index -> the "Add day" dropdown and button, kept to the days without a card yet
-  // Replace a dropdown's choices, keeping the current pick when it is still there
-  const setChoices = (select, choices) => {
-    const current = select.value;
-    select.replaceChildren(...choices.map((o) => el("option", { value: o.value, textContent: o.label })));
-    if (choices.some((o) => o.value === current)) select.value = current;
-  };
 
   // One block per group: heading, cards, and a row of dropdowns to add another
   groups.forEach((group, index) => {
     const list = el("div");
     // A day-card group only picks the day here; heart counts are added inside each day's card
     const selects = (group.dayCard ? group.fields.slice(0, 1) : group.fields).map((field) => fieldSelect(field, field.options[0].value));
-    const button = el("button", { type: "button", className: "secondary", textContent: group.addLabel });
+    const button = actionButton(group.addLabel);
     button.addEventListener("click", () => {
       const key = group.compose(group.dayCard ? [selects[0].value, ""] : selects.map((s) => s.value));
       if (hasKey(key)) return showMessage(`${key} already exists.`);
       add({ key, text: "", group: index });
     });
-    const row = el("div", { className: "add-row" }, ...selects, button);
+    const row = controlRow(...selects, button);
     if (group.dayCard) dayPickers[index] = { select: selects[0], row };
     else if (group.fields.length === 1) simplePickers[index] = { select: selects[0], row }; // kept to the choices not used yet
     if (group.rowsInCard) {
@@ -681,8 +665,8 @@ function createEditor(section) {
   const CUSTOM = "\u0000custom";
   const addSelect = el("select", { title: "Key" });
   const addKey = el("input", { placeholder: otherPlaceholder, title: "Custom key", hidden: true });
-  const addOtherButton = el("button", { type: "button", className: "secondary", textContent: "Add" });
-  const otherRow = el("div", { className: "add-row" }, addSelect, addKey, addOtherButton);
+  const addOtherButton = actionButton("Add");
+  const otherRow = controlRow(addSelect, addKey, addOtherButton);
   addRows.push(otherRow);
   if (!noOther) section.append(el("div", { className: "entry-group part-other" }, el("h3", { textContent: otherTitle }), otherList, otherRow));
 
@@ -773,33 +757,23 @@ function createEditor(section) {
       head.append(key);
     }
     const body = el("div");
-    const toggle = el("button", {
-      type: "button",
-      className: "secondary",
-      textContent: entry.expanded ? "Minimize" : "Expand",
-      onclick: () => {
-        entry.expanded = !entry.expanded;
-        toggle.textContent = entry.expanded ? "Minimize" : "Expand";
-        drawBody();
-      },
+    const toggle = actionButton(entry.expanded ? "Minimize" : "Expand", () => {
+      entry.expanded = !entry.expanded;
+      toggle.textContent = entry.expanded ? "Minimize" : "Expand";
+      drawBody();
     });
     // Dialogue and marriage dialogue: a one-line input beside the key (click it to edit in the preview pane) and an x.
     // Schedule keeps its Expand button and text box.
     const compact = type !== "schedule";
-    const multiline = () => entry.text.includes("\n");
     // Plain text that looks part of the card: one line, cut off with an ellipsis, click to edit in the pane
-    const inline = el("button", { type: "button", className: "line-text" });
-    const refreshInline = () => {
-      const text = multiline() ? entry.text.split("\n").join("  ↵  ") : entry.text;
-      inline.textContent = text || "Click to write what they say";
-      inline.classList.toggle("empty-line", !text);
-      inline.title = text || "";
-    };
-    refreshInline();
-    inline.addEventListener("click", () => {
-      if (entry.expanded) return;
-      entry.expanded = true;
-      drawBody();
+    const { node: inline, refresh: refreshInline } = lineButton({
+      text: () => entry.text,
+      emptyText: "Click to write what they say",
+      onClick: () => {
+        if (entry.expanded) return;
+        entry.expanded = true;
+        drawBody();
+      },
     });
     const removeButton = el("button", {
       type: "button",
@@ -878,39 +852,24 @@ function createEditor(section) {
           },
         };
         const row = type === "schedule" ? reactionFields(reaction) : dialogueBox(reaction);
-        const removeLine = el("button", {
-          type: "button",
-          className: "secondary",
-          textContent: "×",
-          title: "Remove this line",
-          hidden: lines.length < 2,
-          onclick: () => {
-            lines.splice(lines.indexOf(line), 1);
-            sync();
-            drawLines(pane);
-          },
-        });
-        return el("div", { className: "dialogue-line" }, row, removeLine);
-      });
-      const addLine = el("button", {
-        type: "button",
-        className: "secondary",
-        textContent: "Add line",
-        onclick: () => {
-          lines.push({ face: "$0", explicit: false, text: "" });
+        const removeLine = actionButton("×", () => {
+          lines.splice(lines.indexOf(line), 1);
           sync();
           drawLines(pane);
-        },
+        }, { title: "Remove this line", hidden: lines.length < 2 });
+        return el("div", { className: "dialogue-line" }, row, removeLine);
+      });
+      const addLine = actionButton("Add line", () => {
+        lines.push({ face: "$0", explicit: false, text: "" });
+        sync();
+        drawLines(pane);
       });
       pane.replaceChildren(...rows, addLine);
     }
     if (isSchedule) {
       // Each schedule is a collapsible: the key and remove button in the summary, the stops inside
-      const details = el("details", { className: "entry schedule-card", open: Boolean(entry.cardOpen) });
-      details.addEventListener("toggle", () => (entry.cardOpen = details.open));
-      const summary = el("summary", {}, head);
-      summary.addEventListener("keydown", (e) => e.target !== summary && e.stopPropagation()); // typing a space in the key must not toggle the card
-      details.append(summary, body);
+      const details = collapsible({ className: "entry schedule-card", open: Boolean(entry.cardOpen), summary: head, onToggle: (open) => (entry.cardOpen = open) }, body);
+      details.summary.addEventListener("keydown", (e) => e.target !== details.summary && e.stopPropagation()); // typing a space in the key must not toggle the card
       drawBody();
       return details;
     }
@@ -979,14 +938,16 @@ function createEditor(section) {
   const openGroups = new Set();
   // A collapsible card: a title, "(n out of m dialogues added)" while it is closed, then its rows
   function groupCard(id, title, rows, added, possible, footer) {
-    const details = el("details", { className: "entry group-card", open: openGroups.has(id) });
-    details.addEventListener("toggle", () => (details.open ? openGroups.add(id) : openGroups.delete(id)));
-    details.append(
-      el("summary", {}, el("span", { className: "group-title", textContent: title }), el("span", { className: "group-count", textContent: `(${added} out of ${possible} dialogues added)` })),
+    return collapsible(
+      {
+        className: "entry group-card",
+        open: openGroups.has(id),
+        summary: [el("span", { className: "group-title", textContent: title }), el("span", { className: "group-count", textContent: `(${added} out of ${possible} dialogues added)` })],
+        onToggle: (open) => (open ? openGroups.add(id) : openGroups.delete(id)),
+      },
       ...rows,
       ...(footer ? [footer] : [])
     );
-    return details;
   }
 
   // The group an "other" entry belongs to
@@ -1013,8 +974,8 @@ function createEditor(section) {
     const free = group.fields[1].options.filter((o) => !hasKey(group.compose([day, o.value])));
     const select = el("select", { title: group.fields[1].title });
     setChoices(select, free);
-    const button = el("button", { type: "button", className: "secondary", textContent: "Add heart count" });
-    const addRow = el("div", { className: "add-row", hidden: !free.length }, select, button); // nothing left to add: hide it
+    const button = actionButton("Add heart count");
+    const addRow = Object.assign(controlRow(select, button), { hidden: !free.length }); // nothing left to add: hide it
     button.addEventListener("click", () => {
       const key = group.compose([day, select.value]);
       if (hasKey(key)) return showMessage(`${key} already exists.`);
@@ -1088,6 +1049,7 @@ const STOP_PATTERN = /^(\d{3,4}) (\S+) (-?\d+) (-?\d+) ([0-3])(?: (.+))?$/;
 const STOP_TIMES = []; // 6:00 am to 10:00 pm in 30-minute steps
 for (let t = 600; t <= 2200; t += t % 100 === 30 ? 70 : 30) STOP_TIMES.push(t);
 const ARROWS = ["↑", "→", "↓", "←"]; // up, right, down, left, the same order as FACING
+const facingChoices = ARROWS.map((arrow, i) => [i, arrow, `Face ${["up", "right", "down", "left"][i]}`]); // for toggleButtons
 
 const parseStop = (line) => {
   const m = STOP_PATTERN.exec(line.trim());
@@ -1125,11 +1087,12 @@ function createStopMap(stop, stops, onChange) {
   const pickers = el("div", { className: "stop-pickers" },
     el("label", {}, el("span", { textContent: "Time " }), timeSelect), el("label", {}, el("span", { textContent: "Map " }), placeSelect),
     el("label", {}, el("span", { textContent: "Zoom " }), zoomSelect));
-  const facingButtons = FACING.map((o, i) =>
-    el("button", { type: "button", className: "secondary mode", textContent: ARROWS[i], title: `Face ${o.label}`, onclick: () => { stop.facing = i; onChange(); refreshFacing(); drawOverlay(); } })
-  );
-  const refreshFacing = () => facingButtons.forEach((b, i) => b.classList.toggle("selected", stop.facing === i));
-  refreshFacing();
+  const { buttons: facingButtons, refresh: refreshFacing } = toggleButtons(facingChoices, (i) => stop.facing === i, (i) => {
+    stop.facing = i;
+    onChange();
+    refreshFacing();
+    drawOverlay();
+  });
   const arrows = el("div", { className: "map-arrows", hidden: true }, ...facingButtons); // floats over the map's top right corner
   const frame = el("div", { className: "map-frame" }, scroll, arrows);
 
@@ -1265,14 +1228,11 @@ function scheduleStops(entry) {
 
   const summaries = new Map(); // stop -> a function refreshing its toggle labels
   function stopRow(stop, i) {
-    const remove = el("button", {
-      type: "button", className: "secondary remove-x", textContent: "×", title: "Remove this stop",
-      onclick: () => {
-        closeEditors();
-        stops.splice(i, 1);
-        sync();
-        draw();
-      },
+    const remove = removeX("Remove this stop", () => {
+      closeEditors();
+      stops.splice(i, 1);
+      sync();
+      draw();
     });
     if (stop.raw !== undefined) {
       const input = el("input", { value: stop.raw, title: "A line the editor doesn't have controls for", placeholder: "e.g. GOTO Mon" });
@@ -1301,15 +1261,12 @@ function scheduleStops(entry) {
     return el("div", { className: "stop" }, el("div", { className: "stop-head" }, el("span", { className: "step", textContent: i + 1 }), field, remove));
   }
 
-  const addStop = el("button", {
-    type: "button", className: "secondary", textContent: "Add stop",
-    onclick: () => {
-      closeEditors();
-      const last = stops.findLast((s) => s.raw === undefined);
-      stops.push({ time: last ? Math.min(2600, last.time + 100) : 600, place: last?.place || "Town", x: last?.x ?? 0, y: last?.y ?? 0, facing: last?.facing ?? 2, extra: "" });
-      sync();
-      draw();
-    },
+  const addStop = actionButton("Add stop", () => {
+    closeEditors();
+    const last = stops.findLast((s) => s.raw === undefined);
+    stops.push({ time: last ? Math.min(2600, last.time + 100) : 600, place: last?.place || "Town", x: last?.x ?? 0, y: last?.y ?? 0, facing: last?.facing ?? 2, extra: "" });
+    sync();
+    draw();
   });
   function draw() {
     summaries.clear();
@@ -1391,14 +1348,10 @@ function pickItem(items, current, multi = false) {
     const tbody = el("tbody");
     const thead = el("thead");
     const empty = el("p", { className: "empty", textContent: "No items match.", hidden: true });
-    const done = el("button", { type: "button", textContent: "Done" });
-    const close = el("button", { type: "button", className: "secondary", textContent: "Cancel" });
+    const done = actionButton("Done", undefined, { primary: true });
     const table = el("table", { className: "item-table" }, thead, tbody);
-    itemDialog = el("dialog", { className: "item-dialog" }, el("div", { className: "item-dialog-head" }, search, done, close), el("div", { className: "item-scroll" }, table, empty));
+    itemDialog = createDialog({ head: [search, done], closeLabel: "Cancel" }, table, empty);
     Object.assign(itemDialog, { search, tbody, thead, empty, done });
-    close.addEventListener("click", () => itemDialog.close());
-    itemDialog.addEventListener("click", (event) => event.target === itemDialog && itemDialog.close()); // click on the backdrop
-    document.body.append(itemDialog);
   }
   const { search, tbody, thead, empty, done } = itemDialog;
 
@@ -1504,17 +1457,12 @@ function createGiftTastesEditor(section) {
   const itemList = el("div");
   let items = []; // the picker's item list, loaded with the tab
   let newItemId = "0"; // the item the "Add item" button will add
-  const addItem = el("button", { type: "button", className: "secondary", textContent: "Add item" });
-  const addRow = el("div", { className: "add-row" });
+  const addItem = actionButton("Add item");
+  const addRow = controlRow();
   const specificBody = el("div", { hidden: true }, itemList, addRow);
-  const toggleSpecific = el("button", {
-    type: "button",
-    className: "secondary",
-    textContent: "Show specific items",
-    onclick: () => {
-      specificBody.hidden = !specificBody.hidden;
-      toggleSpecific.textContent = specificBody.hidden ? "Show specific items" : "Hide specific items";
-    },
+  const toggleSpecific = actionButton("Show specific items", () => {
+    specificBody.hidden = !specificBody.hidden;
+    toggleSpecific.textContent = specificBody.hidden ? "Show specific items" : "Hide specific items";
   });
 
   section.append(
@@ -1541,7 +1489,7 @@ function createGiftTastesEditor(section) {
       text.readOnly = multi();
     };
     refreshText();
-    const view = el("button", { type: "button", className: "secondary", textContent: "View" });
+    const view = actionButton("View");
     text.addEventListener("input", () => {
       reaction.text = text.value;
       if (live && live.reaction === reaction) live.paneText.value = text.value;
@@ -1607,19 +1555,14 @@ function createGiftTastesEditor(section) {
         return chip;
       });
 
-      const choose = el("button", {
-        type: "button",
-        className: "secondary",
-        textContent: "Add",
-        onclick: async () => {
-          const ticked = await pickItem(items, ids(), true);
-          if (!ticked) return;
-          const known = new Set(items.map((i) => i.id));
-          // keep ids the table doesn't know (negative categories etc.) and the order of what was already there
-          const kept = ids().filter((id) => !known.has(id) || ticked.includes(id));
-          tastes.categories[name] = [...kept, ...ticked.filter((id) => !kept.includes(id))];
-          draw();
-        },
+      const choose = actionButton("Add", async () => {
+        const ticked = await pickItem(items, ids(), true);
+        if (!ticked) return;
+        const known = new Set(items.map((i) => i.id));
+        // keep ids the table doesn't know (negative categories etc.) and the order of what was already there
+        const kept = ids().filter((id) => !known.has(id) || ticked.includes(id));
+        tastes.categories[name] = [...kept, ...ticked.filter((id) => !kept.includes(id))];
+        draw();
       });
       row.replaceChildren(
         el("h4", { className: "category-label", textContent: label }),
@@ -1686,17 +1629,10 @@ function createGiftTastesEditor(section) {
                 entry.item = id;
               }
             );
-            const remove = el("button", {
-              type: "button",
-              className: "secondary remove-x",
-              textContent: "×",
-              title: "Remove",
-              
-              onclick: () => {
-                closePane();
-                tastes.items = tastes.items.filter((e) => e !== entry);
-                render();
-              },
+            const remove = removeX("Remove", () => {
+              closePane();
+              tastes.items = tastes.items.filter((e) => e !== entry);
+              render();
             });
             return el("div", { className: "entry" }, reactionLine(entry, item, remove, "Specific item", true));
           })
@@ -1864,12 +1800,7 @@ const MUSIC = [
 const OTHER_CHOICE = "__other__";
 
 // A dropdown of [value, label] choices. A value that isn't in the list (e.g. typed by hand earlier) is kept as its own choice.
-function choiceSelect(choices, value, title) {
-  const list = choices.some(([v]) => v === value) || value === "" ? choices : [...choices, [value, `${value} (custom)`]];
-  const select = el("select", { title }, ...list.map(([v, label]) => el("option", { value: v, textContent: label })));
-  select.value = value;
-  return select;
-}
+const choiceSelect = (choices, value, title) => dropdown(choices, value, { title, keepUnknown: true });
 
 // --- Conditions ---
 // Friendship (f), time of day (t) and weather (w) get their own controls; any other condition stays a line of text.
@@ -2027,13 +1958,10 @@ function createConditions(event) {
         parsed.other[i] = input.value;
         commit();
       });
-      return el("div", { className: "add-row" }, input, el("button", {
-        type: "button", className: "secondary remove-x", textContent: "×", title: "Remove",
-        onclick: () => {
-          parsed.other.splice(i, 1);
-          commit();
-          render();
-        },
+      return controlRow(input, removeX("Remove", () => {
+        parsed.other.splice(i, 1);
+        commit();
+        render();
       }));
     });
 
@@ -2041,12 +1969,9 @@ function createConditions(event) {
       section("Friendship", parsed.friendship !== null, (on) => toggle("friendship", on, 2000), friendshipBody, "Each heart is 250 friendship points."),
       section("Time of day", parsed.time !== null, (on) => toggle("time", on, [600, 1200]), timeBody, "Day (6am to 6pm) is the bright half of the clock, night the dark half. The green wedge is when the event can start."),
       section("Weather", parsed.weather !== null, (on) => toggle("weather", on, "sunny"), weatherBody, "Rainy covers rain and storms; sunny is every other kind of weather."),
-      el("div", { className: "condition" }, el("span", { className: "other-title", textContent: "Other conditions" }), ...others, el("button", {
-        type: "button", className: "secondary", textContent: "Add condition",
-        onclick: () => {
-          parsed.other.push("");
-          render();
-        },
+      el("div", { className: "condition" }, el("span", { className: "other-title", textContent: "Other conditions" }), ...others, actionButton("Add condition", () => {
+        parsed.other.push("");
+        render();
       }))
     );
   }
@@ -2062,14 +1987,7 @@ function dialogueField(words, onInput, panes = []) {
   const m = /^(\$\d+)([\s\S]*)$/.exec(words);
   const state = { face: m ? m[1] : null, text: m ? m[2] : words }; // no "$n" at the start means the default (neutral) face
   const emit = () => onInput((state.face ?? "") + state.text);
-  const inline = el("button", { type: "button", className: "line-text" });
-  const refresh = () => {
-    const line = ((state.face ?? "") + state.text).split("\n").join("  ↵  ");
-    inline.textContent = line || "Click to write what they say";
-    inline.classList.toggle("empty-line", !line);
-    inline.title = line;
-  };
-  refresh();
+  let refresh = () => {};
   const reaction = {
     get face() {
       return state.face ?? "$0";
@@ -2080,31 +1998,26 @@ function dialogueField(words, onInput, panes = []) {
       refresh();
     },
   };
-  let card = null;
-  let open = false;
-  const closed = () => {
-    open = false;
-    card?.classList.remove("viewing");
-  };
-  panes.push(closed);
-  inline.addEventListener("click", () => {
-    if (open) return;
-    const text = el("textarea", { value: state.text, rows: 5, title: "Words", placeholder: "What they say" });
-    text.addEventListener("input", () => {
-      state.text = text.value;
-      emit();
-      refresh();
-    });
-    const pane = el("div", { className: "preview-body centered" },
-      el("div", { className: "dialogue-box" }, text, faceButton(reaction, assetUrl("portrait"))),
-      el("p", { className: "hint", textContent: "Click the portrait for the next face. Edits here and in the form stay in step." }));
-    showInPane("Speak", pane, closed);
-    open = true;
-    card = inline.closest(".entry");
-    card?.classList.add("viewing");
-    text.focus();
+  const line = paneLine({
+    text: () => (state.face ?? "") + state.text,
+    emptyText: "Click to write what they say",
+    title: "Speak",
+    panes,
+    build: () => {
+      const text = el("textarea", { value: state.text, rows: 5, title: "Words", placeholder: "What they say" });
+      text.addEventListener("input", () => {
+        state.text = text.value;
+        emit();
+        refresh();
+      });
+      const pane = el("div", { className: "preview-body centered" },
+        speechBox(text, faceButton(reaction, assetUrl("portrait"))),
+        el("p", { className: "hint", textContent: "Click the portrait for the next face. Edits here and in the form stay in step." }));
+      return { pane, focus: text };
+    },
   });
-  return inline;
+  refresh = line.refresh;
+  return line.node;
 }
 
 // --- Emote picker ---
@@ -2122,12 +2035,8 @@ let emoteDialog = null;
 function chooseEmote(current, onChoose) {
   if (!emoteDialog) {
     const grid = el("div", { className: "emote-grid" });
-    const close = el("button", { type: "button", className: "secondary", textContent: "Close" });
-    emoteDialog = el("dialog", { className: "item-dialog emote-dialog" }, el("div", { className: "item-dialog-head" }, el("strong", { textContent: "Choose an emote", style: "flex:1" }), close), el("div", { className: "item-scroll" }, grid));
+    emoteDialog = createDialog({ className: "emote-dialog", head: [el("strong", { textContent: "Choose an emote", style: "flex:1" })] }, grid);
     emoteDialog.grid = grid;
-    close.addEventListener("click", () => emoteDialog.close());
-    emoteDialog.addEventListener("click", (event) => event.target === emoteDialog && emoteDialog.close());
-    document.body.append(emoteDialog);
   }
   emoteDialog.grid.replaceChildren(
     ...Array.from({ length: EMOTE_ROWS - 1 }, (_, i) => (i + 1) * EMOTE_COLUMNS).map((n) =>
@@ -2211,38 +2120,24 @@ const FORK_ORIENTATIONS = [["fork0", "fork0"], ["fork1", "fork1"]];
 
 // The question as one line of plain text, cut off with an ellipsis; clicking it edits the whole question in the preview pane.
 function questionField(state, onInput, panes) {
-  const inline = el("button", { type: "button", className: "line-text" });
-  const refresh = () => {
-    inline.textContent = state.question || "Click to write the question";
-    inline.classList.toggle("empty-line", !state.question);
-    inline.title = state.question;
-  };
-  refresh();
-  let card = null;
-  let open = false;
-  const closed = () => {
-    open = false;
-    card?.classList.remove("viewing");
-  };
-  panes.push(closed);
-  inline.addEventListener("click", () => {
-    if (open) return;
-    const text = el("textarea", { value: state.question, rows: 5, title: "Question", placeholder: "What the player is asked" });
-    text.addEventListener("input", () => {
-      state.question = text.value.replaceAll("#", ""); // a # would start a new answer
-      onInput();
-      refresh();
-    });
-    const pane = el("div", { className: "preview-body centered" },
-      el("div", { className: "dialogue-box" }, text),
-      el("p", { className: "hint", textContent: "The question the player sees. Edits here and in the form stay in step." }));
-    showInPane("Question", pane, closed);
-    open = true;
-    card = inline.closest(".entry");
-    card?.classList.add("viewing");
-    text.focus();
-  });
-  return inline;
+  return paneLine({
+    text: () => state.question,
+    emptyText: "Click to write the question",
+    title: "Question",
+    panes,
+    build: (refresh) => {
+      const text = el("textarea", { value: state.question, rows: 5, title: "Question", placeholder: "What the player is asked" });
+      text.addEventListener("input", () => {
+        state.question = text.value.replaceAll("#", ""); // a # would start a new answer
+        onInput();
+        refresh();
+      });
+      const pane = el("div", { className: "preview-body centered" },
+        speechBox(text),
+        el("p", { className: "hint", textContent: "The question the player sees. Edits here and in the form stay in step." }));
+      return { pane, focus: text };
+    },
+  }).node;
 }
 
 // The list of commands for an event (or for its fork). `commands` is edited in place.
@@ -2258,7 +2153,7 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
   const repeatType = { value: REPEAT, label: "Repeat (a group of commands, played several times)" };
   const addTypes = [...(forks ? [{ value: FORK_CARD, label: "Fork (question, answers and steps)" }] : []), ...(nested ? [] : [repeatType]), ...rowTypes];
   const addType = fieldSelect({ title: "Command type", options: addTypes }, "speak");
-  const addButton = el("button", { type: "button", className: "secondary", textContent: "Add command" });
+  const addButton = actionButton("Add command");
   // An event has one fork, so once it has one the Fork option can't be added again
   const syncAdd = () => {
     const blocked = addType.value === FORK_CARD && forks.has();
@@ -2316,36 +2211,18 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
       rowOf.get(unit.commands[0]).animate([{ boxShadow: "0 0 0 3px var(--accent)", backgroundColor: "#e6f2dc" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 900, easing: "ease-out" });
     };
     const group = el("div", { className: "btn-group", hidden: !toolsOpen.has(unit.commands[0]) }, ...[
-      el("button", { type: "button", className: "secondary arrow", textContent: "↑", title: "Move up", disabled: index === 0, onclick: () => move(-1) }),
-      el("button", { type: "button", className: "secondary arrow", textContent: "↓", title: "Move down", disabled: index === units.length - 1, onclick: () => move(1) }),
-      el("button", {
-        type: "button",
-        className: "secondary arrow",
-        textContent: "+",
-        title: "Add a command after this one (the type chosen under the list)",
-        onclick: () => insertCommand(commands.indexOf(unit.commands[unit.commands.length - 1]) + 1),
-      }),
-      ...(unit.fork ? [] : [el("button", {
-        type: "button",
-        className: "secondary arrow",
-        textContent: "⧉",
-        title: "Duplicate this command (right below it)",
-        onclick: () => {
-          commands.splice(commands.indexOf(unit.commands[0]) + 1, 0, structuredClone(unit.commands[0]));
-          render();
-        },
-      })]),
-      el("button", {
-        type: "button",
-        className: "secondary remove-x",
-        textContent: "×",
-        title: unit.fork ? "Remove the fork and its steps" : "Remove",
-        onclick: () => {
-          if (unit.fork && forks.stepCount() > 1 && !confirm(`Remove this fork and its ${forks.stepCount()} steps?`)) return;
-          commands.splice(commands.indexOf(unit.commands[0]), unit.commands.length);
-          if (unit.fork) forks.remove();
-          render();
-        },
+      actionButton("↑", () => move(-1), { className: "arrow", title: "Move up", disabled: index === 0 }),
+      actionButton("↓", () => move(1), { className: "arrow", title: "Move down", disabled: index === units.length - 1 }),
+      actionButton("+", () => insertCommand(commands.indexOf(unit.commands[unit.commands.length - 1]) + 1), { className: "arrow", title: "Add a command after this one (the type chosen under the list)" }),
+      ...(unit.fork ? [] : [actionButton("⧉", () => {
+        commands.splice(commands.indexOf(unit.commands[0]) + 1, 0, structuredClone(unit.commands[0]));
+        render();
+      }, { className: "arrow", title: "Duplicate this command (right below it)" })]),
+      removeX(unit.fork ? "Remove the fork and its steps" : "Remove", () => {
+        if (unit.fork && forks.stepCount() > 1 && !confirm(`Remove this fork and its ${forks.stepCount()} steps?`)) return;
+        commands.splice(commands.indexOf(unit.commands[0]), unit.commands.length);
+        if (unit.fork) forks.remove();
+        render();
       }),
     ]);
     // The tools stay tucked away until asked for; the choice is kept when the list redraws
@@ -2387,22 +2264,16 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
         state.answers[i] = input.value.replaceAll("#", "");
         commit();
       });
-      return el("div", { className: "answer-row" }, el("span", { className: "step", textContent: `${i + 1}.` }), input, el("button", {
-        type: "button", className: "secondary remove-x", textContent: "×", title: "Remove this answer", disabled: state.answers.length < 2,
-        onclick: () => {
-          state.answers.splice(i, 1);
-          commit();
-          render();
-        },
-      }));
-    });
-    const addAnswer = el("button", {
-      type: "button", className: "secondary", textContent: "Add answer",
-      onclick: () => {
-        state.answers.push("");
+      return el("div", { className: "answer-row" }, el("span", { className: "step", textContent: `${i + 1}.` }), input, removeX("Remove this answer", () => {
+        state.answers.splice(i, 1);
         commit();
         render();
-      },
+      }, { disabled: state.answers.length < 2 }));
+    });
+    const addAnswer = actionButton("Add answer", () => {
+      state.answers.push("");
+      commit();
+      render();
     });
     const head = el("div", { className: "entry-head" }, el("strong", { className: "fork-label", textContent: "Fork" }), orientation, name, el("span", { className: "key" }), ...controls(unit, index));
     const body = el("div", { className: "command-fields fork-fields" }, questionField(state, commit, panes), ...answers, el("div", {}, addAnswer));
@@ -2429,16 +2300,13 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
     const inner = createCommandList(command.commands, null, map, { nested: true, onChange: refreshSummary });
     const collapsed = collapsedRepeats.has(command);
     inner.hidden = collapsed;
-    const toggle = el("button", {
-      type: "button", className: "secondary arrow", textContent: collapsed ? "▸" : "▾", title: collapsed ? "Show the group" : "Hide the group",
-      onclick: () => {
-        const hide = !inner.hidden;
-        inner.hidden = hide;
-        hide ? collapsedRepeats.add(command) : collapsedRepeats.delete(command);
-        toggle.textContent = hide ? "▸" : "▾";
-        toggle.title = hide ? "Show the group" : "Hide the group";
-      },
-    });
+    const toggle = actionButton(collapsed ? "▸" : "▾", () => {
+      const hide = !inner.hidden;
+      inner.hidden = hide;
+      hide ? collapsedRepeats.add(command) : collapsedRepeats.delete(command);
+      toggle.textContent = hide ? "▸" : "▾";
+      toggle.title = hide ? "Show the group" : "Hide the group";
+    }, { className: "arrow", title: collapsed ? "Show the group" : "Hide the group" });
     refreshSummary();
 
     // Frame generator: adds a "Show frame" + "Pause" pair for every frame from the first to the last (counting down if the last is smaller)
@@ -2447,23 +2315,17 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
     const [from, to, wait] = [num(0, "First frame"), num(7, "Last frame"), num(100, "Pause between frames (ms)")];
     const generate = el("div", { className: "frame-generator", hidden: !openGenerators.has(command) },
       el("span", { textContent: "Show frames" }), who, from, el("span", { textContent: "to" }), to, el("span", { textContent: "pausing" }), wait, el("span", { textContent: "ms" }),
-      el("button", {
-        type: "button", className: "secondary", textContent: "Add to group", title: "Adds a Show frame and a Pause for each frame, at the end of the group",
-        onclick: () => {
-          const [a, b, ms] = [from, to, wait].map((input) => Math.max(0, Math.floor(Number(input.value)) || 0));
-          const step = a <= b ? 1 : -1;
-          for (let f = a; f !== b + step; f += step) command.commands.push({ type: "showFrame", args: `${who.value.trim() || "{name}"} ${f}` }, { type: "pause", args: String(ms) });
-          openGenerators.add(command);
-          render();
-        },
-      }));
-    const generatorToggle = el("button", {
-      type: "button", className: "secondary", textContent: "Frames…", title: "Fill the group with a run of frames",
-      onclick: () => {
-        generate.hidden = !generate.hidden;
-        generate.hidden ? openGenerators.delete(command) : openGenerators.add(command);
-      },
-    });
+      actionButton("Add to group", () => {
+        const [a, b, ms] = [from, to, wait].map((input) => Math.max(0, Math.floor(Number(input.value)) || 0));
+        const step = a <= b ? 1 : -1;
+        for (let f = a; f !== b + step; f += step) command.commands.push({ type: "showFrame", args: `${who.value.trim() || "{name}"} ${f}` }, { type: "pause", args: String(ms) });
+        openGenerators.add(command);
+        render();
+      }, { title: "Adds a Show frame and a Pause for each frame, at the end of the group" }));
+    const generatorToggle = actionButton("Frames…", () => {
+      generate.hidden = !generate.hidden;
+      generate.hidden ? openGenerators.delete(command) : openGenerators.add(command);
+    }, { title: "Fill the group with a run of frames" });
     const head = el("div", { className: "entry-head" }, toggle, el("strong", { className: "fork-label", textContent: "Repeat" }), times, summary, el("span", { className: "key" }), generatorToggle, ...controls(unit, index));
     return el("div", { className: "entry command cmd-repeat" }, head, generate, inner);
   };
@@ -2555,7 +2417,7 @@ function createCommandList(commands, forks, map, { nested = false, onChange = ()
     });
     box.replaceChildren(
       ...(nodes.length ? nodes : [el("p", { className: "empty", textContent: "No commands yet." })]),
-      el("div", { className: "add-row" }, addType, addButton)
+      controlRow(addType, addButton)
     );
     if (forks) syncAdd();
     map.changed();
@@ -2670,8 +2532,7 @@ function createMapEditor(event, onChange, onPick, onUnpick, onPlace) {
   // Floating over the map while the Actors tool is on: the actors' keys (top left) and the way the chosen one faces (top right)
   let selectedActor = 0; // index into the Actors field
   const actorList = el("div", { className: "map-keys", hidden: true });
-  const facingButtons = FACING.map((o, i) =>
-    el("button", { type: "button", className: "secondary mode", textContent: ARROWS[i], title: `Face ${o.label}`, onclick: () => {
+  const facingButtons = toggleButtons(facingChoices, () => false, (i) => {
       if (picked) {
         // Choosing a Move's destination: the arrows set the way the actor faces when the move ends
         picked.command.args = picked.command.args.replace(/^(\S+ -?\d+ -?\d+) [0-3]/, `$1 ${i}`);
@@ -2686,8 +2547,7 @@ function createMapEditor(event, onChange, onPick, onUnpick, onPlace) {
       onChange();
       drawOverlay();
       refreshFacing();
-    } })
-  );
+  }).buttons;
   const refreshFacing = () => {
     const actor = (parseActors(event.actors) || [])[selectedActor];
     // While a Move is being chosen the arrows show (and set) how the actor ends up facing, not how they start
@@ -2700,14 +2560,16 @@ function createMapEditor(event, onChange, onPick, onUnpick, onPlace) {
   };
   const arrows = el("div", { className: "map-arrows", hidden: true }, ...facingButtons);
   const zoomSelect = fieldSelect({ title: "Zoom", options: options([1, 2, 3, 4], (z) => `${z}x`) }, "2");
-  const modeButtons = [["viewport", "Viewport"], ["actors", "Actors"]].map(([value, label]) =>
-    el("button", { type: "button", className: "secondary mode", textContent: label, onclick: () => { mode = value; refreshModes(); } })
-  );
+  const modes = toggleButtons([["viewport", "Viewport"], ["actors", "Actors"]], (value) => value === mode, (value) => {
+    mode = value;
+    refreshModes();
+  });
+  const modeButtons = modes.buttons;
   const hint = el("small", { textContent: "" });
   const pathsLabel = el("label", { className: "check-inline" }, showAllPaths, el("span", { textContent: " Show all move paths" }));
   // Viewport and Actors are a toggle: the actor list and move paths only show while editing actors
   const refreshModes = () => {
-    modeButtons.forEach((b, i) => b.classList.toggle("selected", ["viewport", "actors"][i] === mode));
+    modes.refresh();
     hint.textContent = mode === "viewport" ? "Click or drag on the map to place the camera. The bright box is what the player sees (about 20 x 11 tiles)." : "Drag an actor to move them. Click an actor to turn them (the arrow is the way they face).";
     pathsLabel.hidden = mode !== "actors";
     syncFloaters();
@@ -2720,7 +2582,7 @@ function createMapEditor(event, onChange, onPick, onUnpick, onPlace) {
   // The Place: only editable once the Place in the event card has been clicked. The close icon goes back to the Place chosen when it was opened.
   let placeAtOpen = event.location;
   const placeSelect = choiceSelect(LOCATIONS, event.location, "Place");
-  const placeReset = el("button", { type: "button", className: "secondary place-reset", textContent: "↩", title: "Go back to the last Place selected", "aria-label": "Go back to the last Place selected" });
+  const placeReset = actionButton("↩", undefined, { className: "place-reset", title: "Go back to the last Place selected", "aria-label": "Go back to the last Place selected" });
   function setPlaceEditable(editable) {
     if (editable) placeAtOpen = event.location;
     placeSelect.disabled = !editable;
@@ -2906,28 +2768,22 @@ function createMapEditor(event, onChange, onPick, onUnpick, onPlace) {
           }
         },
       }, el("span", { className: "swatch", style: `background:${ACTOR_COLORS[i % ACTOR_COLORS.length]}` }), el("span", { textContent: label }));
-      const remove = el("button", { type: "button", disabled: locked, className: "secondary remove-x", textContent: "×", title: `Remove ${actor.name}`, onclick: () => {
+      const remove = actionButton("×", () => {
         actors.splice(i, 1);
         if (selectedActor > i) selectedActor--;
         save();
         renderActors();
-      } });
+      }, { className: "remove-x", disabled: locked, title: `Remove ${actor.name}` });
       return el("div", { className: "actor-key-row" }, key, remove);
     });
-    actorList.replaceChildren(...rows, el("button", {
-      type: "button",
-      disabled: !!picked,
-      className: "secondary add-actor",
-      textContent: "Add actor",
-      onclick: () => {
-        const view = parseViewport(event.viewport) || { x: 5, y: 5 };
-        const name = !actors.some((a) => a.name === "farmer") ? "farmer" : !actors.some((a) => a.name === "{name}") ? "{name}" : `actor${actors.length + 1}`;
-        actors.push({ name, x: view.x, y: view.y, facing: 2 });
-        selectedActor = actors.length - 1;
-        save();
-        renderActors();
-      },
-    }));
+    actorList.replaceChildren(...rows, actionButton("Add actor", () => {
+      const view = parseViewport(event.viewport) || { x: 5, y: 5 };
+      const name = !actors.some((a) => a.name === "farmer") ? "farmer" : !actors.some((a) => a.name === "{name}") ? "{name}" : `actor${actors.length + 1}`;
+      actors.push({ name, x: view.x, y: view.y, facing: 2 });
+      selectedActor = actors.length - 1;
+      save();
+      renderActors();
+    }, { className: "add-actor", disabled: !!picked }));
     refreshFacing();
   }
 
@@ -2991,7 +2847,7 @@ function createMapEditor(event, onChange, onPick, onUnpick, onPlace) {
     if (!picked) return;
     banner.replaceChildren(
       el("span", { textContent: step && step.from ? `Step ${step.n}: click the tile ${step.who} should walk to (from ${step.from.x}, ${step.from.y}). Everyone is shown where they stand at this step. A corner becomes two moves.` : `${step && step.who} isn't in the Actors field, so there's no start tile to move from. Add them above.` }),
-      el("button", { type: "button", className: "secondary", textContent: "Done", onclick: () => api_pick(null) })
+      actionButton("Done", () => api_pick(null))
     );
   }
   function chooseDestination(tile) {
@@ -3133,15 +2989,15 @@ function createEventsEditor(section) {
   const list = el("div");
   const addId = el("input", { placeholder: "Event ID, e.g. 9999016", title: "Event ID" });
   const addLocation = choiceSelect(LOCATIONS, "Beach", "Place");
-  const addButton = el("button", { type: "button", className: "secondary", textContent: "Add event" });
-  const addRow = el("div", { className: "add-row" }, addId, addLocation, addButton);
+  const addButton = actionButton("Add event");
+  const addRow = controlRow(addId, addLocation, addButton);
   section.append(el("h2", { textContent: title }), el("p", { className: "hint", textContent: hint }), defaultsRow, message, list, addRow);
 
   const labelOf = (event) => `${event.id || "(no ID)"} in ${event.location || "(no place)"}`;
 
   function card(event) {
-    const summary = el("summary", { textContent: labelOf(event) });
-    const refresh = () => (summary.textContent = labelOf(event));
+    let details;
+    const refresh = () => (details.summary.textContent = labelOf(event));
     const text = (key, props) => {
       const input = el("input", { value: event[key], ...props });
       input.addEventListener("input", () => {
@@ -3265,13 +3121,10 @@ function createEventsEditor(section) {
     };
     renderFork();
 
-    const details = el(
-      "details",
-      { className: "entry event", open: !!event.open },
-      summary,
+    details = collapsible(
+      { className: "entry event", open: !!event.open, summary: labelOf(event), onToggle: (open) => (event.open = open) },
       el("div", { className: "setup-wrap" },
-        el("details", { className: "setup-card", open: true },
-          el("summary", { textContent: "Setup Scene" }),
+        collapsible({ className: "setup-card", open: true, summary: "Setup Scene" },
           el("div", { className: "event-row id-row" },
             labelled("Event ID", text("id", { title: "Event ID" }), "A unique number."),
             labelled("Conditions", conditions.input, "Optional. Click to set them in the preview panel."),
@@ -3285,17 +3138,11 @@ function createEventsEditor(section) {
       createCommandList(event.commands, forks, mapHooks),
       el("h4", { textContent: "Fork steps" }),
       forkBox,
-      el("button", {
-        type: "button",
-        className: "secondary",
-        textContent: "Remove event",
-        onclick: () => {
-          events = events.filter((e) => e !== event);
-          render();
-        },
+      actionButton("Remove event", () => {
+        events = events.filter((e) => e !== event);
+        render();
       })
     );
-    details.addEventListener("toggle", () => (event.open = details.open));
     return details;
   }
 
@@ -3423,20 +3270,12 @@ function createMailEditor(section) {
 
   const list = el("div");
   const addId = el("input", { placeholder: "Letter ID, e.g. FirstLetter", title: "Letter ID" });
-  const addButton = el("button", { type: "button", className: "secondary", textContent: "Add letter" });
-  const addRow = el("div", { className: "add-row" }, addId, addButton);
+  const addButton = actionButton("Add letter");
+  const addRow = controlRow(addId, addButton);
   section.append(el("h2", { textContent: title }), el("p", { className: "hint", textContent: hint }), message, list, addRow);
 
   const field = (label, control, note) => el("div", { className: "field" }, el("span", { textContent: label }), el("div", {}, control, ...(note ? [el("small", { textContent: note })] : [])));
-  const bind = (letter, key, node, event = "input") => {
-    node.addEventListener(event, () => (letter[key] = node.value));
-    return node;
-  };
-  const number = (letter, key, min, max) => {
-    const node = el("input", { type: "number", min, max, value: letter[key] });
-    node.addEventListener("input", () => (letter[key] = Number(node.value) || 0));
-    return node;
-  };
+  const number = (letter, key, min, max) => bindValue(el("input", { type: "number", min, max, value: letter[key] }), letter, key, { parse: (v) => Number(v) || 0 });
 
   function showLetter(letter) {
     preview = letter;
@@ -3448,17 +3287,10 @@ function createMailEditor(section) {
     const draw = () => {
       box.replaceChildren(
         ...letter.items.map((entry) => {
-          const count = el("input", { type: "number", min: 1, max: 999, value: entry.count, title: "How many" });
-          count.addEventListener("input", () => (entry.count = Number(count.value) || 1));
-          const remove = el("button", {
-            type: "button",
-            className: "secondary remove-x",
-            textContent: "×",
-            title: "Remove",
-            onclick: () => {
-              letter.items = letter.items.filter((e) => e !== entry);
-              draw();
-            },
+          const count = bindValue(el("input", { type: "number", min: 1, max: 999, value: entry.count, title: "How many" }), entry, "count", { parse: (v) => Number(v) || 1 });
+          const remove = removeX("Remove", () => {
+            letter.items = letter.items.filter((e) => e !== entry);
+            draw();
           });
           const pick = itemButton(items, () => entry.item, (id) => {
             if (letter.items.some((e) => e !== entry && e.item === id)) {
@@ -3468,54 +3300,44 @@ function createMailEditor(section) {
             showMessage("");
             entry.item = id;
           });
-          return el("div", { className: "add-row" }, pick, count, remove);
+          return controlRow(pick, count, remove);
         })
       );
       let next = "74";
       const choose = itemButton(items, () => next, (id) => void (next = id));
-      const add = el("button", { type: "button", className: "secondary", textContent: "Attach item" });
+      const add = actionButton("Attach item");
       add.addEventListener("click", () => {
         if (letter.items.some((e) => e.item === next)) return showMessage(`(O)${next} is already attached to ${letter.id}.`);
         showMessage("");
         letter.items.push({ item: next, count: 1 });
         draw();
       });
-      box.append(el("div", { className: "add-row" }, choose, add));
+      box.append(controlRow(choose, add));
     };
     draw();
     return box;
   }
 
   function card(letter) {
-    const subject = bind(letter, "subject", el("input", { value: letter.subject, placeholder: "The title in the mailbox" }));
-    const text = bind(letter, "text", el("textarea", { value: letter.text, rows: 7, placeholder: "Dear @,", title: "Letter text" }));
-    const trigger = bind(letter, "trigger", choiceSelect(MAIL_TRIGGERS, letter.trigger, "When to send"), "change");
-    const delivery = bind(letter, "delivery", choiceSelect(MAIL_DELIVERY, letter.delivery, "Where it arrives"), "change");
-    const condition = bind(letter, "condition", el("input", { value: letter.condition, placeholder: "e.g. PLAYER_HAS_MAIL Current SomeOtherLetter Received" }));
-    const once = el("input", { type: "checkbox", checked: letter.once !== false });
-    once.addEventListener("change", () => (letter.once = once.checked));
+    const subject = bindValue(el("input", { value: letter.subject, placeholder: "The title in the mailbox" }), letter, "subject");
+    const text = bindValue(el("textarea", { value: letter.text, rows: 7, placeholder: "Dear @,", title: "Letter text" }), letter, "text");
+    const trigger = bindValue(choiceSelect(MAIL_TRIGGERS, letter.trigger, "When to send"), letter, "trigger");
+    const delivery = bindValue(choiceSelect(MAIL_DELIVERY, letter.delivery, "Where it arrives"), letter, "delivery");
+    const condition = bindValue(el("input", { value: letter.condition, placeholder: "e.g. PLAYER_HAS_MAIL Current SomeOtherLetter Received" }), letter, "condition");
+    const once = checkbox(letter.once !== false, (checked) => (letter.once = checked));
 
     const refresh = () => preview === letter && showLetter(letter);
     for (const node of [subject, text]) node.addEventListener("input", refresh);
 
-    const view = el("button", { type: "button", className: "secondary", textContent: "Preview", onclick: () => (preview === letter ? closePane() : showLetter(letter)) });
-    const remove = el("button", {
-      type: "button",
-      className: "secondary remove-x",
-      textContent: "×",
-      title: "Remove this letter",
-      onclick: () => {
-        if (preview === letter) closePane();
-        mail = mail.filter((l) => l !== letter);
-        render();
-      },
+    const view = actionButton("Preview", () => (preview === letter ? closePane() : showLetter(letter)));
+    const remove = removeX("Remove this letter", () => {
+      if (preview === letter) closePane();
+      mail = mail.filter((l) => l !== letter);
+      render();
     });
-    const summary = el("summary", { textContent: `${letter.id}${letter.subject ? ` - ${letter.subject}` : ""}` });
-    subject.addEventListener("input", () => (summary.textContent = `${letter.id}${letter.subject ? ` - ${letter.subject}` : ""}`));
-    const details = el(
-      "details",
-      { className: "entry event", open: !!letter.open },
-      summary,
+    const heading = () => `${letter.id}${letter.subject ? ` - ${letter.subject}` : ""}`;
+    const details = collapsible(
+      { className: "entry event", open: !!letter.open, summary: heading(), onToggle: (open) => (letter.open = open) },
       field("Subject", subject, "The title shown in the mailbox (the part after [#] in the game's mail data)."),
       field("Letter", text, "@ is the player's name. A new line is a line break. {newName} is the new character's name, e.g. sign it -{newName}. {name} is the Stardew character's name."),
       field("Attached items", giftRows(letter), "Optional. They come with the letter."),
@@ -3526,9 +3348,9 @@ function createMailEditor(section) {
       field("Extra condition", condition, "Optional. Another game state query, joined to the friendship points with a comma."),
       field("Arrives", delivery),
       el("label", { className: "check indent" }, once, " Only send it once (untick to send it again every time the condition is met)"),
-      el("div", { className: "add-row" }, view, remove)
+      controlRow(view, remove)
     );
-    details.addEventListener("toggle", () => (letter.open = details.open));
+    subject.addEventListener("input", () => (details.summary.textContent = heading()));
     return details;
   }
 
