@@ -133,6 +133,21 @@
       "item": "909",
       "face": "$5",
       "text": "... this... reminds me of a past I'd rather not remember."
+    },
+    {
+      "item": "444",
+      "face": "$0",
+      "text": "A feather. It is surprisingly well-balanced, though I have little use for a quill."
+    },
+    {
+      "item": "814",
+      "face": "$0",
+      "text": "Squid ink... Dark and potent. Not something I would normally keep on hand, yet intriguing nonetheless."
+    },
+    {
+      "item": "614",
+      "face": "$0",
+      "text": "A peculiar brew. The aroma is faint, yet unmistakable... Very well. I will accept it."
     }
   ]
 }

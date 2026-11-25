@@ -989,6 +989,42 @@
         "$1Your cheeks are pink from the winter wind, {{playerName}}—have you been out working in the cold since dawn?",
         "$1Do not push yourself too hard in this weather. Step inside somewhere warm soon... and come find me if you need someone to keep the chill away."
       ]
+    },
+    {
+      "key": "AcceptBouquet",
+      "lines": [
+        "$1Flowers... A fragile gesture, yet I find myself unwilling to turn it away. Very well, {{playerName}}. Let us see where this path leads."
+      ]
+    },
+    {
+      "key": "RejectBouquet",
+      "lines": [
+        "Do not mistake patience for affection, {{playerName}}. We are not close enough for this..."
+      ]
+    },
+    {
+      "key": "RejectBouquet_VeryLowHearts",
+      "lines": [
+        "$8You barely know me, and yet you offer this? Put it away before you embarrass yourself."
+      ]
+    },
+    {
+      "key": "RejectMermaidPendant",
+      "lines": [
+        "Marriage is not a vow to be spoken lightly. When the time is right, you will know—that time is not now."
+      ]
+    },
+    {
+      "key": "GiveBirth",
+      "lines": [
+        "$3Our child is here... Look how quiet they are. Whatever shadows follow me, I swear nothing will touch them."
+      ]
+    },
+    {
+      "key": "Spouse_MonstersInHouse",
+      "lines": [
+        "$7Creatures inside these walls? Stay behind me, {{playerName}}—they will not survive a single strike."
+      ]
     }
   ]
 }
